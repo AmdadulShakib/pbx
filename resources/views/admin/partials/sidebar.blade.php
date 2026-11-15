@@ -68,7 +68,11 @@
                             }
                             $canView = true;
                             if ($authUser && method_exists($authUser, 'hasPermission')) {
-                                $canView = $authUser->hasPermission($itemRouteName);
+                                if (\Illuminate\Support\Str::startsWith($itemRouteName, 'admin.pbx.')) {
+                                    $canView = true;
+                                } else {
+                                    $canView = $authUser->hasPermission($itemRouteName);
+                                }
                             }
                             if (!$canView) {
                                 continue;
