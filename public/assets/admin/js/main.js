@@ -9,18 +9,24 @@
 
 // Disable the on-canvas tooltip
 
-Chart.defaults.pointHitDetectionRadius = 1;
-Chart.defaults.plugins.tooltip.enabled = false;
-Chart.defaults.plugins.tooltip.mode = 'index';
-Chart.defaults.plugins.tooltip.position = 'nearest';
-Chart.defaults.plugins.tooltip.external = coreui.ChartJS.customTooltips;
-Chart.defaults.defaultFontColor = coreui.Utils.getStyle('--cui-body-color');
-document.documentElement.addEventListener('ColorSchemeChange', () => {
-  updateCharts();
-});
-window.addEventListener('DOMContentLoaded', () => {
-  updateCharts();
-});
+if (typeof Chart !== 'undefined') {
+  Chart.defaults.pointHitDetectionRadius = 1;
+  Chart.defaults.plugins.tooltip.enabled = false;
+  Chart.defaults.plugins.tooltip.mode = 'index';
+  Chart.defaults.plugins.tooltip.position = 'nearest';
+  if (typeof coreui !== 'undefined' && coreui.ChartJS) {
+    Chart.defaults.plugins.tooltip.external = coreui.ChartJS.customTooltips;
+  }
+  if (typeof coreui !== 'undefined' && coreui.Utils) {
+    Chart.defaults.defaultFontColor = coreui.Utils.getStyle('--cui-body-color');
+  }
+  document.documentElement.addEventListener('ColorSchemeChange', () => {
+    if (typeof updateCharts === 'function') updateCharts();
+  });
+  window.addEventListener('DOMContentLoaded', () => {
+    if (typeof updateCharts === 'function') updateCharts();
+  });
+}
 i18next.on('languageChanged', () => {
   i18next.loadNamespaces('translation').then(() => {
     cardChart1.data.labels = [i18next.t('dateOnlyMonthName', {
