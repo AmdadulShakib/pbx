@@ -19,6 +19,8 @@
 <body class="@yield('body-class', 'site-body')">
     @yield('content')
     @stack('scripts')
+
+    @include('components.pbx-phone-widget')
 </body>
 </html>
 

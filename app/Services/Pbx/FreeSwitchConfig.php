@@ -26,7 +26,11 @@ class FreeSwitchConfig
             File::put($dirs[1] . '/' . $e->extension . '.xml', $this->dialplanXml($e));
         }
 
-        $this->fs->api('reloadxml');
+        try {
+            $this->fs->api('reloadxml');
+        } catch (\Throwable $e) {
+            logger()->warning('FreeSWITCH reloadxml failed: ' . $e->getMessage());
+        }
     }
 
     private function esc(string $v): string
@@ -50,6 +54,9 @@ class FreeSwitchConfig
       <variable name="user_context" value="default"/>
       <variable name="effective_caller_id_name" value="{$name}"/>
       <variable name="effective_caller_id_number" value="{$ext}"/>
+      <variable name="outbound_caller_id_name" value="{$name}"/>
+      <variable name="outbound_caller_id_number" value="{$ext}"/>
+      <variable name="media_webrtc" value="true"/>
     </variables>
   </user>
 </include>
@@ -63,6 +70,7 @@ XML;
   <extension name="pbx-ext-__EXT__">
     <condition field="destination_number" expression="^__EXT__$">
       <action application="set" data="ringback=${us-ring}"/>
+      <action application="set" data="instant_ringback=true"/>
       <action application="set" data="hangup_after_bridge=true"/>
       <action application="bridge" data="user/__EXT__@$${domain}"/>
     </condition>

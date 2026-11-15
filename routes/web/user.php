@@ -8,6 +8,13 @@ use App\Http\Controllers\Web\User\SecurityController;
 use App\Http\Controllers\Web\User\PbxPhoneController;
 
 Route::prefix('user')->name('user.')->group(function() {
+    Route::middleware(['auth:web,admin'])->group(function() {
+        Route::prefix('pbx')->name('pbx.')->group(function () {
+            Route::get('phone', [PbxPhoneController::class, 'index'])->name('phone');
+            Route::get('phone/credentials', [PbxPhoneController::class, 'credentials'])->name('phone.credentials');
+        });
+    });
+
     Route::middleware(['auth:web'])->group(function() {
         Route::controller(LoginController::class)->group(function() {
             Route::post('logout', 'logout')->name('logout');
@@ -22,10 +29,5 @@ Route::prefix('user')->name('user.')->group(function() {
 
         //AllDynamicDataStart
         //AllDynamicDataEnd
-        Route::prefix('pbx')->name('pbx.')->group(function () {
-            Route::get('phone', [PbxPhoneController::class, 'index'])->name('phone');
-            Route::get('phone/credentials', [PbxPhoneController::class, 'credentials'])->name('phone.credentials');
-        });
-
     });
 });

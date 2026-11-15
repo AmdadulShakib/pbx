@@ -79,6 +79,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('extensions', PbxExtensionController::class)->except('show');
             Route::get('status', [PbxStatusController::class, 'index'])->name('status');
             Route::post('originate', [PbxStatusController::class, 'originate'])->name('originate');
+            Route::get('settings', [PbxStatusController::class, 'settings'])->name('settings');
+            Route::post('settings', [PbxStatusController::class, 'saveSettings'])->name('settings.save');
         });
     });
 });

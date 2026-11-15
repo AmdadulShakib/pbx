@@ -1,0 +1,10 @@
+<include>
+  <extension name="pbx-ext-1002">
+    <condition field="destination_number" expression="^1002$">
+      <action application="set" data="ringback=${us-ring}"/>
+      <action application="set" data="instant_ringback=true"/>
+      <action application="set" data="hangup_after_bridge=true"/>
+      <action application="bridge" data="user/1002@$${domain}"/>
+    </condition>
+  </extension>
+</include>

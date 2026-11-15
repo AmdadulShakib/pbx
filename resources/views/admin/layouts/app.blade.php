@@ -58,6 +58,8 @@
     <script src="{{ asset('assets/admin/admin-ui.js') }}"></script>
 
     @stack('js')
+
+    @include('components.pbx-phone-widget')
 </body>
 </html>
 

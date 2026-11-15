@@ -48,6 +48,11 @@ use HasFactory;
         return $this->belongsToMany(Role::class, 'role_user');
     }
 
+    public function pbxExtension()
+    {
+        return $this->hasOne(PbxExtension::class);
+    }
+
     public function hasPermission(string $ability): bool
     {
         if (!$this->isAdminAccount()) {

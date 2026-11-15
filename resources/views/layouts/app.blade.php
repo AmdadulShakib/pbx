@@ -77,5 +77,7 @@
             @yield('content')
         </main>
     </div>
+
+    @include('components.pbx-phone-widget')
 </body>
 </html>

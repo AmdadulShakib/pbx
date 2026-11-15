@@ -1,0 +1,15 @@
+<include>
+  <user id="1002">
+    <params>
+      <param name="password" value="secret1002Pass!"/>
+    </params>
+    <variables>
+      <variable name="user_context" value="default"/>
+      <variable name="effective_caller_id_name" value="Shakib Desk"/>
+      <variable name="effective_caller_id_number" value="1002"/>
+      <variable name="outbound_caller_id_name" value="Shakib Desk"/>
+      <variable name="outbound_caller_id_number" value="1002"/>
+      <variable name="media_webrtc" value="true"/>
+    </variables>
+  </user>
+</include>

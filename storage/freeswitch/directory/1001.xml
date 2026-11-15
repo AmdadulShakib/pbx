@@ -1,0 +1,15 @@
+<include>
+  <user id="1001">
+    <params>
+      <param name="password" value="secret1001Pass!"/>
+    </params>
+    <variables>
+      <variable name="user_context" value="default"/>
+      <variable name="effective_caller_id_name" value="Admin Desk"/>
+      <variable name="effective_caller_id_number" value="1001"/>
+      <variable name="outbound_caller_id_name" value="Admin Desk"/>
+      <variable name="outbound_caller_id_number" value="1001"/>
+      <variable name="media_webrtc" value="true"/>
+    </variables>
+  </user>
+</include>

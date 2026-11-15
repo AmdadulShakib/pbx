@@ -20,7 +20,7 @@ class PbxStatusController extends Controller
             $error = $e->getMessage();
         }
 
-        return view('pbx.status', compact('regs', 'error'));
+        return view('admin.pbx.status', compact('regs', 'error'));
     }
 
     public function originate(Request $request, FreeSwitch $fs)
@@ -40,5 +40,40 @@ class PbxStatusController extends Controller
         }
 
         return back()->with('ok', 'ফলাফল: ' . $result);
+    }
+
+    public function settings()
+    {
+        return view('admin.pbx.settings', [
+            'driver'   => config('pbx.driver', 'asterisk'),
+            'domain'   => config('pbx.domain', '10.211.10.238'),
+            'ws_url'   => config('pbx.ws_url', 'ws://10.211.10.238:8088/ws'),
+            'esl_host' => config('pbx.host', '127.0.0.1'),
+            'esl_port' => config('pbx.port', 8021),
+            'esl_pass' => config('pbx.password', 'ClueCon'),
+        ]);
+    }
+
+    public function saveSettings(Request $request, \App\Services\EnvEditor $envEditor)
+    {
+        $data = $request->validate([
+            'driver' => 'required|in:asterisk,freeswitch',
+            'domain' => 'required|string|max:100',
+            'ws_url' => 'required|string|max:200',
+        ]);
+
+        $envEditor->setMany([
+            'PBX_DRIVER' => $data['driver'],
+            'PBX_DOMAIN' => $data['domain'],
+            'PBX_WS_URL' => $data['ws_url'],
+        ]);
+
+        config([
+            'pbx.driver' => $data['driver'],
+            'pbx.domain' => $data['domain'],
+            'pbx.ws_url' => $data['ws_url'],
+        ]);
+
+        return back()->with('ok', 'PBX সার্ভার সেটিংস সফলভাবে আপডেট করা হয়েছে');
     }
 }
