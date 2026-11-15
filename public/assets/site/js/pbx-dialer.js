@@ -190,7 +190,10 @@
         }
         if (activeToneGain) {
             try {
-                activeToneGain.gain.setValueAtTime(0, audioContext ? audioContext.currentTime : 0);
+                const ctx = getAudioContext();
+                if (ctx) {
+                    activeToneGain.gain.setValueAtTime(0, ctx.currentTime);
+                }
                 activeToneGain.disconnect();
             } catch (e) {}
             activeToneGain = null;
@@ -417,20 +420,20 @@
             return;
         }
 
-        const num = targetNumber || $('pbx-display-input')?.textContent.trim();
+        const num = (targetNumber || $('pbx-display-input')?.textContent || '').trim();
         if (!num) {
             alert('Please enter an extension number to call.');
             return;
         }
 
-        if (num === userCreds.extension) {
+        if (userCreds && String(num) === String(userCreds.extension)) {
             alert('Cannot call your own extension.');
             return;
         }
 
         getAudioContext();
 
-        const match = userCreds.contacts ? userCreds.contacts.find((c) => c.extension === num) : null;
+        const match = (userCreds && userCreds.contacts) ? userCreds.contacts.find((c) => String(c.extension) === String(num)) : null;
         const displayName = targetName || (match ? (match.name || match.user_name) : 'Extension ' + num);
 
         executeCall(num, displayName);
@@ -440,13 +443,16 @@
         showCallOverlay('Calling...', displayName, num);
         startOutgoingRingback();
 
-        const targetUri = `sip:${num}@${userCreds.domain}`;
+        const domain = (userCreds && userCreds.domain) ? userCreds.domain : window.location.hostname;
+        const targetUri = `sip:${num}@${domain}`;
         const options = {
             mediaConstraints: { audio: true, video: false },
             pcConfig: {
                 iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
             }
         };
+
+        console.log('[PBX] Initiating call to:', targetUri);
 
         try {
             const session = ua.call(targetUri, options);
@@ -802,12 +808,17 @@
         currentSession = session;
         bindSessionEvents(session);
 
-        const callerName = session.remote_identity.display_name || 'Extension ' + session.remote_identity.uri.user;
-        const callerExt = session.remote_identity.uri.user;
+        const callerExt = session.remote_identity?.uri?.user || session._targetNum || 'Unknown';
+        const callerName = session.remote_identity?.display_name || ('Extension ' + callerExt);
+        session._targetNum = callerExt;
+        session._targetName = callerName;
 
-        $('pbx-incoming-caller').textContent = callerName;
-        $('pbx-incoming-ext').textContent = 'Ext ' + callerExt;
-        $('pbx-incoming-avatar').textContent = callerName.charAt(0).toUpperCase();
+        const callerEl = $('pbx-incoming-caller');
+        const extEl = $('pbx-incoming-ext');
+        const avatarEl = $('pbx-incoming-avatar');
+        if (callerEl) callerEl.textContent = callerName;
+        if (extEl) extEl.textContent = 'Ext ' + callerExt;
+        if (avatarEl) avatarEl.textContent = callerName ? callerName.charAt(0).toUpperCase() : '?';
 
         const incomingModal = $('pbx-incoming-modal');
         if (incomingModal) incomingModal.classList.add('active');
@@ -837,12 +848,8 @@
         const fab = $('pbx-fab-btn');
         if (fab) fab.classList.remove('is-incoming');
 
-        let callerName = 'Caller';
-        let callerExt = '';
-        if (currentSession.remote_identity) {
-            callerName = currentSession.remote_identity.display_name || ('Ext ' + (currentSession.remote_identity.uri ? currentSession.remote_identity.uri.user : ''));
-            callerExt = currentSession.remote_identity.uri ? currentSession.remote_identity.uri.user : '';
-        }
+        const callerExt = currentSession.remote_identity?.uri?.user || currentSession._targetNum || '';
+        const callerName = currentSession.remote_identity?.display_name || (callerExt ? 'Ext ' + callerExt : 'Caller');
 
         showCallOverlay('Connecting...', callerName, callerExt);
 
@@ -986,8 +993,10 @@
 
             ua.on('newRTCSession', function (data) {
                 const session = data.session;
-                if (session.direction === 'incoming') {
-                    console.log('[PBX] Incoming call received from:', session.remote_identity.uri.user);
+                const isIncoming = (session.direction === 'incoming' || data.originator === 'remote');
+                if (isIncoming) {
+                    const fromExt = session.remote_identity?.uri?.user || 'Unknown';
+                    console.log('[PBX] Incoming call received from:', fromExt);
                     handleIncomingCall(session);
                 }
             });
