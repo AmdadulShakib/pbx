@@ -55,11 +55,11 @@
                                    id="extension" 
                                    name="extension" 
                                    value="{{ old('extension', $extension->extension) }}" 
-                                   placeholder="e.g. 1001, 2001" 
+                                   placeholder="e.g. 101, 1003, 2001" 
                                    required 
-                                   pattern="[0-9]{3,6}"
-                                   maxlength="6">
-                            <small class="text-muted">{{ __('3 to 6 digits (e.g. 1001, 1002).') }}</small>
+                                   pattern="[0-9]{2,8}"
+                                   maxlength="8">
+                            <small class="text-muted">{{ __('Numeric extension (e.g. 101, 1003, 2001).') }}</small>
                             @error('extension')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

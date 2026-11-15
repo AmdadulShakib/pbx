@@ -78,12 +78,12 @@ class PbxExtensionController extends Controller
 
         $data = $request->validate([
             'extension' => [
-                'required', 'digits_between:3,6',
-                'not_regex:/^10[01][0-9]$/',
+                'required',
+                'digits_between:2,8',
                 Rule::unique('pbx_extensions', 'extension')->ignore($id),
             ],
             'name'     => ['required', 'string', 'max:50'],
-            'password' => [$ext ? 'nullable' : 'required', 'string', 'min:8', 'max:64'],
+            'password' => [$ext ? 'nullable' : 'required', 'string', 'min:4', 'max:64'],
             'user_id'  => [
                 'nullable', 'exists:users,id',
                 Rule::unique('pbx_extensions', 'user_id')->ignore($id),
