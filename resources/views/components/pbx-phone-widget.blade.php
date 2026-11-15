@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="{{ asset('assets/site/css/pbx-dialer.css') }}">
 
 <!-- Remote Audio Element for WebRTC Stream -->
-<audio id="pbx-remote-audio" autoplay playsinline style="display: none;"></audio>
+<audio id="pbx-remote-audio" autoplay playsinline style="position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none;"></audio>
 
 <!-- Floating Corner Dialer Container -->
 <div id="pbx-floating-container">

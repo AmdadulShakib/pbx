@@ -80,6 +80,8 @@
         }
     }
 
+    let activeToneGain = null;
+
     // Incoming Call Ringtone Synthesizer (Realistic Phone Ring)
     function startIncomingRingtone() {
         stopAllAudioTones();
@@ -92,6 +94,7 @@
                 const osc1 = ctx.createOscillator();
                 const osc2 = ctx.createOscillator();
                 const gain = ctx.createGain();
+                activeToneGain = gain;
 
                 osc1.type = 'sine';
                 osc2.type = 'sine';
@@ -129,6 +132,7 @@
                 const osc1 = ctx.createOscillator();
                 const osc2 = ctx.createOscillator();
                 const gain = ctx.createGain();
+                activeToneGain = gain;
 
                 osc1.type = 'sine';
                 osc2.type = 'sine';
@@ -183,6 +187,13 @@
         if (activeRingback) {
             clearInterval(activeRingback);
             activeRingback = null;
+        }
+        if (activeToneGain) {
+            try {
+                activeToneGain.gain.setValueAtTime(0, audioContext ? audioContext.currentTime : 0);
+                activeToneGain.disconnect();
+            } catch (e) {}
+            activeToneGain = null;
         }
     }
 
@@ -422,19 +433,7 @@
         const match = userCreds.contacts ? userCreds.contacts.find((c) => c.extension === num) : null;
         const displayName = targetName || (match ? (match.name || match.user_name) : 'Extension ' + num);
 
-        // Pre-request microphone permission so browser does not block media
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-                // Stop the preliminary test stream
-                stream.getTracks().forEach((t) => t.stop());
-                executeCall(num, displayName);
-            }).catch((err) => {
-                console.warn('[PBX] Mic access error:', err);
-                executeCall(num, displayName);
-            });
-        } else {
-            executeCall(num, displayName);
-        }
+        executeCall(num, displayName);
     };
 
     function executeCall(num, displayName) {
@@ -491,11 +490,15 @@
 
         // PeerConnection track received
         session.on('peerconnection', function (data) {
+            console.log('[PBX WebRTC] PeerConnection created');
             const pc = data.peerconnection;
             pc.addEventListener('track', function (e) {
-                console.log('[PBX WebRTC] Remote track received:', e.track.kind);
+                console.log('[PBX WebRTC] Remote track received:', e.track ? e.track.kind : 'unknown');
                 if (e.streams && e.streams[0]) {
                     attachRemoteAudio(e.streams[0]);
+                } else if (e.track && e.track.kind === 'audio') {
+                    const stream = new MediaStream([e.track]);
+                    attachRemoteAudio(stream);
                 }
             });
         });
@@ -819,8 +822,14 @@
     }
 
     window.pbxAnswerIncoming = function () {
+        console.log('[PBX] Answering incoming call...');
         stopAllAudioTones();
-        if (!currentSession) return;
+        getAudioContext();
+
+        if (!currentSession) {
+            console.warn('[PBX] No incoming session found to answer.');
+            return;
+        }
 
         const incomingModal = $('pbx-incoming-modal');
         if (incomingModal) incomingModal.classList.remove('active');
@@ -828,9 +837,15 @@
         const fab = $('pbx-fab-btn');
         if (fab) fab.classList.remove('is-incoming');
 
-        showCallOverlay('Connected', currentSession.remote_identity.display_name, currentSession.remote_identity.uri.user);
+        let callerName = 'Caller';
+        let callerExt = '';
+        if (currentSession.remote_identity) {
+            callerName = currentSession.remote_identity.display_name || ('Ext ' + (currentSession.remote_identity.uri ? currentSession.remote_identity.uri.user : ''));
+            callerExt = currentSession.remote_identity.uri ? currentSession.remote_identity.uri.user : '';
+        }
 
-        // Pre-request user media permission and answer
+        showCallOverlay('Connecting...', callerName, callerExt);
+
         const options = {
             mediaConstraints: { audio: true, video: false },
             pcConfig: {
@@ -838,15 +853,13 @@
             }
         };
 
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-                stream.getTracks().forEach((t) => t.stop());
-                currentSession.answer(options);
-            }).catch(() => {
-                currentSession.answer(options);
-            });
-        } else {
+        try {
             currentSession.answer(options);
+            console.log('[PBX] currentSession.answer() executed successfully.');
+        } catch (e) {
+            console.error('[PBX] Exception in currentSession.answer():', e);
+            alert('Failed to answer call: ' + e.message);
+            endCallUI();
         }
     };
 
