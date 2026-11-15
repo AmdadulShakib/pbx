@@ -22,25 +22,28 @@
                 <div class="d-flex align-items-center">
                     <i data-lucide="alert-octagon" class="text-warning me-2" style="width: 24px; height: 24px;"></i>
                     <div>
-                        <h6 class="alert-heading mb-1 fw-bold">{{ __('FreeSWITCH Service Unreachable') }}</h6>
+                        <h6 class="alert-heading mb-1 fw-bold">{{ __(ucfirst($driver) . ' Service Unreachable') }}</h6>
                         <p class="mb-0 small">{{ $error }}</p>
-                        <small class="text-muted">{{ __('Please ensure the FreeSWITCH Windows service is started (services.msc -> FreeSWITCH).') }}</small>
+                        <small class="text-muted">{{ __('Please verify your PBX backend service status and configuration.') }}</small>
                     </div>
                 </div>
             </div>
         @endif
     </div>
 
-    <!-- Live Registrations Card -->
+    <!-- Live Registrations / Extensions Card -->
     <div class="col-12 col-xl-8">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
                 <div>
                     <h5 class="card-title mb-0 fw-bold">
                         <i data-lucide="radio" class="me-2 text-success" style="width: 20px; height: 20px;"></i>
-                        {{ __('Online Extensions / Registrations') }}
+                        {{ __('PBX Extensions & Registrations') }}
                     </h5>
-                    <small class="text-muted">{{ __('Extensions currently connected and ready to make/receive calls') }}</small>
+                    <small class="text-muted">
+                        {{ __('Engine:') }} <strong class="text-primary text-uppercase">{{ $driver }}</strong> | 
+                        {{ __('WebSocket:') }} <code>{{ config('pbx.ws_url') }}</code>
+                    </small>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ route('admin.pbx.status') }}" class="btn btn-outline-secondary btn-sm">
@@ -55,57 +58,124 @@
             </div>
 
             <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>{{ __('User / Extension') }}</th>
-                                <th>{{ __('Contact IP / Port') }}</th>
-                                <th>{{ __('Agent') }}</th>
-                                <th>{{ __('Expires') }}</th>
-                                <th class="text-end">{{ __('Status') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($regs as $r)
+                @if($driver === 'asterisk' && empty($regs))
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="badge bg-success-subtle text-success fs-6 fw-bold px-2 py-1">
-                                                {{ $r['reg_user'] ?? 'N/A' }}
+                                    <th>{{ __('Extension') }}</th>
+                                    <th>{{ __('Display Name') }}</th>
+                                    <th>{{ __('Assigned Employee') }}</th>
+                                    <th>{{ __('Protocol') }}</th>
+                                    <th class="text-end">{{ __('Status') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($extensions as $ext)
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-primary-subtle text-primary fs-6 fw-bold px-2.5 py-1">
+                                                Ext {{ $ext->extension }}
                                             </span>
-                                            <span class="text-muted small">@ {{ $r['realm'] ?? '' }}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <code class="small text-dark">{{ $r['network_ip'] ?? '' }}:{{ $r['network_port'] ?? '' }}</code>
-                                    </td>
-                                    <td>
-                                        <span class="text-truncate d-inline-block small" style="max-width: 160px;" title="{{ $r['agent'] ?? '' }}">
-                                            {{ $r['agent'] ?? 'WebRTC' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="small text-muted">{{ $r['expires'] ?? '' }}</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <span class="badge bg-success">
-                                            <i data-lucide="check" style="width: 12px; height: 12px;" class="me-1"></i>{{ __('Registered') }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            @empty
+                                        </td>
+                                        <td>
+                                            <span class="fw-semibold">{{ $ext->name }}</span>
+                                        </td>
+                                        <td>
+                                            @if($ext->user)
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="avatar-xs rounded-circle bg-light text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 11px;">
+                                                        {{ strtoupper(substr($ext->user->name, 0, 2)) }}
+                                                    </div>
+                                                    <div>
+                                                        <div class="small fw-semibold text-dark">{{ $ext->user->name }}</div>
+                                                        <div class="text-muted" style="font-size: 11px;">{{ $ext->user->email }}</div>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <span class="badge bg-secondary-subtle text-secondary small">{{ __('Unassigned') }}</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info-subtle text-info">WebRTC / WSS</span>
+                                        </td>
+                                        <td class="text-end">
+                                            @if($ext->enabled)
+                                                <span class="badge bg-success">
+                                                    <i data-lucide="check" style="width: 12px; height: 12px;" class="me-1"></i>{{ __('Enabled') }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-danger">{{ __('Disabled') }}</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">
+                                            <i data-lucide="phone-off" class="mb-2 text-secondary" style="width: 36px; height: 36px;"></i>
+                                            <p class="mb-0">{{ __('No extensions created yet.') }}</p>
+                                            <a href="{{ route('admin.pbx.extensions.create') }}" class="btn btn-primary btn-sm mt-2">
+                                                <i data-lucide="plus" class="me-1" style="width: 14px; height: 14px;"></i>{{ __('Create First Extension') }}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted">
-                                        <i data-lucide="phone-off" class="mb-2 text-secondary" style="width: 36px; height: 36px;"></i>
-                                        <p class="mb-0">{{ __('No extensions currently registered online.') }}</p>
-                                        <small>{{ __('When an employee opens the page and registers their dialer, their extension will appear here.') }}</small>
-                                    </td>
+                                    <th>{{ __('User / Extension') }}</th>
+                                    <th>{{ __('Contact IP / Port') }}</th>
+                                    <th>{{ __('Agent') }}</th>
+                                    <th>{{ __('Expires') }}</th>
+                                    <th class="text-end">{{ __('Status') }}</th>
                                 </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                @forelse($regs as $r)
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge bg-success-subtle text-success fs-6 fw-bold px-2 py-1">
+                                                    {{ $r['reg_user'] ?? 'N/A' }}
+                                                </span>
+                                                <span class="text-muted small">@ {{ $r['realm'] ?? '' }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <code class="small text-dark">{{ $r['network_ip'] ?? '' }}:{{ $r['network_port'] ?? '' }}</code>
+                                        </td>
+                                        <td>
+                                            <span class="text-truncate d-inline-block small" style="max-width: 160px;" title="{{ $r['agent'] ?? '' }}">
+                                                {{ $r['agent'] ?? 'WebRTC' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="small text-muted">{{ $r['expires'] ?? '' }}</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="badge bg-success">
+                                                <i data-lucide="check" style="width: 12px; height: 12px;" class="me-1"></i>{{ __('Registered') }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">
+                                            <i data-lucide="phone-off" class="mb-2 text-secondary" style="width: 36px; height: 36px;"></i>
+                                            <p class="mb-0">{{ __('No extensions currently registered online.') }}</p>
+                                            <small>{{ __('When an employee opens the page and registers their dialer, their extension will appear here.') }}</small>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

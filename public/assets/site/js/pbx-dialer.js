@@ -524,12 +524,30 @@
                 return;
             }
 
+            // Auto upgrade WS URL for HTTPS compatibility and prevent Mixed Content blocking
+            let wsUrl = data.ws_url || `wss://${window.location.host}/ws`;
+            if (window.location.protocol === 'https:' && wsUrl.startsWith('ws://')) {
+                wsUrl = wsUrl.replace(/^ws:\/\//i, 'wss://');
+            }
+            if (/^(wss?:\/\/)(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|127\.|localhost)/.test(wsUrl) && !/^(10\.|192\.168\.|172\.|127\.|localhost)/.test(window.location.hostname)) {
+                const proto = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+                wsUrl = `${proto}${window.location.host}/ws`;
+                console.warn('[PBX] Rewrote private WS URL to public host:', wsUrl);
+            }
+
+            let sipDomain = data.domain || window.location.hostname;
+            if (/^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|127\.|localhost)/.test(sipDomain) && !/^(10\.|192\.168\.|172\.|127\.|localhost)/.test(window.location.hostname)) {
+                sipDomain = window.location.hostname;
+            }
+
+            console.log('[PBX] Connecting to WebSocket:', wsUrl, 'Domain:', sipDomain);
+
             // Create WebSocket Transport
-            const socket = new JsSIP.WebSocketInterface(data.ws_url);
+            const socket = new JsSIP.WebSocketInterface(wsUrl);
 
             const config = {
                 sockets: [socket],
-                uri: `sip:${data.extension}@${data.domain}`,
+                uri: `sip:${data.extension}@${sipDomain}`,
                 password: data.password,
                 display_name: data.name,
                 session_timers: false,
@@ -541,7 +559,7 @@
             ua = new JsSIP.UA(config);
 
             ua.on('connecting', function () {
-                console.log('[PBX] Connecting to FreeSWITCH WebSocket...');
+                console.log('[PBX] Connecting to PBX WebSocket server...');
                 setStatus('connecting', 'Connecting...');
             });
 
