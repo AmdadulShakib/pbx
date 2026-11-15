@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\File;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,7 +18,10 @@ class AppServiceProvider extends ServiceProvider
             require_once app_path('Support/helpers.php');
         }
 
-        //
+        File::ensureDirectoryExists(storage_path('framework/views'));
+        File::ensureDirectoryExists(storage_path('framework/cache'));
+        File::ensureDirectoryExists(storage_path('framework/sessions'));
+        File::ensureDirectoryExists(storage_path('logs'));
     }
 
     /**
