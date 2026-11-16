@@ -462,6 +462,12 @@
     };
 
     function executeCall(num, displayName) {
+        if (currentSession && !currentSession.isEnded()) {
+            console.warn('[PBX] Already in call, cannot initiate another call.');
+            alert('A call is already in progress.');
+            return;
+        }
+
         showCallOverlay('Calling...', displayName, num);
         startOutgoingRingback();
 
@@ -474,10 +480,6 @@
                     { urls: 'stun:stun.l.google.com:19302' },
                     { urls: 'stun:global.stun.twilio.com:3478' }
                 ]
-            },
-            rtcOfferConstraints: {
-                offerToReceiveAudio: true,
-                offerToReceiveVideo: false
             }
         };
 
@@ -510,18 +512,25 @@
         }
         if (!stream) return;
 
+        if (remoteAudio.srcObject === stream) {
+            return;
+        }
+
         console.log('[PBX Audio] Attaching remote audio stream:', stream.id);
         remoteAudio.srcObject = stream;
-        remoteAudio.play().then(() => {
-            console.log('[PBX Audio] Remote audio playback active.');
-        }).catch((err) => {
-            console.warn('[PBX Audio] Autoplay policy prevented audio play:', err);
-            const resumePlay = () => {
-                remoteAudio.play();
-                document.removeEventListener('click', resumePlay);
-            };
-            document.addEventListener('click', resumePlay);
-        });
+        const playPromise = remoteAudio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                console.log('[PBX Audio] Remote audio playback active.');
+            }).catch((err) => {
+                console.warn('[PBX Audio] Autoplay policy prevented audio play:', err);
+                const resumePlay = () => {
+                    remoteAudio.play();
+                    document.removeEventListener('click', resumePlay);
+                };
+                document.addEventListener('click', resumePlay);
+            });
+        }
     }
 
     // Configure PeerConnection listeners safely for BOTH incoming and outgoing calls
@@ -584,6 +593,7 @@
 
         // 180 / 183 Ringing
         session.on('progress', function () {
+            if (session !== currentSession) return;
             console.log('[PBX] Remote phone is ringing...');
             updateCallOverlayState('Ringing...', false);
             setStatus('ringing', 'Ringing...');
@@ -591,12 +601,14 @@
 
         // 200 OK Received or Sent (Call Answered)
         session.on('accepted', function () {
+            if (session !== currentSession) return;
             console.log('[PBX] Call accepted / answered!');
             handleCallEstablished();
         });
 
         // ACK Received or Sent (Call Fully Confirmed)
         session.on('confirmed', function () {
+            if (session !== currentSession) return;
             console.log('[PBX] Call confirmed (ACK received)!');
             handleCallEstablished();
         });
@@ -604,15 +616,27 @@
         // Call Ended
         session.on('ended', function () {
             console.log('[PBX] Call ended normally.');
+            if (session !== currentSession) {
+                console.log('[PBX] Ignoring ended event from previous/stale session.');
+                return;
+            }
             playCallEndTone();
             recordCallHistory(session, 'Completed');
             updateCallOverlayState('Call Ended', false);
-            setTimeout(endCallUI, 1200);
+            setTimeout(() => {
+                if (session === currentSession) {
+                    endCallUI();
+                }
+            }, 1200);
         });
 
         // Call Failed
         session.on('failed', function (e) {
             console.warn('[PBX] Call failed cause:', e.cause);
+            if (session !== currentSession) {
+                console.log('[PBX] Ignoring failed event from previous/stale session.');
+                return;
+            }
             playCallEndTone();
             recordCallHistory(session, e.cause || 'Failed');
             const reason = e.cause || 'No Answer';
@@ -620,7 +644,11 @@
             if (e.cause === JsSIP.C.causes.USER_DENIED_MEDIA_ACCESS) {
                 alert('Microphone permission is required to make or receive calls.');
             }
-            setTimeout(endCallUI, 2200);
+            setTimeout(() => {
+                if (session === currentSession) {
+                    endCallUI();
+                }
+            }, 2000);
         });
     }
 
@@ -720,6 +748,15 @@
     function endCallUI() {
         stopCallTimer();
         stopAllAudioTones();
+
+        let remoteAudio = $('pbx-remote-audio');
+        if (remoteAudio) {
+            try {
+                remoteAudio.pause();
+                remoteAudio.srcObject = null;
+            } catch (e) {}
+        }
+
         currentSession = null;
         isCallMuted = false;
         isCallHeld = false;
@@ -751,7 +788,8 @@
     // =========================================================================
     window.pbxHangup = function () {
         getAudioContext();
-        if (currentSession) {
+        stopAllAudioTones();
+        if (currentSession && !currentSession.isEnded()) {
             try {
                 currentSession.terminate();
             } catch (e) {
@@ -882,9 +920,9 @@
     // Incoming Call Handling
     // =========================================================================
     function handleIncomingCall(session) {
-        // If already in an active connected call, send busy
-        if (currentSession && currentSession !== session && currentSession.isEstablished && currentSession.isEstablished()) {
-            console.warn('[PBX] Already in call, rejecting with busy.');
+        // If already in an active or ringing call, send busy
+        if (currentSession && !currentSession.isEnded()) {
+            console.warn('[PBX] Already in call or handling a session, rejecting new call with 486 Busy Here.');
             try {
                 session.terminate({ status_code: 486, reason_phrase: 'Busy Here' });
             } catch (e) {}
@@ -925,8 +963,9 @@
         stopAllAudioTones();
         getAudioContext();
 
-        if (!currentSession) {
-            console.warn('[PBX] No incoming session found to answer.');
+        if (!currentSession || currentSession.isEnded()) {
+            console.warn('[PBX] No active incoming session found to answer.');
+            endCallUI();
             return;
         }
 
@@ -948,10 +987,6 @@
                     { urls: 'stun:stun.l.google.com:19302' },
                     { urls: 'stun:global.stun.twilio.com:3478' }
                 ]
-            },
-            rtcAnswerConstraints: {
-                offerToReceiveAudio: true,
-                offerToReceiveVideo: false
             }
         };
 
@@ -967,10 +1002,12 @@
 
     window.pbxRejectIncoming = function () {
         stopAllAudioTones();
-        if (currentSession) {
+        if (currentSession && !currentSession.isEnded()) {
             try {
                 currentSession.terminate({ status_code: 486, reason_phrase: 'Busy Here' });
-            } catch (e) {}
+            } catch (e) {
+                console.warn('[PBX] Reject error:', e);
+            }
         }
         endCallUI();
     };

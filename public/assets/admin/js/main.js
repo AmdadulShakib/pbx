@@ -27,6 +27,7 @@ if (typeof Chart !== 'undefined') {
     if (typeof updateCharts === 'function') updateCharts();
   });
 }
+if (typeof i18next !== 'undefined' && i18next && typeof i18next.on === 'function') {
 i18next.on('languageChanged', () => {
   i18next.loadNamespaces('translation').then(() => {
     cardChart1.data.labels = [i18next.t('dateOnlyMonthName', {
@@ -137,6 +138,7 @@ i18next.on('languageChanged', () => {
     updateCharts();
   });
 });
+}
 const updateCharts = () => {
   cardChart1.data.datasets[0].pointBackgroundColor = coreui.Utils.getStyle('--cui-primary');
   mainBarChart.options.scales.x.ticks.color = coreui.Utils.getStyle('--cui-body-color');
