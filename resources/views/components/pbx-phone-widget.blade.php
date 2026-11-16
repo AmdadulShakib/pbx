@@ -1,5 +1,5 @@
 @if(auth('web')->check() || auth('admin')->check())
-<link rel="stylesheet" href="{{ asset('assets/site/css/pbx-dialer.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/site/css/pbx-dialer.css') }}?v={{ @filemtime(public_path('assets/site/css/pbx-dialer.css')) ?: time() }}&t={{ time() }}">
 
 <!-- Remote Audio Element for WebRTC Stream -->
 <audio id="pbx-remote-audio" autoplay playsinline style="position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none;"></audio>

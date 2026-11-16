@@ -673,6 +673,16 @@
                 console.log('[PBX] Ignoring failed event from previous/stale session.');
                 return;
             }
+
+            // If this was an incoming call canceled because it was answered on another tab/browser, reset cleanly
+            if (session._direction === 'incoming' && (e.cause === 'Canceled' || e.cause === JsSIP.C.causes.CANCELED)) {
+                console.log('[PBX] Incoming call answered elsewhere or canceled. Silently resetting UI.');
+                stopAllAudioTones();
+                recordCallHistory(session, 'Missed');
+                endCallUI();
+                return;
+            }
+
             playCallEndTone();
             recordCallHistory(session, e.cause || 'Failed');
             const reason = e.cause || 'No Answer';
