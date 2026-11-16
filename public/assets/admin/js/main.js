@@ -151,8 +151,9 @@ const updateCharts = () => {
   mainBarChart.update();
 };
 
+if (typeof Chart !== 'undefined' && typeof coreui !== 'undefined') {
 // eslint-disable-next-line no-unused-vars
-const cardChartNew1 = new Chart(document.getElementById('card-chart-new1'), {
+const cardChartNew1 = document.getElementById('card-chart-new1') ? new Chart(document.getElementById('card-chart-new1'), {
   type: 'line',
   data: {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -194,7 +195,7 @@ const cardChartNew1 = new Chart(document.getElementById('card-chart-new1'), {
     }
   }
 });
-const cardChart1 = new Chart(document.getElementById('card-chart1'), {
+const cardChart1 = document.getElementById('card-chart1') ? new Chart(document.getElementById('card-chart1'), {
   type: 'line',
   data: {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -250,7 +251,7 @@ const cardChart1 = new Chart(document.getElementById('card-chart1'), {
     }
   }
 });
-const cardChart3 = new Chart(document.getElementById('card-chart3'), {
+const cardChart3 = document.getElementById('card-chart3') ? new Chart(document.getElementById('card-chart3'), {
   type: 'line',
   data: {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -290,7 +291,7 @@ const cardChart3 = new Chart(document.getElementById('card-chart3'), {
     }
   }
 });
-const cardChart4 = new Chart(document.getElementById('card-chart4'), {
+const cardChart4 = document.getElementById('card-chart4') ? new Chart(document.getElementById('card-chart4'), {
   type: 'bar',
   data: {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March', 'April'],
@@ -334,7 +335,7 @@ const cardChart4 = new Chart(document.getElementById('card-chart4'), {
     }
   }
 });
-const mainBarChart = new Chart(document.getElementById('main-bar-chart'), {
+const mainBarChart = document.getElementById('main-bar-chart') ? new Chart(document.getElementById('main-bar-chart'), {
   type: 'bar',
   data: {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -403,4 +404,5 @@ const mainBarChart = new Chart(document.getElementById('main-bar-chart'), {
     }
   }
 });
+}
 //# sourceMappingURL=main.js.map
