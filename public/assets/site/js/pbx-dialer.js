@@ -461,12 +461,33 @@
         executeCall(num, displayName);
     };
 
+    function ensureRemoteAudioUnlocked() {
+        let remoteAudio = $('pbx-remote-audio');
+        if (!remoteAudio) {
+            remoteAudio = document.createElement('audio');
+            remoteAudio.id = 'pbx-remote-audio';
+            remoteAudio.autoplay = true;
+            remoteAudio.playsInline = true;
+            remoteAudio.style.cssText = 'position:absolute;width:0;height:0;opacity:0;pointer-events:none;';
+            document.body.appendChild(remoteAudio);
+        }
+        try {
+            const playPromise = remoteAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {});
+            }
+        } catch (e) {}
+    }
+
     function executeCall(num, displayName) {
         if (currentSession && !currentSession.isEnded()) {
             console.warn('[PBX] Already in call, cannot initiate another call.');
             alert('A call is already in progress.');
             return;
         }
+
+        getAudioContext();
+        ensureRemoteAudioUnlocked();
 
         showCallOverlay('Calling...', displayName, num);
         startOutgoingRingback();
@@ -477,9 +498,7 @@
             mediaConstraints: { audio: true, video: false },
             pcConfig: {
                 iceServers: [
-                    { urls: 'stun:103.107.160.37:3478' },
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478' }
+                    { urls: 'stun:stun.l.google.com:19302' }
                 ]
             }
         };
@@ -578,6 +597,24 @@
         currentSession = session;
         isCallMuted = false;
         isCallHeld = false;
+
+        // Ultra-fast ICE candidate gathering:
+        // Do NOT wait for multi-second timeouts. Once local/STUN candidates start gathering,
+        // trigger ready() within 100ms so INVITE or 200 OK is transmitted instantly!
+        let iceDone = false;
+        let iceTimer = null;
+        session.on('icecandidate', function (event) {
+            if (iceDone) return;
+            if (!iceTimer) {
+                iceTimer = setTimeout(() => {
+                    if (!iceDone && event && typeof event.ready === 'function') {
+                        iceDone = true;
+                        console.log('[PBX WebRTC] Fast ICE timer reached (100ms). Sending SDP immediately.');
+                        try { event.ready(); } catch (err) {}
+                    }
+                }, 100);
+            }
+        });
 
         // If connection already exists (common on incoming sessions), set up immediately
         if (session.connection) {
@@ -961,6 +998,7 @@
         console.log('[PBX] Answering incoming call...');
         stopAllAudioTones();
         getAudioContext();
+        ensureRemoteAudioUnlocked();
 
         if (!currentSession || currentSession.isEnded()) {
             console.warn('[PBX] No active incoming session found to answer.');
@@ -983,9 +1021,7 @@
             mediaConstraints: { audio: true, video: false },
             pcConfig: {
                 iceServers: [
-                    { urls: 'stun:103.107.160.37:3478' },
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478' }
+                    { urls: 'stun:stun.l.google.com:19302' }
                 ]
             }
         };
