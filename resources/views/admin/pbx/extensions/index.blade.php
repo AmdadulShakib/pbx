@@ -93,14 +93,18 @@
                                         <span class="text-muted small">{{ $ext->created_at?->format('d M Y, h:i A') ?? 'N/A' }}</span>
                                     </td>
                                     <td class="text-end">
-                                        <div class="d-inline-flex gap-1">
-                                            <a href="{{ route('admin.pbx.extensions.edit', $ext) }}" class="btn btn-outline-secondary btn-sm" title="{{ __('Edit') }}">
+                                        <div class="d-inline-flex align-items-center gap-1">
+                                            <button type="button" class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1 px-2.5 py-1" onclick="if (typeof togglePbxDialer === 'function') { togglePbxDialer(); pbxCallContact('{{ $ext->extension }}', '{{ $ext->name }}'); }" title="{{ __('Call with Softphone') }}">
+                                                <i data-lucide="phone-call" style="width: 13px; height: 13px;"></i>
+                                                <span>{{ __('Call') }}</span>
+                                            </button>
+                                            <a href="{{ route('admin.pbx.extensions.edit', $ext) }}" class="btn btn-outline-secondary btn-sm p-1" title="{{ __('Edit') }}">
                                                 <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                             </a>
                                             <form action="{{ route('admin.pbx.extensions.destroy', $ext) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this extension?') }}')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="{{ __('Delete') }}">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm p-1" title="{{ __('Delete') }}">
                                                     <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                                 </button>
                                             </form>

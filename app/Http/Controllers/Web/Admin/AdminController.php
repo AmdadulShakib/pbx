@@ -64,7 +64,12 @@ class AdminController extends Controller
 
         $widgets = array_values(array_filter($widgets));
 
-        return view('admin.dashboard', ['widgets' => $widgets]);
+        $extensions = \App\Models\PbxExtension::with('user')->orderBy('extension')->get();
+        $totalExtensions = $extensions->count();
+        $totalUsers = \App\Models\User::count();
+        $driver = config('pbx.driver', 'asterisk');
+
+        return view('admin.dashboard', compact('widgets', 'extensions', 'totalExtensions', 'totalUsers', 'driver'));
     }
 
     protected function buildWidget($config, array $modules): ?array

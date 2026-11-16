@@ -409,15 +409,16 @@
 }
 
 /* ==========================================================================
-   Keypad Grid - Solid Tactile Keys
+   Keypad Grid - Circular Tactile Keys (Apple & Aircall Minimal Standard)
    ========================================================================== */
 .pbx-keypad-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    padding: 6px 16px;
+    gap: 10px;
+    padding: 6px 20px;
     flex: 1;
     align-content: center;
+    justify-items: center;
 }
 
 .pbx-key-btn {
@@ -425,13 +426,15 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 48px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
     background-color: var(--pbx-surface-elevated);
     border: 1px solid var(--pbx-border-strong);
-    border-radius: var(--pbx-radius-md);
     cursor: pointer;
     transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.1s ease;
     outline: none;
+    user-select: none;
 }
 
 .pbx-key-btn:hover {
@@ -441,14 +444,14 @@
 }
 
 .pbx-key-btn:active {
-    transform: scale(0.96);
+    transform: scale(0.92);
     background-color: var(--pbx-surface-active);
 }
 
 .pbx-key-btn .num {
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 1.1;
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1;
     color: #ffffff;
 }
 
@@ -459,54 +462,55 @@
 }
 
 .pbx-key-btn .sub {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    font-size: 8.5px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
     color: #64748b;
     line-height: 1;
     text-transform: uppercase;
-    margin-top: 1px;
+    margin-top: 2px;
 }
 
 /* ==========================================================================
-   Call Bar - Solid Action
+   Call Bar - Centered Circular Call Button
    ========================================================================== */
 .pbx-call-bar {
-    padding: 6px 16px 14px 16px;
+    padding: 6px 20px 16px 20px;
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 
 .pbx-main-call-btn {
-    width: 100%;
-    height: 46px;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
     background-color: var(--pbx-success);
     border: none;
-    border-radius: var(--pbx-radius-md);
     cursor: pointer;
-    box-shadow: var(--pbx-shadow-btn);
-    transition: background-color 0.15s ease, transform 0.1s ease;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
     outline: none;
 }
 
 .pbx-main-call-btn:hover {
     background-color: var(--pbx-success-hover);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(22, 163, 74, 0.45);
 }
 
 .pbx-main-call-btn:active {
-    transform: scale(0.98);
+    transform: scale(0.92);
 }
 
 .pbx-call-btn-inner {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     color: #ffffff;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
 }
 
 /* ==========================================================================
@@ -671,7 +675,7 @@
     width: 76px;
     height: 76px;
     margin: 0 auto 12px auto;
-    border-radius: var(--pbx-radius-lg);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -680,7 +684,7 @@
 .pbx-call-avatar {
     width: 76px;
     height: 76px;
-    border-radius: var(--pbx-radius-lg);
+    border-radius: 50%;
     background-color: var(--pbx-surface-elevated);
     border: 2px solid var(--pbx-border-strong);
     color: #ffffff;
@@ -863,7 +867,7 @@
 .pbx-hangup-btn {
     width: 58px;
     height: 58px;
-    border-radius: var(--pbx-radius-lg);
+    border-radius: 50%;
     background-color: var(--pbx-danger);
     border: none;
     color: #ffffff;
@@ -871,18 +875,19 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: var(--pbx-shadow-btn);
-    transition: background-color 0.15s ease, transform 0.1s ease;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+    transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
     outline: none;
 }
 
 .pbx-hangup-btn:hover {
     background-color: var(--pbx-danger-hover);
     transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.45);
 }
 
 .pbx-hangup-btn:active {
-    transform: scale(0.96);
+    transform: scale(0.92);
 }
 
 /* In-Call Drawers */
@@ -1025,7 +1030,7 @@
 .pbx-incoming-avatar {
     width: 80px;
     height: 80px;
-    border-radius: var(--pbx-radius-lg);
+    border-radius: 50%;
     background-color: var(--pbx-surface-elevated);
     border: 2px solid var(--pbx-success);
     color: #ffffff;
@@ -1082,11 +1087,12 @@
 }
 
 .pbx-ans-circle-btn svg {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--pbx-radius-lg);
-    padding: 14px;
-    transition: transform 0.15s ease, background-color 0.15s ease;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .pbx-ans-circle-btn.decline svg {

@@ -1,19 +1,19 @@
 :root {
-    --ui-bg: #f5f7fb;
+    --ui-bg: #f8fafc;
     --ui-surface: #ffffff;
     --ui-text: #0f172a;
-    --ui-muted: #6b7280;
-    --ui-border: #e5e7eb;
-    --ui-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
-    --ui-radius: 12px;
-    --ui-radius-sm: 8px;
-    --ui-ring: 0 0 0 0.2rem rgba(99, 102, 241, 0.2);
+    --ui-muted: #64748b;
+    --ui-border: #e2e8f0;
+    --ui-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+    --ui-radius: 10px;
+    --ui-radius-sm: 6px;
+    --ui-ring: 0 0 0 2px rgba(37, 99, 235, 0.25);
     --ui-table-head: #f8fafc;
     --ui-table-hover: #f1f5f9;
     --ui-sidebar-bg: #0f172a;
     --ui-sidebar-text: #e2e8f0;
     --ui-sidebar-muted: #94a3b8;
-    --ui-sidebar-hover: rgba(255, 255, 255, 0.08);
+    --ui-sidebar-hover: #1e293b;
 }
 
 html[data-theme='dark'] {
