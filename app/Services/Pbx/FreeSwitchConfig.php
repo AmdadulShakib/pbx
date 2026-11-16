@@ -71,6 +71,7 @@ XML;
     <condition field="destination_number" expression="^__EXT__$">
       <action application="set" data="ringback=${us-ring}"/>
       <action application="set" data="instant_ringback=true"/>
+      <action application="set" data="call_timeout=45"/>
       <action application="set" data="hangup_after_bridge=true"/>
       <action application="bridge" data="user/__EXT__@$${domain}"/>
     </condition>

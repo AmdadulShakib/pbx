@@ -269,6 +269,28 @@
         }
     };
 
+    // Physical Keyboard support for keypad
+    document.addEventListener('keydown', function (e) {
+        const card = $('pbx-dialer-card');
+        if (!card || !card.classList.contains('open')) return;
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+        if (tag === 'input' || tag === 'textarea') return;
+
+        if (e.key >= '0' && e.key <= '9') {
+            e.preventDefault();
+            pbxDialDigit(e.key);
+        } else if (e.key === '*' || e.key === '#') {
+            e.preventDefault();
+            pbxDialDigit(e.key);
+        } else if (e.key === 'Backspace') {
+            e.preventDefault();
+            pbxBackspace();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            pbxMakeCall();
+        }
+    });
+
     function updateCalleeNameMatch() {
         const display = $('pbx-display-input');
         const matchEl = $('pbx-callee-name');
@@ -280,7 +302,7 @@
             return;
         }
 
-        const match = userCreds.contacts?.find((c) => c.extension === val);
+        const match = userCreds.contacts?.find((c) => String(c.extension) === val);
         if (match) {
             matchEl.textContent = `${match.name} (${match.user_name || 'Colleague'})`;
         } else {
@@ -354,7 +376,7 @@
             const key = 'pbx_recents_' + (userCreds ? userCreds.extension : 'default');
             let recents = JSON.parse(localStorage.getItem(key) || '[]');
             recents.unshift({
-                direction: direction, // 'incoming', 'outgoing', 'missed'
+                direction: direction,
                 ext: ext,
                 name: name,
                 status: status,
@@ -448,7 +470,14 @@
         const options = {
             mediaConstraints: { audio: true, video: false },
             pcConfig: {
-                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' }
+                ]
+            },
+            rtcOfferConstraints: {
+                offerToReceiveAudio: true,
+                offerToReceiveVideo: false
             }
         };
 
@@ -470,8 +499,16 @@
 
     // Attach remote audio track safely across all browser versions
     function attachRemoteAudio(stream) {
-        const remoteAudio = $('pbx-remote-audio');
-        if (!remoteAudio || !stream) return;
+        let remoteAudio = $('pbx-remote-audio');
+        if (!remoteAudio) {
+            remoteAudio = document.createElement('audio');
+            remoteAudio.id = 'pbx-remote-audio';
+            remoteAudio.autoplay = true;
+            remoteAudio.playsInline = true;
+            remoteAudio.style.cssText = 'position:absolute;width:0;height:0;opacity:0;pointer-events:none;';
+            document.body.appendChild(remoteAudio);
+        }
+        if (!stream) return;
 
         console.log('[PBX Audio] Attaching remote audio stream:', stream.id);
         remoteAudio.srcObject = stream;
@@ -479,12 +516,52 @@
             console.log('[PBX Audio] Remote audio playback active.');
         }).catch((err) => {
             console.warn('[PBX Audio] Autoplay policy prevented audio play:', err);
-            // On user click anywhere, retry play
             const resumePlay = () => {
                 remoteAudio.play();
                 document.removeEventListener('click', resumePlay);
             };
             document.addEventListener('click', resumePlay);
+        });
+    }
+
+    // Configure PeerConnection listeners safely for BOTH incoming and outgoing calls
+    function setupPeerConnection(pc) {
+        if (!pc || pc._pbxConfigured) return;
+        pc._pbxConfigured = true;
+        console.log('[PBX WebRTC] Setting up PeerConnection');
+
+        pc.addEventListener('track', function (e) {
+            console.log('[PBX WebRTC] Remote track received:', e.track ? e.track.kind : 'unknown');
+            if (e.streams && e.streams[0]) {
+                attachRemoteAudio(e.streams[0]);
+            } else if (e.track && e.track.kind === 'audio') {
+                const stream = new MediaStream([e.track]);
+                attachRemoteAudio(stream);
+            }
+        });
+
+        pc.addEventListener('addstream', function (e) {
+            console.log('[PBX WebRTC] Legacy stream received:', e.stream ? e.stream.id : 'unknown');
+            if (e.stream) {
+                attachRemoteAudio(e.stream);
+            }
+        });
+
+        pc.addEventListener('iceconnectionstatechange', function () {
+            console.log('[PBX WebRTC] ICE state:', pc.iceConnectionState);
+            if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+                handleCallEstablished();
+            } else if (pc.iceConnectionState === 'failed') {
+                console.error('[PBX WebRTC] ICE connection failed!');
+                updateCallOverlayState('Network Error (ICE Failed)', false);
+            }
+        });
+
+        pc.addEventListener('connectionstatechange', function () {
+            console.log('[PBX WebRTC] Connection state:', pc.connectionState);
+            if (pc.connectionState === 'connected') {
+                handleCallEstablished();
+            }
         });
     }
 
@@ -494,19 +571,15 @@
         isCallMuted = false;
         isCallHeld = false;
 
-        // PeerConnection track received
+        // If connection already exists (common on incoming sessions), set up immediately
+        if (session.connection) {
+            setupPeerConnection(session.connection);
+        }
+
+        // When PeerConnection is created (outgoing or incoming answer)
         session.on('peerconnection', function (data) {
-            console.log('[PBX WebRTC] PeerConnection created');
-            const pc = data.peerconnection;
-            pc.addEventListener('track', function (e) {
-                console.log('[PBX WebRTC] Remote track received:', e.track ? e.track.kind : 'unknown');
-                if (e.streams && e.streams[0]) {
-                    attachRemoteAudio(e.streams[0]);
-                } else if (e.track && e.track.kind === 'audio') {
-                    const stream = new MediaStream([e.track]);
-                    attachRemoteAudio(stream);
-                }
-            });
+            console.log('[PBX WebRTC] PeerConnection created event');
+            setupPeerConnection(data.peerconnection || session.connection);
         });
 
         // 180 / 183 Ringing
@@ -542,7 +615,11 @@
             console.warn('[PBX] Call failed cause:', e.cause);
             playCallEndTone();
             recordCallHistory(session, e.cause || 'Failed');
-            updateCallOverlayState(`Call Failed (${e.cause || 'No Answer'})`, false);
+            const reason = e.cause || 'No Answer';
+            updateCallOverlayState(`Call Failed (${reason})`, false);
+            if (e.cause === JsSIP.C.causes.USER_DENIED_MEDIA_ACCESS) {
+                alert('Microphone permission is required to make or receive calls.');
+            }
             setTimeout(endCallUI, 2200);
         });
     }
@@ -557,6 +634,7 @@
 
         // Check if remote stream is already present on PeerConnection
         if (currentSession && currentSession.connection) {
+            setupPeerConnection(currentSession.connection);
             const receivers = currentSession.connection.getReceivers();
             receivers.forEach((r) => {
                 if (r.track && r.track.kind === 'audio') {
@@ -592,7 +670,7 @@
         $('pbx-overlay-name').textContent = name || 'Internal Call';
         $('pbx-overlay-ext').textContent = 'Ext ' + ext;
         $('pbx-overlay-timer').textContent = '00:00';
-        $('pbx-overlay-avatar').textContent = (name ? name.charAt(0).toUpperCase() : ext.charAt(0));
+        $('pbx-overlay-avatar').textContent = (name ? name.charAt(0).toUpperCase() : (ext ? ext.charAt(0) : '?'));
 
         updateCallOverlayState(status, false);
 
@@ -624,7 +702,7 @@
         if (timerEl) timerEl.textContent = '00:00';
 
         callTimerInterval = setInterval(function () {
-            if (isCallHeld) return; // Don't tick timer while on hold
+            if (isCallHeld) return;
             const diff = Math.floor((Date.now() - callStartTime) / 1000);
             const mins = String(Math.floor(diff / 60)).padStart(2, '0');
             const secs = String(diff % 60).padStart(2, '0');
@@ -804,14 +882,24 @@
     // Incoming Call Handling
     // =========================================================================
     function handleIncomingCall(session) {
+        // If already in an active connected call, send busy
+        if (currentSession && currentSession !== session && currentSession.isEstablished && currentSession.isEstablished()) {
+            console.warn('[PBX] Already in call, rejecting with busy.');
+            try {
+                session.terminate({ status_code: 486, reason_phrase: 'Busy Here' });
+            } catch (e) {}
+            return;
+        }
+
         session._direction = 'incoming';
         currentSession = session;
-        bindSessionEvents(session);
 
         const callerExt = session.remote_identity?.uri?.user || session._targetNum || 'Unknown';
         const callerName = session.remote_identity?.display_name || ('Extension ' + callerExt);
         session._targetNum = callerExt;
         session._targetName = callerName;
+
+        bindSessionEvents(session);
 
         const callerEl = $('pbx-incoming-caller');
         const extEl = $('pbx-incoming-ext');
@@ -856,7 +944,14 @@
         const options = {
             mediaConstraints: { audio: true, video: false },
             pcConfig: {
-                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' }
+                ]
+            },
+            rtcAnswerConstraints: {
+                offerToReceiveAudio: true,
+                offerToReceiveVideo: false
             }
         };
 
@@ -956,8 +1051,10 @@
                 display_name: data.name,
                 session_timers: false,
                 register: true,
+                register_expires: 120,
                 connection_recovery_min_interval: 2,
-                connection_recovery_max_interval: 15
+                connection_recovery_max_interval: 15,
+                user_agent: 'PBX-WebPhone/1.0'
             };
 
             ua = new JsSIP.UA(config);
@@ -998,6 +1095,8 @@
                     const fromExt = session.remote_identity?.uri?.user || 'Unknown';
                     console.log('[PBX] Incoming call received from:', fromExt);
                     handleIncomingCall(session);
+                } else {
+                    console.log('[PBX] Outgoing session created for:', session.remote_identity?.uri?.user || 'Unknown');
                 }
             });
 
