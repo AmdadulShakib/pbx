@@ -45,12 +45,6 @@ return [
         ],
     ],
     [
-        'type' => 'route',
-        'label' => 'Employees & Users',
-        'icon' => 'users',
-        'route' => 'admin.users.index',
-    ],
-    [
         'type' => 'group',
         'label' => 'Access Control',
         'icon' => 'lock',

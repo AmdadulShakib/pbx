@@ -116,7 +116,7 @@
     <!-- Main Content: Extensions Structured Data Table (Stripe/Linear Clean Standard) -->
     <div class="col-12 col-xl-8">
         <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+            <div class="card-header bg-transparent py-3 border-bottom d-flex align-items-center justify-content-between">
                 <div>
                     <h6 class="card-title mb-0 fw-bold text-dark d-flex align-items-center gap-2">
                         <i data-lucide="phone" class="text-primary" style="width: 18px; height: 18px;"></i>
@@ -207,8 +207,8 @@
     <div class="col-12 col-xl-4">
         <!-- Telemetry Card -->
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white py-3 border-bottom">
-                <h6 class="card-title mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+            <div class="card-header bg-transparent py-3 border-bottom">
+                <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
                     <i data-lucide="activity" class="text-primary" style="width: 18px; height: 18px;"></i>
                     <span>{{ __('Telephony Gateway Health') }}</span>
                 </h6>
@@ -216,15 +216,15 @@
             <div class="card-body p-3 small">
                 <div class="d-flex justify-content-between py-2 border-bottom">
                     <span class="text-muted">{{ __('Signaling URL') }}</span>
-                    <code class="fw-semibold text-dark text-break">{{ config('pbx.ws_url') }}</code>
+                    <code class="fw-semibold text-break">{{ config('pbx.ws_url') }}</code>
                 </div>
                 <div class="d-flex justify-content-between py-2 border-bottom">
                     <span class="text-muted">{{ __('SIP Realm Domain') }}</span>
-                    <span class="fw-semibold text-dark">{{ config('pbx.domain') }}</span>
+                    <span class="fw-semibold">{{ config('pbx.domain') }}</span>
                 </div>
                 <div class="d-flex justify-content-between py-2 border-bottom">
                     <span class="text-muted">{{ __('STUN NAT Gateway') }}</span>
-                    <span class="fw-semibold text-dark">stun.l.google.com:19302</span>
+                    <span class="fw-semibold">stun.l.google.com:19302</span>
                 </div>
                 <div class="d-flex justify-content-between py-2 border-bottom">
                     <span class="text-muted">{{ __('Parallel Contacts') }}</span>
@@ -232,15 +232,15 @@
                 </div>
                 <div class="d-flex justify-content-between py-2">
                     <span class="text-muted">{{ __('Media Encryption') }}</span>
-                    <span class="fw-semibold text-dark">SRTP / DTLS 1.2</span>
+                    <span class="fw-semibold">SRTP / DTLS 1.2</span>
                 </div>
             </div>
         </div>
 
         <!-- Quick Call Originate Card -->
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3 border-bottom">
-                <h6 class="card-title mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+            <div class="card-header bg-transparent py-3 border-bottom">
+                <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
                     <i data-lucide="phone-forwarded" class="text-secondary" style="width: 18px; height: 18px;"></i>
                     <span>{{ __('Server Test Call Bridge') }}</span>
                 </h6>

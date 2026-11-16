@@ -41,7 +41,7 @@
     <!-- Active Channels Table -->
     <div class="col-12 col-xl-8">
         <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-0 py-3 px-3 px-md-4 d-flex align-items-center justify-content-between">
+            <div class="card-header bg-transparent border-bottom py-3 px-3 px-md-4 d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
                     <h6 class="fw-bold mb-0 text-dark">{{ __('Active Voice Channels') }}</h6>
                     <span id="live-channel-count-badge" class="badge bg-primary rounded-pill px-2.5 py-1">
@@ -125,12 +125,12 @@
     <!-- Right Side: Server Call Bridge / Manual Originate -->
     <div class="col-12 col-xl-4">
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white border-0 py-3 px-3 px-md-4">
+            <div class="card-header bg-transparent border-bottom py-3 px-3 px-md-4">
                 <div class="d-flex align-items-center gap-2">
                     <div class="rounded-2 bg-primary-subtle text-primary p-1.5 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
                         <i data-lucide="phone-forwarded" style="width: 15px; height: 15px;"></i>
                     </div>
-                    <h6 class="fw-bold mb-0 text-dark">{{ __('Server Call Bridge') }}</h6>
+                    <h6 class="fw-bold mb-0">{{ __('Server Call Bridge') }}</h6>
                 </div>
             </div>
             <div class="card-body p-3 p-md-4 pt-0">
@@ -164,12 +164,12 @@
 
         <!-- Telemetry Status Card -->
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 py-3 px-3 px-md-4">
+            <div class="card-header bg-transparent border-bottom py-3 px-3 px-md-4">
                 <div class="d-flex align-items-center gap-2">
                     <div class="rounded-2 bg-success-subtle text-success p-1.5 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
                         <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
                     </div>
-                    <h6 class="fw-bold mb-0 text-dark">{{ __('Telecom Engine Status') }}</h6>
+                    <h6 class="fw-bold mb-0">{{ __('Telecom Engine Status') }}</h6>
                 </div>
             </div>
             <div class="card-body p-3 p-md-4 pt-0">

@@ -19,7 +19,7 @@
         @endif
 
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom">
+            <div class="card-header bg-transparent py-3 d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom">
                 <div>
                     <h5 class="card-title mb-0 fw-bold">
                         <i data-lucide="phone" class="me-2 text-primary" style="width: 20px; height: 20px;"></i>
@@ -61,7 +61,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="fw-semibold text-dark">{{ $ext->name }}</span>
+                                        <span class="fw-semibold">{{ $ext->name }}</span>
                                     </td>
                                     <td>
                                         @if($ext->user)
@@ -70,7 +70,7 @@
                                                     {{ strtoupper(substr($ext->user->name, 0, 1)) }}
                                                 </div>
                                                 <div>
-                                                    <div class="fw-semibold text-dark">{{ $ext->user->name }}</div>
+                                                    <div class="fw-semibold">{{ $ext->user->name }}</div>
                                                     <small class="text-muted">{{ $ext->user->email }}</small>
                                                 </div>
                                             </div>

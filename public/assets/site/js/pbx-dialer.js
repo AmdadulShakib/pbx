@@ -870,7 +870,7 @@
         $('pbx-incall-transfer-drawer')?.classList.remove('active');
 
         if (ua && ua.isRegistered()) {
-            setStatus('online', userCreds ? `Ext ${userCreds.extension}` : 'Online');
+            setStatus('online', 'Online');
         } else {
             setStatus('offline', 'Offline');
         }
@@ -1205,7 +1205,7 @@
 
             ua.on('registered', function () {
                 console.log('[PBX] Extension registered successfully: Ext', data.extension);
-                setStatus('online', `Ext ${data.extension}`);
+                setStatus('online', 'Online');
             });
 
             ua.on('unregistered', function () {

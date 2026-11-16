@@ -88,7 +88,7 @@
             </table>
         </div>
         @if(method_exists($staff, 'links'))
-            <div class="card-footer bg-white">
+            <div class="card-footer bg-transparent">
                 {{ $staff->links() }}
             </div>
         @endif

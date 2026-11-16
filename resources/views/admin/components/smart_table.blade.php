@@ -20,7 +20,7 @@
         {!! $table ?? '' !!}
     </div>
     @if(!empty(trim($pagination ?? '')))
-        <div class="card-footer bg-white">
+        <div class="card-footer bg-transparent">
             {!! $pagination !!}
         </div>
     @endif

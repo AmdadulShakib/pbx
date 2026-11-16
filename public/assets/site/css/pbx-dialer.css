@@ -236,7 +236,8 @@ html[data-theme="dark"],
 }
 
 /* Header bar */
-.pbx-card-header {
+.pbx-card-header,
+.pbx-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -244,12 +245,23 @@ html[data-theme="dark"],
     background-color: var(--pbx-surface-base);
     border-bottom: 1px solid var(--pbx-border-subtle);
     user-select: none;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.pbx-user-pill {
+.pbx-user-pill,
+.pbx-user-profile {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
+}
+
+.pbx-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 .pbx-user-avatar {

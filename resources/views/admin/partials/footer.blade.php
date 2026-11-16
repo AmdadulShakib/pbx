@@ -1,4 +1,4 @@
-<footer class="admin-footer py-3 border-top bg-white">
+<footer class="admin-footer py-3 border-top">
     <div class="container-fluid d-flex flex-wrap align-items-center justify-content-between gap-2">
         <div class="text-muted small">&copy; {{ date('Y') }} VoxPulse PBX Platform. All rights reserved.</div>
         <div class="text-muted small">

@@ -34,7 +34,7 @@
     <!-- Live Registrations / Extensions Card -->
     <div class="col-12 col-xl-8">
         <div class="card shadow-sm border-0 h-100">
-            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+            <div class="card-header bg-transparent py-3 border-bottom d-flex align-items-center justify-content-between">
                 <div>
                     <h5 class="card-title mb-0 fw-bold">
                         <i data-lucide="radio" class="me-2 text-success" style="width: 20px; height: 20px;"></i>
@@ -183,7 +183,7 @@
     <!-- Originate Test Call Card -->
     <div class="col-12 col-xl-4">
         <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-white py-3 border-bottom">
+            <div class="card-header bg-transparent py-3 border-bottom">
                 <h6 class="card-title mb-0 fw-bold">
                     <i data-lucide="phone-outgoing" class="me-2 text-primary" style="width: 18px; height: 18px;"></i>
                     {{ __('Server Test Call (Originate)') }}
@@ -211,7 +211,7 @@
 
         <!-- Connection Info Card -->
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 border-bottom">
+            <div class="card-header bg-transparent py-3 border-bottom">
                 <h6 class="card-title mb-0 fw-bold">
                     <i data-lucide="server" class="me-2 text-secondary" style="width: 18px; height: 18px;"></i>
                     {{ __('PBX Server Details') }}

@@ -1213,3 +1213,67 @@ html[data-theme='dark'] .table-hover > tbody > tr:hover > * {
   border-radius: 999px;
   display: inline-block;
 }
+
+/* ==========================================================================
+   Senior Designer Dark Mode Harmonization (Zero Mismatched White Bars)
+   ========================================================================== */
+html[data-theme='dark'] .text-dark,
+[data-coreui-theme='dark'] .text-dark {
+  color: var(--ui-text, #f1f5f9) !important;
+}
+
+html[data-theme='dark'] .bg-white,
+[data-coreui-theme='dark'] .bg-white {
+  background-color: var(--ui-surface, #1e293b) !important;
+  color: var(--ui-text, #f1f5f9) !important;
+}
+
+html[data-theme='dark'] .card,
+[data-coreui-theme='dark'] .card {
+  background-color: var(--ui-surface, #1e293b) !important;
+  border-color: var(--ui-border, #334155) !important;
+  color: var(--ui-text, #f1f5f9) !important;
+}
+
+html[data-theme='dark'] .card-header,
+[data-coreui-theme='dark'] .card-header {
+  background-color: transparent !important;
+  border-color: var(--ui-border, #334155) !important;
+  color: var(--ui-text, #f1f5f9) !important;
+}
+
+html[data-theme='dark'] .card-header h5,
+html[data-theme='dark'] .card-header h6,
+[data-coreui-theme='dark'] .card-header h5,
+[data-coreui-theme='dark'] .card-header h6 {
+  color: var(--ui-text, #f1f5f9) !important;
+}
+
+html[data-theme='dark'] .card-footer,
+[data-coreui-theme='dark'] .card-footer {
+  background-color: transparent !important;
+  border-color: var(--ui-border, #334155) !important;
+}
+
+html[data-theme='dark'] .table-light,
+[data-coreui-theme='dark'] .table-light,
+html[data-theme='dark'] .table-light th,
+[data-coreui-theme='dark'] .table-light th {
+  background-color: #0f172a !important;
+  color: #94a3b8 !important;
+  border-color: #334155 !important;
+}
+
+html[data-theme='dark'] .bg-light,
+[data-coreui-theme='dark'] .bg-light {
+  background-color: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+html[data-theme='dark'] .admin-footer,
+[data-coreui-theme='dark'] .admin-footer {
+  background-color: var(--ui-bg, #0f172a) !important;
+  border-color: var(--ui-border, #334155) !important;
+}
+

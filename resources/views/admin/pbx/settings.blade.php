@@ -25,7 +25,7 @@
         @endif
 
         <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+            <div class="card-header bg-transparent py-3 border-bottom d-flex align-items-center justify-content-between">
                 <div>
                     <h5 class="card-title mb-0 fw-bold">
                         <i data-lucide="server" class="me-2 text-primary" style="width: 20px; height: 20px;"></i>
@@ -123,20 +123,20 @@
         <!-- Quick Help & Documentation Card -->
         <div class="card border-0 shadow-sm bg-light">
             <div class="card-body p-4">
-                <h6 class="fw-bold mb-3 text-dark">
+                <h6 class="fw-bold mb-3">
                     <i data-lucide="help-circle" class="me-2 text-primary" style="width: 18px; height: 18px;"></i>
                     {{ __('Asterisk WebRTC Checklist') }}
                 </h6>
                 <div class="row g-3 small text-muted">
                     <div class="col-12 col-md-6">
-                        <div class="p-3 bg-white rounded border">
-                            <strong class="text-dark d-block mb-1">1. HTTP WebSocket (8088)</strong>
+                        <div class="p-3 bg-light rounded border">
+                            <strong class="d-block mb-1">1. HTTP WebSocket (8088)</strong>
                             Asterisk এর <code>/etc/asterisk/http.conf</code> ফাইলে <code>bindport=8088</code> এবং <code>enabled=yes</code> থাকতে হবে।
                         </div>
                     </div>
                     <div class="col-12 col-md-6">
-                        <div class="p-3 bg-white rounded border">
-                            <strong class="text-dark d-block mb-1">2. DTLS Encryption</strong>
+                        <div class="p-3 bg-light rounded border">
+                            <strong class="d-block mb-1">2. DTLS Encryption</strong>
                             WebRTC কলিংয়ের অডিও এনক্রিপশনের জন্য <code>pjsip.conf</code> এ <code>dtls_cert_file</code> এবং <code>dtls_private_key</code> সেট থাকতে হবে।
                         </div>
                     </div>
