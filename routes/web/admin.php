@@ -8,7 +8,9 @@ use App\Http\Controllers\Web\Admin\AdminController;
 use App\Http\Controllers\Web\Admin\Auth\LoginController;
 use App\Http\Controllers\Web\Admin\BusinessSettingsController;
 use App\Http\Controllers\Web\Admin\CategoryController;
+use App\Http\Controllers\Web\Admin\PbxCallLogController;
 use App\Http\Controllers\Web\Admin\PbxExtensionController;
+use App\Http\Controllers\Web\Admin\PbxLiveCallsController;
 use App\Http\Controllers\Web\Admin\PbxStatusController;
 use App\Http\Middleware\PbxAdmin;
 use Illuminate\Support\Facades\Route;
@@ -77,6 +79,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::middleware(PbxAdmin::class)->prefix('pbx')->name('pbx.')->group(function () {
             Route::resource('extensions', PbxExtensionController::class)->except('show');
+            Route::get('live-calls', [PbxLiveCallsController::class, 'index'])->name('live-calls');
+            Route::get('live-calls/api', [PbxLiveCallsController::class, 'api'])->name('live-calls.api');
+            Route::post('live-calls/hangup', [PbxLiveCallsController::class, 'hangup'])->name('live-calls.hangup');
+            Route::post('live-calls/originate', [PbxLiveCallsController::class, 'originate'])->name('live-calls.originate');
+            Route::get('calls', [PbxCallLogController::class, 'index'])->name('calls.index');
+            Route::post('calls/log', [PbxCallLogController::class, 'store'])->name('calls.store');
+            Route::delete('calls/{call}', [PbxCallLogController::class, 'destroy'])->name('calls.destroy');
+            Route::post('calls/clear', [PbxCallLogController::class, 'clearAll'])->name('calls.clear');
             Route::get('status', [PbxStatusController::class, 'index'])->name('status');
             Route::post('originate', [PbxStatusController::class, 'originate'])->name('originate');
             Route::get('settings', [PbxStatusController::class, 'settings'])->name('settings');

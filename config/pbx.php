@@ -9,4 +9,10 @@ return [
     'ws_url'       => env('PBX_WS_URL', 'wss://pbx.103.107.160.37.sslip.io/ws'),
     'conf_path'    => storage_path('freeswitch'),
     'admin_emails' => env('PBX_ADMIN_EMAILS', ''),
+
+    // Asterisk AMI Management
+    'ami_host'     => env('ASTERISK_AMI_HOST', '10.0.1.1'),
+    'ami_port'     => (int) env('ASTERISK_AMI_PORT', 5038),
+    'ami_user'     => env('ASTERISK_AMI_USER', 'admin'),
+    'ami_secret'   => env('ASTERISK_AMI_SECRET', 'voxpulse2026'),
 ];

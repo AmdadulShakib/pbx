@@ -40,8 +40,12 @@ class AdminPermission
             return $next($request);
         }
 
-        $user = $request->user();
-        if ($user && Gate::forUser($user)->allows($name)) {
+        $user = $request->user('admin') ?? $request->user();
+        if (!$user) {
+            return redirect()->route('admin.login');
+        }
+
+        if (Gate::forUser($user)->allows($name)) {
             return $next($request);
         }
 

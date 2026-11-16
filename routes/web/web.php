@@ -23,5 +23,7 @@ Route::controller(PasswordController::class)->group(function() {
     Route::post('forgot-password', 'sendResetLink');
 });
 
+Route::post('pbx/call-log', [\App\Http\Controllers\Web\Admin\PbxCallLogController::class, 'store'])->name('pbx.call-log');
+
 //AllDynamicDataStart
 //AllDynamicDataEnd

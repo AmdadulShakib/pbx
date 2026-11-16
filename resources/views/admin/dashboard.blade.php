@@ -23,9 +23,13 @@
                         <i data-lucide="phone-call" style="width: 15px; height: 15px;"></i>
                         <span>{{ __('Launch Softphone') }}</span>
                     </button>
-                    <a href="{{ route('admin.pbx.status') }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1.5 px-3 py-1.5">
-                        <i data-lucide="activity" style="width: 15px; height: 15px;"></i>
-                        <span>{{ __('Live Telemetry') }}</span>
+                    <a href="{{ route('admin.pbx.live-calls') }}" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1.5 px-3 py-1.5">
+                        <i data-lucide="radio" style="width: 15px; height: 15px;"></i>
+                        <span>{{ __('Live Calls') }}</span>
+                    </a>
+                    <a href="{{ route('admin.pbx.calls.index') }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1.5 px-3 py-1.5">
+                        <i data-lucide="history" style="width: 15px; height: 15px;"></i>
+                        <span>{{ __('Call History') }}</span>
                     </a>
                     <a href="{{ route('admin.pbx.extensions.create') }}" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1.5 px-3 py-1.5">
                         <i data-lucide="plus" style="width: 15px; height: 15px;"></i>

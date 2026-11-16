@@ -11,7 +11,9 @@ Route::prefix('user')->name('user.')->group(function() {
     Route::middleware(['auth:web,admin'])->group(function() {
         Route::prefix('pbx')->name('pbx.')->group(function () {
             Route::get('phone', [PbxPhoneController::class, 'index'])->name('phone');
+            Route::get('history', [PbxPhoneController::class, 'history'])->name('history');
             Route::get('phone/credentials', [PbxPhoneController::class, 'credentials'])->name('phone.credentials');
+            Route::post('call-log', [\App\Http\Controllers\Web\Admin\PbxCallLogController::class, 'store'])->name('call-log.store');
         });
     });
 

@@ -23,16 +23,27 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api/v1',
         health: '/up',
     )->withMiddleware(function (Middleware $middleware) {
+        $middleware->redirectTo(
+            guests: function (\Illuminate\Http\Request $request) {
+                if ($request->is('admin') || $request->is('admin/*')) {
+                    return route('admin.login');
+                }
+                return route('login');
+            },
+            users: function (\Illuminate\Http\Request $request) {
+                if ($request->is('admin') || $request->is('admin/*')) {
+                    return route('admin.dashboard');
+                }
+                return route('user.dashboard');
+            }
+        );
+
         $middleware->alias([
-            
             'admin.home.redirect' => \App\Http\Middleware\AdminHomeRedirect::class,
-
             'admin.api' => \App\Http\Middleware\AdminApi::class,
-
             'user.api' => \App\Http\Middleware\UserApi::class,
-
             'admin.permission' => \App\Http\Middleware\AdminPermission::class,
-'admin' => App\Http\Middleware\RedirectIfNotAdmin::class,
+            'admin' => \App\Http\Middleware\RedirectIfNotAdmin::class,
             'admin.guest' => \App\Http\Middleware\RedirectIfAdmin::class,
         ]);
     })

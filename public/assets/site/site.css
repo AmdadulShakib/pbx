@@ -127,15 +127,25 @@ a {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 9px 18px;
+    padding: 8px 16px;
+    min-height: 38px;
+    box-sizing: border-box;
     border-radius: var(--radius-md);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     border: 1px solid transparent;
     cursor: pointer;
     transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
     text-decoration: none;
     line-height: 1.25;
+}
+
+.btn-sm {
+    padding: 5px 12px;
+    min-height: 32px;
+    font-size: 13px;
+    gap: 6px;
+    border-radius: var(--radius-sm);
 }
 
 .btn-primary {
@@ -183,7 +193,8 @@ a {
 }
 
 .btn-lg {
-    padding: 12px 22px;
+    padding: 10px 20px;
+    min-height: 42px;
     font-size: 15px;
     border-radius: var(--radius-md);
 }

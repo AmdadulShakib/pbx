@@ -62,5 +62,25 @@ class PbxPhoneController extends Controller
             'contacts'  => $contacts,
         ])->header('Cache-Control', 'no-store');
     }
+
+    public function history()
+    {
+        $ext = $this->myExtension();
+        $user = auth('web')->user() ?: auth('admin')->user() ?: auth()->user();
+        $query = \App\Models\PbxCallLog::query()->latest();
+
+        if ($ext) {
+            $query->where(function ($q) use ($ext) {
+                $q->where('caller', $ext->extension)
+                  ->orWhere('callee', $ext->extension);
+            });
+        } elseif ($user) {
+            $query->where('user_id', $user->id);
+        }
+
+        $logs = $query->paginate(15);
+
+        return view('user.pbx.history', compact('ext', 'logs', 'user'));
+    }
 }
 

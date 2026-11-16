@@ -734,6 +734,53 @@
         const name = session._targetName || (session.remote_identity ? session.remote_identity.display_name : 'Ext ' + ext);
 
         addRecentCall(dir, ext, name, status, duration);
+
+        // Sync Call Detail Record (CDR) to Database
+        try {
+            const parts = duration.split(':');
+            const sec = parts.length === 2 ? (parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10)) : 0;
+            const myExt = currentExt ? currentExt.extension : '101';
+
+            const callerNum = (session._direction === 'outgoing') ? myExt : ext;
+            const calleeNum = (session._direction === 'outgoing') ? ext : myExt;
+
+            let statusClean = 'answered';
+            if (status === 'Completed') {
+                statusClean = 'answered';
+            } else if (isMissed) {
+                statusClean = 'missed';
+            } else if (String(status).toLowerCase().includes('busy')) {
+                statusClean = 'busy';
+            } else {
+                statusClean = 'failed';
+            }
+
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (csrf) {
+                fetch('/pbx/call-log', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caller: callerNum,
+                        callee: calleeNum,
+                        status: statusClean,
+                        duration: sec,
+                        direction: session._direction || 'internal',
+                        sip_call_id: session.id || null,
+                    })
+                }).then(r => r.json()).then(res => {
+                    console.log('[PBX CDR] Call synced to database log:', res);
+                }).catch(err => {
+                    console.warn('[PBX CDR] Logging error:', err);
+                });
+            }
+        } catch (cdrErr) {
+            console.warn('[PBX CDR] Error preparing CDR record:', cdrErr);
+        }
     }
 
     // Call Overlay State & Timer
