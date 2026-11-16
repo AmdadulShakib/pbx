@@ -10,9 +10,13 @@ use App\Http\Controllers\Web\Admin\BusinessSettingsController;
 use App\Http\Controllers\Web\Admin\CategoryController;
 use App\Http\Controllers\Web\Admin\PbxCallLogController;
 use App\Http\Controllers\Web\Admin\PbxExtensionController;
+use App\Http\Controllers\Web\Admin\PbxInboundRouteController;
 use App\Http\Controllers\Web\Admin\PbxIvrController;
 use App\Http\Controllers\Web\Admin\PbxLiveCallsController;
+use App\Http\Controllers\Web\Admin\PbxOutboundRouteController;
+use App\Http\Controllers\Web\Admin\PbxRingGroupController;
 use App\Http\Controllers\Web\Admin\PbxStatusController;
+use App\Http\Controllers\Web\Admin\PbxTrunkController;
 use App\Http\Middleware\PbxAdmin;
 use Illuminate\Support\Facades\Route;
 
@@ -87,6 +91,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('live-calls/spy', [PbxLiveCallsController::class, 'spy'])->name('live-calls.spy');
             Route::post('ivr/sync', [PbxIvrController::class, 'syncDialplan'])->name('ivr.sync');
             Route::resource('ivr', PbxIvrController::class);
+            Route::post('ring-groups/sync', [PbxRingGroupController::class, 'sync'])->name('ring-groups.sync');
+            Route::resource('ring-groups', PbxRingGroupController::class);
+            Route::post('inbound-routes/sync', [PbxInboundRouteController::class, 'sync'])->name('inbound-routes.sync');
+            Route::resource('inbound-routes', PbxInboundRouteController::class);
+            Route::post('outbound-routes/sync', [PbxOutboundRouteController::class, 'sync'])->name('outbound-routes.sync');
+            Route::resource('outbound-routes', PbxOutboundRouteController::class);
+            Route::post('trunks/sync', [PbxTrunkController::class, 'sync'])->name('trunks.sync');
+            Route::resource('trunks', PbxTrunkController::class);
             Route::get('calls', [PbxCallLogController::class, 'index'])->name('calls.index');
             Route::post('calls/log', [PbxCallLogController::class, 'store'])->name('calls.store');
             Route::delete('calls/{call}', [PbxCallLogController::class, 'destroy'])->name('calls.destroy');

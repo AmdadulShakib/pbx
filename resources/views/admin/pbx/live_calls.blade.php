@@ -242,7 +242,7 @@
 </div>
 @endsection
 
-@push('scripts')
+@push('js')
 <script>
     let pollTimer = null;
 

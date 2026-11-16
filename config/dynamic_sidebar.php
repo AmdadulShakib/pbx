@@ -32,6 +32,30 @@ return [
             ],
             [
                 'type' => 'route',
+                'label' => 'Ring Groups',
+                'icon' => 'users-2',
+                'route' => 'admin.pbx.ring-groups.index',
+            ],
+            [
+                'type' => 'route',
+                'label' => 'Inbound Routes',
+                'icon' => 'phone-incoming',
+                'route' => 'admin.pbx.inbound-routes.index',
+            ],
+            [
+                'type' => 'route',
+                'label' => 'Outbound Routes',
+                'icon' => 'phone-outgoing',
+                'route' => 'admin.pbx.outbound-routes.index',
+            ],
+            [
+                'type' => 'route',
+                'label' => 'SIP Trunks',
+                'icon' => 'network',
+                'route' => 'admin.pbx.trunks.index',
+            ],
+            [
+                'type' => 'route',
                 'label' => 'Call History (CDR)',
                 'icon' => 'history',
                 'route' => 'admin.pbx.calls.index',

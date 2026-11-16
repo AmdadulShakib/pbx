@@ -165,6 +165,28 @@ class AsteriskAmi
     }
 
     /**
+     * Run an arbitrary Asterisk CLI command via AMI
+     */
+    public function command(string $cliCommand): array
+    {
+        $raw = $this->query([
+            'action'  => 'command',
+            'command' => $cliCommand,
+        ]);
+
+        $lines = [];
+        foreach ($raw as $line) {
+            $line = trim($line);
+            $cleaned = preg_replace('/^Output:\s*/i', '', $line);
+            $cleaned = trim($cleaned);
+            if ($cleaned !== '' && !str_starts_with($cleaned, 'Response:') && !str_starts_with($cleaned, 'Privilege:') && !str_starts_with($cleaned, '--END')) {
+                $lines[] = $cleaned;
+            }
+        }
+        return $lines;
+    }
+
+    /**
      * Get active channels from Asterisk.
      * Returns structured array of live ongoing calls.
      */

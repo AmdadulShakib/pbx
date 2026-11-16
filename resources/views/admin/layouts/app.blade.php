@@ -20,6 +20,7 @@
     <link href="{{ asset('assets/admin/admin-ui.css') }}?v={{ @filemtime(public_path('assets/admin/admin-ui.css')) ?: time() }}&t={{ time() }}" rel="stylesheet">
 
     @stack('css')
+    @stack('styles')
     @stack('css_or_js')
 </head>
 <body class="admin-body">
@@ -55,6 +56,7 @@
     <script src="{{ asset('assets/admin/admin-ui.js') }}"></script>
 
     @stack('js')
+    @stack('scripts')
 
     @include('components.pbx-phone-widget')
 </body>

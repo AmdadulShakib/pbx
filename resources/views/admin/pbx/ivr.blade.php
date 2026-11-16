@@ -336,20 +336,25 @@
 </div>
 @endsection
 
-@push('scripts')
+@push('js')
 <script>
     const availableExtensions = @json($extensions);
 
     function addOptionRow(containerId, digit = '', dest = '', label = '') {
         const container = document.getElementById(containerId);
+        if (!container) return;
         const row = document.createElement('div');
         row.className = 'row g-2 align-items-center option-row';
 
         let optionsHtml = '';
-        availableExtensions.forEach(ext => {
-            const selected = (ext.extension == dest) ? 'selected' : '';
-            optionsHtml += `<option value="${ext.extension}" ${selected}>Ext ${ext.extension} - ${ext.name}</option>`;
-        });
+        if (availableExtensions && availableExtensions.length > 0) {
+            availableExtensions.forEach(ext => {
+                const selected = (String(ext.extension) === String(dest)) ? 'selected' : '';
+                optionsHtml += `<option value="${ext.extension}" ${selected}>Ext ${ext.extension} - ${ext.name}</option>`;
+            });
+        } else {
+            optionsHtml = '<option value="101">Ext 101 - Admin</option>';
+        }
 
         row.innerHTML = `
             <div class="col-2">
@@ -364,7 +369,7 @@
                 <input type="text" name="labels[]" class="form-control form-control-sm" placeholder="e.g. Sales" value="${label}">
             </div>
             <div class="col-1 text-end">
-                <button type="button" class="btn btn-outline-danger btn-sm p-1" onclick="this.closest('.option-row').remove()">&times;</button>
+                <button type="button" class="btn btn-outline-danger btn-sm p-1" onclick="this.closest('.option-row').remove()" title="Remove">&times;</button>
             </div>
         `;
 
@@ -391,7 +396,8 @@
             addOptionRow('edit-options-container');
         }
 
-        const modal = new bootstrap.Modal(document.getElementById('editIvrModal'));
+        const modalEl = document.getElementById('editIvrModal');
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
         modal.show();
     }
 </script>

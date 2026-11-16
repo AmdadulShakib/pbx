@@ -382,7 +382,47 @@ Once deployed, log into the Admin Panel (`https://pbx.yourdomain.com/admin/login
    - **Timeout Fallback:** Extension `101`
 4. Click **Save IVR Menu**, then click **Sync Dialplan**.
 
-### Step 3: Test Calling with the Softphone
+### Step 3: Configure SIP Carrier Trunks
+1. Navigate to **PBX Telecom System &rarr; SIP Trunks**.
+2. Click **+ Add SIP Trunk**.
+3. Enter your telecom provider details:
+   - **Trunk Name:** e.g. "Twilio US", "BTCL Carrier", "Flowroute"
+   - **Host & Port:** e.g. `sip.twilio.com:5060`
+   - **Username & Secret:** Carrier SIP account credentials
+   - **Outbound Caller ID:** Company DID e.g. `+18005550199`
+4. Click **Save Trunk**, then click **Sync to Asterisk**.
+
+### Step 4: Configure Ring Groups (Department Call Hunt)
+1. Navigate to **PBX Telecom System &rarr; Ring Groups**.
+2. Click **+ Create Ring Group**.
+3. Fill in:
+   - **Group Name:** "Sales Team"
+   - **Dial Extension:** `600`
+   - **Ring Strategy:** `Ring All (Simultaneous)` or `Hunt (Sequential)`
+   - **Members:** Select Extensions `101`, `102`, `103`
+   - **Failover:** Forward to IVR `500` or Extension `101` if unanswered in 20 seconds.
+4. Click **Save Ring Group**, then click **Sync to Asterisk**.
+
+### Step 5: Configure Inbound DID Routes
+1. Navigate to **PBX Telecom System &rarr; Inbound Routes**.
+2. Click **+ Add Inbound Route**.
+3. Fill in:
+   - **DID Number Pattern:** e.g. `+18005550199` or `ANY`
+   - **Destination Type:** IVR (`500`) or Ring Group (`600`)
+   - **CID Prefix:** `[SALES] ` (helps agents recognize the inbound department)
+4. Click **Save Inbound Route**, then click **Sync to Asterisk**.
+
+### Step 6: Configure Outbound Carrier Dial Routes
+1. Navigate to **PBX Telecom System &rarr; Outbound Routes**.
+2. Click **+ Add Outbound Route**.
+3. Fill in:
+   - **Route Name:** "Domestic 11-digit"
+   - **Dial Pattern:** `_01XXXXXXXXX` or `_X.`
+   - **Primary Trunk:** Select your configured SIP Trunk
+   - **Failover Trunk:** Optional secondary backup trunk
+4. Click **Save Outbound Route**, then click **Sync to Asterisk**.
+
+### Step 7: Test Calling with the Softphone
 1. Log in as an employee or admin on the frontend (`https://pbx.yourdomain.com`).
 2. The **PBX Phone** floating pill appears at the bottom-right corner.
 3. Click the pill to expand the dialer:
@@ -390,6 +430,7 @@ Once deployed, log into the Admin Panel (`https://pbx.yourdomain.com/admin/login
 4. Dial `*43` and press the green Call button:
    - Speak into your microphone; Asterisk will echo your voice back immediately with crystal clarity.
 5. Dial `500` to test the automated IVR receptionist menu.
+6. Dial `600` to test the Department Ring Group.
 
 ---
 
