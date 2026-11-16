@@ -8,22 +8,25 @@
     <div class="auth-grid">
         <div class="auth-side">
             <div>
-                <h1>Create your account</h1>
-                <p>Join the platform and manage your profile, orders, and updates from one place.</p>
+                <a href="{{ url('/') }}" style="display: inline-block; margin-bottom: 28px;">
+                    <img src="{{ asset('branding/logo-white.svg') }}" alt="VoxPulse PBX" height="34">
+                </a>
+                <h1>Employee Registration</h1>
+                <p>Register your account to receive your company extension and access the WebRTC softphone.</p>
                 <div class="auth-list">
-                    <div class="auth-list-item">Quick registration flow</div>
-                    <div class="auth-list-item">Secure password storage</div>
-                    <div class="auth-list-item">Friendly interface on any device</div>
+                    <div class="auth-list-item">Direct integration with company PBX</div>
+                    <div class="auth-list-item">Seamless in-browser dialing</div>
+                    <div class="auth-list-item">Multi-device parallel ring capability</div>
                 </div>
             </div>
-            <div>
-                <a class="btn btn-ghost" href="{{ url('/') }}">Back to home</a>
+            <div style="margin-top: 32px;">
+                <a class="btn btn-secondary btn-sm" href="{{ url('/') }}">Back to Overview</a>
             </div>
         </div>
 
         <div class="auth-card">
             <h2 class="auth-title">Sign up</h2>
-            <p class="auth-sub">Fill in your details to get started.</p>
+            <p class="auth-sub">Create your employee profile to get started.</p>
 
             @if (session('error'))
                 <div class="notice notice-error">{{ session('error') }}</div>

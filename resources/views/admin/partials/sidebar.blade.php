@@ -1,8 +1,7 @@
 <aside class="admin-sidebar sidebar sidebar-fixed" id="sidebar">
     <div class="sidebar-brand border-bottom px-3 py-3 d-flex align-items-center justify-content-between">
-        <a href="{{ url('/admin') }}" class="brand d-flex align-items-center gap-2">
-            <span class="brand-icon">AP</span>
-            <span class="brand-name">{{ config('app.name', 'Admin') }}</span>
+        <a href="{{ url('/admin') }}" class="brand d-flex align-items-center gap-2 text-decoration-none">
+            <img src="{{ asset('branding/logo-white.svg') }}" alt="VoxPulse PBX" height="32" class="d-inline-block">
         </a>
         <button class="btn btn-icon btn-light d-lg-none" type="button" onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()">
             <i data-lucide="x"></i>

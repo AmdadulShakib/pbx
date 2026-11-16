@@ -16,9 +16,11 @@
                 <div class="card login-card border-0 shadow-lg">
                     <div class="card-body p-4 p-md-5">
                         <div class="text-center mb-4">
-                            <div class="login-brand-icon mx-auto mb-3">AP</div>
-                            <h1 class="h4 mb-1">@lang('Welcome back')</h1>
-                            <p class="text-muted mb-0">@lang('Sign in to continue')</p>
+                            <a href="{{ url('/') }}" class="d-inline-block mb-3">
+                                <img src="{{ asset('branding/logo.svg') }}" alt="VoxPulse PBX" height="42">
+                            </a>
+                            <h1 class="h4 mb-1 fw-bold text-dark">@lang('Admin Portal')</h1>
+                            <p class="text-muted mb-0 small">@lang('Sign in with your administrator credentials')</p>
                         </div>
                         <form method="post" action="{{ route('admin.login') }}">
                             @csrf

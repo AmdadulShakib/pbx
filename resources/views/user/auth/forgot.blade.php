@@ -8,16 +8,19 @@
     <div class="auth-grid">
         <div class="auth-side">
             <div>
+                <a href="{{ url('/') }}" style="display: inline-block; margin-bottom: 28px;">
+                    <img src="{{ asset('branding/logo-white.svg') }}" alt="VoxPulse PBX" height="34">
+                </a>
                 <h1>Reset access</h1>
-                <p>Submit your email and we will send you guidance to recover your account.</p>
+                <p>Submit your email to recover your account and restore softphone access.</p>
                 <div class="auth-list">
-                    <div class="auth-list-item">Private and secure</div>
-                    <div class="auth-list-item">Works on any device</div>
-                    <div class="auth-list-item">Support-ready experience</div>
+                    <div class="auth-list-item">Encrypted password reset token</div>
+                    <div class="auth-list-item">Instant access restoration</div>
+                    <div class="auth-list-item">Direct integration with PBX credentials</div>
                 </div>
             </div>
-            <div>
-                <a class="btn btn-ghost" href="{{ route('login') }}">Back to login</a>
+            <div style="margin-top: 32px;">
+                <a class="btn btn-secondary btn-sm" href="{{ route('login') }}">Back to login</a>
             </div>
         </div>
 

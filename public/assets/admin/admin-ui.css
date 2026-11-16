@@ -38,19 +38,19 @@ body.admin-body {
 }
 
 .admin-login {
-    background: radial-gradient(circle at top, rgba(99, 102, 241, 0.12), transparent 55%),
-        linear-gradient(135deg, rgba(15, 23, 42, 0.04), rgba(99, 102, 241, 0.08));
+    background-color: var(--ui-bg);
 }
 
 .login-card {
     border-radius: 18px;
+    border: 1px solid var(--ui-border);
 }
 
 .login-brand-icon {
     width: 56px;
     height: 56px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    background-color: #2563eb;
     color: #fff;
     font-weight: 700;
     display: inline-flex;
@@ -333,7 +333,7 @@ body.admin-body {
 }
 
 .table-toolbar {
-    background: linear-gradient(180deg, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0));
+    background-color: var(--ui-surface);
 }
 
 .table-premium thead th {
@@ -383,7 +383,7 @@ body.admin-body {
 }
 
 .form-card-header {
-    background: linear-gradient(180deg, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0));
+    background-color: var(--ui-surface);
     border-bottom: 1px solid var(--ui-border);
 }
 
@@ -1046,7 +1046,7 @@ html[data-theme='dark'] .page-header .text-muted {
 }
 
 html[data-theme='dark'] .table-toolbar {
-    background: linear-gradient(180deg, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0));
+    background-color: var(--ui-surface);
 }
 
 html[data-theme='dark'] .table-premium tbody tr {
@@ -1054,7 +1054,7 @@ html[data-theme='dark'] .table-premium tbody tr {
 }
 
 html[data-theme='dark'] .form-card-header {
-    background: linear-gradient(180deg, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0));
+    background-color: var(--ui-surface);
 }
 
 html[data-theme='dark'] .badge-soft {
@@ -1192,7 +1192,7 @@ html[data-theme='dark'] .table-hover > tbody > tr:hover > * {
 
 .dashboard-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4f46e5, #06b6d4);
+  background-color: #2563eb;
   border-radius: inherit;
 }
 

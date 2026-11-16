@@ -10,17 +10,13 @@
         $faviconIco = public_path('branding/favicon.ico');
         $faviconPng = public_path('branding/favicon.png');
     @endphp
-    @if (file_exists($faviconIco))
-        <link rel="icon" href="{{ asset('branding/favicon.ico') }}">
-    @elseif (file_exists($faviconPng))
-        <link rel="icon" href="{{ asset('branding/favicon.png') }}">
-    @endif
+    <link rel="icon" type="image/svg+xml" href="{{ asset('branding/favicon.svg') }}">
 
     <link href="{{ asset('assets/admin/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/admin/css/style.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/vendor/select2/select2.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/vendor/toast/toastr.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/admin/admin-ui.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/admin/admin-ui.css') }}?v={{ @filemtime(public_path('assets/admin/admin-ui.css')) ?: time() }}&t={{ time() }}" rel="stylesheet">
 
     @stack('css')
     @stack('css_or_js')

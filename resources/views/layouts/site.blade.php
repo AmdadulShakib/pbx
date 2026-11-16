@@ -9,12 +9,8 @@
         $faviconIco = public_path('branding/favicon.ico');
         $faviconPng = public_path('branding/favicon.png');
     @endphp
-    @if (file_exists($faviconIco))
-        <link rel="icon" href="{{ asset('branding/favicon.ico') }}">
-    @elseif (file_exists($faviconPng))
-        <link rel="icon" href="{{ asset('branding/favicon.png') }}">
-    @endif
-    <link rel="stylesheet" href="{{ asset('assets/site/site.css') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('branding/favicon.svg') }}">
+    <link rel="stylesheet" href="{{ asset('assets/site/site.css') }}?v={{ @filemtime(public_path('assets/site/site.css')) ?: time() }}&t={{ time() }}">
 </head>
 <body class="@yield('body-class', 'site-body')">
     @yield('content')

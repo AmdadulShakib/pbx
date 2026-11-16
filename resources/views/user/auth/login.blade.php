@@ -8,22 +8,25 @@
     <div class="auth-grid">
         <div class="auth-side">
             <div>
-                <h1>Welcome back</h1>
-                <p>Access your account to manage orders, track status, and keep your profile updated.</p>
+                <a href="{{ url('/') }}" style="display: inline-block; margin-bottom: 28px;">
+                    <img src="{{ asset('branding/logo-white.svg') }}" alt="VoxPulse PBX" height="34">
+                </a>
+                <h1>Employee Portal</h1>
+                <p>Sign in to access your WebRTC softphone, colleague directory, and extension credentials.</p>
                 <div class="auth-list">
-                    <div class="auth-list-item">Fast access to your data</div>
-                    <div class="auth-list-item">Secure sessions and ownership rules</div>
-                    <div class="auth-list-item">Clean, mobile-ready experience</div>
+                    <div class="auth-list-item">Instant in-browser SIP registration</div>
+                    <div class="auth-list-item">Simultaneous multi-tab parallel ringing</div>
+                    <div class="auth-list-item">HD Opus audio with sub-100ms connection</div>
                 </div>
             </div>
-            <div>
-                <a class="btn btn-ghost" href="{{ url('/') }}">Back to home</a>
+            <div style="margin-top: 32px;">
+                <a class="btn btn-secondary btn-sm" href="{{ url('/') }}">Back to Overview</a>
             </div>
         </div>
 
         <div class="auth-card">
             <h2 class="auth-title">Sign in</h2>
-            <p class="auth-sub">Use your email and password to continue.</p>
+            <p class="auth-sub">Enter your credentials to connect your softphone.</p>
 
             @if (session('error'))
                 <div class="notice notice-error">{{ session('error') }}</div>
