@@ -477,6 +477,7 @@
             mediaConstraints: { audio: true, video: false },
             pcConfig: {
                 iceServers: [
+                    { urls: 'stun:103.107.160.37:3478' },
                     { urls: 'stun:stun.l.google.com:19302' },
                     { urls: 'stun:global.stun.twilio.com:3478' }
                 ]
@@ -512,8 +513,12 @@
         }
         if (!stream) return;
 
-        if (remoteAudio.srcObject === stream) {
-            return;
+        const newTrack = stream.getAudioTracks ? stream.getAudioTracks()[0] : null;
+        if (remoteAudio.srcObject && newTrack) {
+            const currentTracks = remoteAudio.srcObject.getAudioTracks ? remoteAudio.srcObject.getAudioTracks() : [];
+            if (currentTracks.length > 0 && currentTracks[0].id === newTrack.id) {
+                return; // Exact track already attached and playing
+            }
         }
 
         console.log('[PBX Audio] Attaching remote audio stream:', stream.id);
@@ -523,9 +528,10 @@
             playPromise.then(() => {
                 console.log('[PBX Audio] Remote audio playback active.');
             }).catch((err) => {
+                if (err.name === 'AbortError') return;
                 console.warn('[PBX Audio] Autoplay policy prevented audio play:', err);
                 const resumePlay = () => {
-                    remoteAudio.play();
+                    remoteAudio.play().catch(() => {});
                     document.removeEventListener('click', resumePlay);
                 };
                 document.addEventListener('click', resumePlay);
@@ -546,13 +552,6 @@
             } else if (e.track && e.track.kind === 'audio') {
                 const stream = new MediaStream([e.track]);
                 attachRemoteAudio(stream);
-            }
-        });
-
-        pc.addEventListener('addstream', function (e) {
-            console.log('[PBX WebRTC] Legacy stream received:', e.stream ? e.stream.id : 'unknown');
-            if (e.stream) {
-                attachRemoteAudio(e.stream);
             }
         });
 
@@ -984,6 +983,7 @@
             mediaConstraints: { audio: true, video: false },
             pcConfig: {
                 iceServers: [
+                    { urls: 'stun:103.107.160.37:3478' },
                     { urls: 'stun:stun.l.google.com:19302' },
                     { urls: 'stun:global.stun.twilio.com:3478' }
                 ]

@@ -274,5 +274,5 @@
 </div>
 
 <script src="{{ asset('assets/vendor/jssip/jssip.min.js') }}"></script>
-<script src="{{ asset('assets/site/js/pbx-dialer.js') }}?v={{ @filemtime(public_path('assets/site/js/pbx-dialer.js')) ?: time() }}"></script>
+<script src="{{ asset('assets/site/js/pbx-dialer.js') }}?v={{ @filemtime(public_path('assets/site/js/pbx-dialer.js')) ?: time() }}&t={{ time() }}"></script>
 @endif
