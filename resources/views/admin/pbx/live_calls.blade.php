@@ -20,11 +20,22 @@
                                 <span>{{ __('Live Polling (3s)') }}</span>
                             </span>
                         </div>
-                        <p class="text-muted small mb-0">{{ __('Inspect active voice RTP bridges, dialed endpoints, and terminate live channels.') }}</p>
+                        <p class="text-muted small mb-0">{{ __('Inspect active RTP voice channels, silently listen, coach agents with whisper, or 3-way barge.') }}</p>
                     </div>
                 </div>
 
                 <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="d-flex align-items-center gap-2 me-md-2">
+                        <label class="small text-muted mb-0 fw-semibold text-nowrap">{{ __('Supervisor Ext:') }}</label>
+                        <select id="supervisor-ext-select" class="form-select form-select-sm" style="width: 140px;">
+                            @foreach($extensions as $ext)
+                                <option value="{{ $ext->extension }}" @selected($ext->extension == $currentAdminExt)>
+                                    Ext {{ $ext->extension }} ({{ Str::limit($ext->name, 10) }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <button type="button" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1.5 px-3 py-1.5" onclick="fetchLiveChannels();">
                         <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
                         <span>{{ __('Refresh Now') }}</span>
@@ -59,8 +70,8 @@
                             <th class="py-3">{{ __('Destination') }}</th>
                             <th class="py-3">{{ __('State') }}</th>
                             <th class="py-3">{{ __('Talk Time') }}</th>
-                            <th class="py-3">{{ __('Channel ID') }}</th>
-                            <th class="text-end pe-3 pe-md-4 py-3">{{ __('Terminate') }}</th>
+                            <th class="py-3">{{ __('Channel') }}</th>
+                            <th class="text-end pe-3 pe-md-4 py-3">{{ __('Supervisor Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody id="live-channels-tbody">
@@ -71,7 +82,10 @@
                                         <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 12px;">
                                             {{ substr($chan['caller'], 0, 3) }}
                                         </div>
-                                        <div class="fw-bold text-dark font-monospace">Ext {{ $chan['caller'] }}</div>
+                                        <div>
+                                            <div class="fw-bold text-dark font-monospace">Ext {{ $chan['caller'] }}</div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">{{ $chan['app'] }}</small>
+                                        </div>
                                     </div>
                                 </td>
 
@@ -92,15 +106,28 @@
                                     {{ $chan['formatted_duration'] }}
                                 </td>
 
-                                <td class="py-3 font-monospace small text-muted text-truncate" style="max-width: 140px;" title="{{ $chan['channel'] }}">
+                                <td class="py-3 font-monospace small text-muted text-truncate" style="max-width: 130px;" title="{{ $chan['channel'] }}">
                                     {{ $chan['channel'] }}
                                 </td>
 
                                 <td class="text-end pe-3 pe-md-4 py-3">
-                                    <button type="button" class="btn btn-outline-danger btn-sm px-2.5 py-1" onclick="hangupChannel('{{ $chan['channel'] }}');" title="{{ __('Force Hangup') }}">
-                                        <i data-lucide="phone-off" style="width: 13px; height: 13px;"></i>
-                                        <span>{{ __('Hangup') }}</span>
-                                    </button>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1" onclick="startSpy('{{ $chan['channel'] }}', '{{ $chan['caller'] }}', 'listen')" title="{{ __('Listen Silently (Neither party hears you)') }}">
+                                            <i data-lucide="headphones" style="width: 13px; height: 13px;"></i>
+                                            <span>{{ __('Listen') }}</span>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning btn-sm px-2 py-1" onclick="startSpy('{{ $chan['channel'] }}', '{{ $chan['caller'] }}', 'whisper')" title="{{ __('Whisper Coach (Only agent hears you)') }}">
+                                            <i data-lucide="mic" style="width: 13px; height: 13px;"></i>
+                                            <span>{{ __('Whisper') }}</span>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success btn-sm px-2 py-1" onclick="startSpy('{{ $chan['channel'] }}', '{{ $chan['caller'] }}', 'barge')" title="{{ __('Barge In (3-Way Conference)') }}">
+                                            <i data-lucide="users" style="width: 13px; height: 13px;"></i>
+                                            <span>{{ __('Barge') }}</span>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1" onclick="hangupChannel('{{ $chan['channel'] }}');" title="{{ __('Force Terminate Call') }}">
+                                            <i data-lucide="phone-off" style="width: 13px; height: 13px;"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -122,15 +149,65 @@
         </div>
     </div>
 
-    <!-- Right Side: Server Call Bridge / Manual Originate -->
+    <!-- Right Column: Supervisor Guide & Bridge Form -->
     <div class="col-12 col-xl-4">
+        <!-- Call Monitoring Feature Card -->
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-transparent border-bottom py-3 px-3 px-md-4">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-2 bg-warning-subtle text-warning p-1.5 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                        <i data-lucide="shield" style="width: 15px; height: 15px;"></i>
+                    </div>
+                    <h6 class="fw-bold mb-0 text-dark">{{ __('Supervisor Call Coaching') }}</h6>
+                </div>
+            </div>
+            <div class="card-body p-3 p-md-4 pt-0">
+                <p class="text-muted small mb-3">{{ __('Monitor active calls in real time. Click any action button above, and Asterisk will instantly call your softphone to bridge you into the call.') }}</p>
+
+                <div class="list-group list-group-flush border rounded-3 mb-3 small">
+                    <div class="list-group-item d-flex align-items-center justify-content-between py-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary-subtle text-primary">🎧 Listen</span>
+                            <span class="text-dark">{{ __('Silent Monitor') }}</span>
+                        </div>
+                        <span class="font-monospace text-muted">*55&lt;ext&gt;</span>
+                    </div>
+                    <div class="list-group-item d-flex align-items-center justify-content-between py-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-warning-subtle text-warning">🗣️ Whisper</span>
+                            <span class="text-dark">{{ __('Coach Agent Only') }}</span>
+                        </div>
+                        <span class="font-monospace text-muted">*56&lt;ext&gt;</span>
+                    </div>
+                    <div class="list-group-item d-flex align-items-center justify-content-between py-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-success-subtle text-success">👥 Barge</span>
+                            <span class="text-dark">{{ __('Join 3-Way Call') }}</span>
+                        </div>
+                        <span class="font-monospace text-muted">*57&lt;ext&gt;</span>
+                    </div>
+                </div>
+
+                <div class="bg-light p-2.5 rounded-3 border">
+                    <div class="fw-bold small text-dark mb-1 d-flex align-items-center gap-1.5">
+                        <i data-lucide="info" style="width: 14px; height: 14px;"></i>
+                        <span>{{ __('In-Call DTMF Mode Switching') }}</span>
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 12px; line-height: 1.4;">
+                        {{ __('While monitoring, press') }} <kbd class="bg-dark text-white px-1">4</kbd> {{ __('for Silent Listen,') }} <kbd class="bg-dark text-white px-1">5</kbd> {{ __('for Whisper, or') }} <kbd class="bg-dark text-white px-1">6</kbd> {{ __('for Barge on your dialpad at any time.') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Server Call Bridge -->
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-header bg-transparent border-bottom py-3 px-3 px-md-4">
                 <div class="d-flex align-items-center gap-2">
                     <div class="rounded-2 bg-primary-subtle text-primary p-1.5 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
                         <i data-lucide="phone-forwarded" style="width: 15px; height: 15px;"></i>
                     </div>
-                    <h6 class="fw-bold mb-0">{{ __('Server Call Bridge') }}</h6>
+                    <h6 class="fw-bold mb-0 text-dark">{{ __('Server Call Bridge') }}</h6>
                 </div>
             </div>
             <div class="card-body p-3 p-md-4 pt-0">
@@ -161,32 +238,6 @@
                 </form>
             </div>
         </div>
-
-        <!-- Telemetry Status Card -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-bottom py-3 px-3 px-md-4">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-2 bg-success-subtle text-success p-1.5 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
-                        <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
-                    </div>
-                    <h6 class="fw-bold mb-0">{{ __('Telecom Engine Status') }}</h6>
-                </div>
-            </div>
-            <div class="card-body p-3 p-md-4 pt-0">
-                <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
-                    <span class="text-muted small">{{ __('SIP Driver') }}</span>
-                    <span class="fw-bold text-dark font-monospace">Asterisk 20.6 PJSIP</span>
-                </div>
-                <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
-                    <span class="text-muted small">{{ __('Signaling Gateway') }}</span>
-                    <span class="badge bg-success-subtle text-success border border-success-subtle">WSS Port 8088</span>
-                </div>
-                <div class="d-flex align-items-center justify-content-between py-2">
-                    <span class="text-muted small">{{ __('Management Protocol') }}</span>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Asterisk AMI</span>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 @endsection
@@ -194,6 +245,11 @@
 @push('scripts')
 <script>
     let pollTimer = null;
+
+    function getSelectedSupervisorExt() {
+        const sel = document.getElementById('supervisor-ext-select');
+        return sel ? sel.value : '{{ $currentAdminExt }}';
+    }
 
     async function fetchLiveChannels() {
         try {
@@ -241,7 +297,10 @@
                             <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 12px;">
                                 ${chan.caller.substring(0, 3)}
                             </div>
-                            <div class="fw-bold text-dark font-monospace">Ext ${chan.caller}</div>
+                            <div>
+                                <div class="fw-bold text-dark font-monospace">Ext ${chan.caller}</div>
+                                <small class="text-muted d-block" style="font-size: 11px;">${chan.app || 'Voice'}</small>
+                            </div>
                         </div>
                     </td>
                     <td class="py-3">
@@ -258,14 +317,27 @@
                     <td class="py-3 font-monospace fw-medium text-dark">
                         ${chan.formatted_duration}
                     </td>
-                    <td class="py-3 font-monospace small text-muted text-truncate" style="max-width: 140px;" title="${chan.channel}">
+                    <td class="py-3 font-monospace small text-muted text-truncate" style="max-width: 130px;" title="${chan.channel}">
                         ${chan.channel}
                     </td>
                     <td class="text-end pe-3 pe-md-4 py-3">
-                        <button type="button" class="btn btn-outline-danger btn-sm px-2.5 py-1" onclick="hangupChannel('${chan.channel}');" title="{{ __('Force Hangup') }}">
-                            <i data-lucide="phone-off" style="width: 13px; height: 13px;"></i>
-                            <span>{{ __('Hangup') }}</span>
-                        </button>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1" onclick="startSpy('${chan.channel}', '${chan.caller}', 'listen')" title="{{ __('Listen Silently') }}">
+                                <i data-lucide="headphones" style="width: 13px; height: 13px;"></i>
+                                <span>{{ __('Listen') }}</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm px-2 py-1" onclick="startSpy('${chan.channel}', '${chan.caller}', 'whisper')" title="{{ __('Whisper Coach') }}">
+                                <i data-lucide="mic" style="width: 13px; height: 13px;"></i>
+                                <span>{{ __('Whisper') }}</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm px-2 py-1" onclick="startSpy('${chan.channel}', '${chan.caller}', 'barge')" title="{{ __('Barge In') }}">
+                                <i data-lucide="users" style="width: 13px; height: 13px;"></i>
+                                <span>{{ __('Barge') }}</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1" onclick="hangupChannel('${chan.channel}');" title="{{ __('Force Terminate') }}">
+                                <i data-lucide="phone-off" style="width: 13px; height: 13px;"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -273,6 +345,51 @@
 
         tbody.innerHTML = html;
         if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+    }
+
+    async function startSpy(channel, ext, mode) {
+        const supervisorExt = getSelectedSupervisorExt();
+        const modeNames = {
+            'listen': '{{ __("Silent Listen") }}',
+            'whisper': '{{ __("Whisper Coaching (Only agent hears you)") }}',
+            'barge': '{{ __("3-Way Conference Barge") }}'
+        };
+
+        const confirmMsg = `${modeNames[mode] || mode} on Ext ${ext}?\n\nAsterisk will ring your softphone (Ext ${supervisorExt}). Answer the softphone to connect.`;
+        if (!confirm(confirmMsg)) return;
+
+        try {
+            const res = await fetch("{{ route('admin.pbx.live-calls.spy') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    admin_extension: supervisorExt,
+                    target: channel || ext,
+                    mode: mode
+                })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                // Automatically open softphone widget so admin can answer
+                if (typeof togglePbxDialer === 'function') {
+                    const card = document.getElementById('pbx-dialer-card');
+                    if (card && !card.classList.contains('active')) {
+                        togglePbxDialer();
+                    }
+                }
+                alert(data.message || 'Call initiated. Please answer your softphone!');
+            } else {
+                alert(data.message || 'Failed to start monitoring session.');
+            }
+        } catch (e) {
+            console.error('[PBX Spy] Error:', e);
+            alert('Error initiating supervisor call.');
+        }
     }
 
     async function hangupChannel(channel) {

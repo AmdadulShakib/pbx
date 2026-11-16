@@ -15,4 +15,5 @@ return [
     'ami_port'     => (int) env('ASTERISK_AMI_PORT', 5038),
     'ami_user'     => env('ASTERISK_AMI_USER', 'admin'),
     'ami_secret'   => env('ASTERISK_AMI_SECRET', 'voxpulse2026'),
+    'rawman_url'   => env('ASTERISK_RAWMAN_URL', 'https://pbx.103.107.160.37.sslip.io/rawman'),
 ];

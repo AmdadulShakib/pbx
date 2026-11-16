@@ -26,6 +26,12 @@ return [
             ],
             [
                 'type' => 'route',
+                'label' => 'IVR Receptionist',
+                'icon' => 'layers',
+                'route' => 'admin.pbx.ivr.index',
+            ],
+            [
+                'type' => 'route',
                 'label' => 'Call History (CDR)',
                 'icon' => 'history',
                 'route' => 'admin.pbx.calls.index',

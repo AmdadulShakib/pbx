@@ -105,40 +105,27 @@
         </div>
     </div>
 
-    <!-- Account Details & Connection Guide -->
-    <div class="account-grid">
-        <section class="account-card">
-            <h3 class="card-title">Telecom Account Insights</h3>
-            <div class="stat-grid">
-                <div class="stat-card">
-                    <span class="stat-label">Signaling Gateway</span>
-                    <span class="stat-value" style="font-size: 13px; font-weight: 700; word-break: break-all;">pbx.103.107.160.37.sslip.io</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Signaling Protocol</span>
-                    <span class="stat-value" style="font-size: 13px; font-weight: 700;">WSS (TLS Encrypted)</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Audio Protocol</span>
-                    <span class="stat-value" style="font-size: 13px; font-weight: 700;">WebRTC / SRTP</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Parallel Ringing</span>
-                    <span class="stat-value" style="font-size: 13px; font-weight: 700; color: var(--site-success);">Enabled (Multi-Tab)</span>
-                </div>
+    <!-- Account Telemetry & Extension Status -->
+    <div class="account-card" style="padding: 24px;">
+        <h3 class="card-title mb-3">{{ __('Telecom Network Insights') }}</h3>
+        <div class="stat-grid">
+            <div class="stat-card">
+                <span class="stat-label">{{ __('Signaling Gateway') }}</span>
+                <span class="stat-value font-monospace" style="font-size: 13px; font-weight: 700; word-break: break-all;">pbx.103.107.160.37.sslip.io</span>
             </div>
-        </section>
-
-        <aside class="account-card soft-card">
-            <h3 class="card-title">WebRTC Calling Guide</h3>
-            <p class="card-sub" style="margin-bottom: 12px;">For the best call quality:</p>
-            <ul style="padding-left: 18px; margin: 0; font-size: 13px; color: var(--site-muted); line-height: 1.7;">
-                <li>Ensure microphone permissions are granted to this domain.</li>
-                <li>Multiple tabs can stay open; all tabs will ring simultaneously.</li>
-                <li>Wear a headset to eliminate ambient background echo.</li>
-                <li>Use Google Chrome, Microsoft Edge, or Mozilla Firefox.</li>
-            </ul>
-        </aside>
+            <div class="stat-card">
+                <span class="stat-label">{{ __('Signaling Protocol') }}</span>
+                <span class="stat-value" style="font-size: 13px; font-weight: 700;">WSS (TLS Encrypted)</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">{{ __('Audio Protocol') }}</span>
+                <span class="stat-value" style="font-size: 13px; font-weight: 700;">WebRTC / SRTP</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">{{ __('Parallel Ringing') }}</span>
+                <span class="stat-value" style="font-size: 13px; font-weight: 700; color: var(--site-success);">Enabled (Multi-Tab)</span>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

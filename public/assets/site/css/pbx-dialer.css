@@ -195,16 +195,22 @@ html[data-theme="dark"],
     background-color: #14532d;
     border-color: var(--pbx-success);
     color: #ffffff;
-    animation: pbx-pulse-soft 1s infinite alternate;
+    animation: pbx-fab-ringing 1s infinite alternate;
 }
 
 .pbx-fab-btn.is-incoming .pbx-fab-title {
     color: #ffffff;
 }
 
-@keyframes pbx-pulse-soft {
-    from { transform: scale(1); }
-    to { transform: scale(1.04); }
+@keyframes pbx-fab-ringing {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6), 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    100% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(22, 163, 74, 0), 0 6px 18px rgba(0, 0, 0, 0.35);
+    }
 }
 
 /* ==========================================================================
@@ -815,32 +821,40 @@ html[data-theme="dark"],
     margin-top: 6px;
 }
 
-/* Audio Waves - Solid Minimalist Bars */
+/* Audio Waves - Smooth Equalizer Waveform */
 .pbx-audio-waves {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
-    height: 20px;
-    margin-top: 6px;
+    height: 22px;
+    margin-top: 8px;
 }
 
 .pbx-audio-waves span {
-    width: 3px;
+    width: 3.5px;
     height: 6px;
     background-color: var(--pbx-brand);
     border-radius: 2px;
-    animation: pbx-wave-solid 1s ease-in-out infinite;
+    animation: pbx-wave-dynamic 1.1s ease-in-out infinite;
+    transform-origin: bottom;
 }
 
-.pbx-audio-waves span:nth-child(2) { animation-delay: 0.15s; }
-.pbx-audio-waves span:nth-child(3) { animation-delay: 0.3s; }
-.pbx-audio-waves span:nth-child(4) { animation-delay: 0.45s; }
-.pbx-audio-waves span:nth-child(5) { animation-delay: 0.6s; }
+.pbx-audio-waves span:nth-child(1) { animation-delay: 0.1s; height: 8px; }
+.pbx-audio-waves span:nth-child(2) { animation-delay: 0.25s; height: 14px; }
+.pbx-audio-waves span:nth-child(3) { animation-delay: 0.4s; height: 20px; }
+.pbx-audio-waves span:nth-child(4) { animation-delay: 0.2s; height: 12px; }
+.pbx-audio-waves span:nth-child(5) { animation-delay: 0.35s; height: 16px; }
 
-@keyframes pbx-wave-solid {
-    0%, 100% { height: 6px; }
-    50% { height: 18px; background-color: var(--pbx-success); }
+@keyframes pbx-wave-dynamic {
+    0%, 100% {
+        transform: scaleY(0.4);
+        background-color: var(--pbx-brand);
+    }
+    50% {
+        transform: scaleY(1.3);
+        background-color: var(--pbx-success);
+    }
 }
 
 /* 6-Button Control Grid */
@@ -1083,26 +1097,72 @@ html[data-theme="dark"],
 
 .pbx-incoming-halo {
     position: relative;
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 14px auto;
+    width: 86px;
+    height: 86px;
+    margin: 0 auto 16px auto;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.pbx-incoming-halo::before,
+.pbx-incoming-halo::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 2px solid var(--pbx-success);
+    opacity: 0;
+    pointer-events: none;
+    animation: pbx-ripple-wave 2.2s cubic-bezier(0.1, 0.7, 0.1, 1) infinite;
+}
+
+.pbx-incoming-halo::after {
+    animation-delay: 1.1s;
+}
+
+@keyframes pbx-ripple-wave {
+    0% {
+        transform: scale(0.85);
+        opacity: 0.85;
+        border-width: 2.5px;
+    }
+    50% {
+        opacity: 0.35;
+    }
+    100% {
+        transform: scale(1.65);
+        opacity: 0;
+        border-width: 1px;
+    }
+}
+
 .pbx-incoming-avatar {
-    width: 80px;
-    height: 80px;
+    width: 86px;
+    height: 86px;
     border-radius: 50%;
     background-color: var(--pbx-surface-elevated);
-    border: 2px solid var(--pbx-success);
+    border: 2.5px solid var(--pbx-success);
     color: var(--pbx-text-primary);
-    font-size: 30px;
+    font-size: 32px;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 2;
+    animation: pbx-avatar-breathe 2.2s ease-in-out infinite;
+}
+
+@keyframes pbx-avatar-breathe {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 8px rgba(22, 163, 74, 0.25);
+    }
 }
 
 .pbx-incoming-badge {
@@ -1172,11 +1232,23 @@ html[data-theme="dark"],
 .pbx-ans-circle-btn.answer svg {
     background-color: var(--pbx-success);
     color: #ffffff;
+    animation: pbx-answer-ring 1.5s ease-in-out infinite;
 }
 
 .pbx-ans-circle-btn.answer:hover svg {
     background-color: var(--pbx-success-hover);
     transform: translateY(-2px);
+}
+
+@keyframes pbx-answer-ring {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7), 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+    50% {
+        transform: scale(1.07);
+        box-shadow: 0 0 0 12px rgba(22, 163, 74, 0), 0 6px 18px rgba(0, 0, 0, 0.3);
+    }
 }
 
 /* ==========================================================================

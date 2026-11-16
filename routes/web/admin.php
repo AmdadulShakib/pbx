@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\Admin\BusinessSettingsController;
 use App\Http\Controllers\Web\Admin\CategoryController;
 use App\Http\Controllers\Web\Admin\PbxCallLogController;
 use App\Http\Controllers\Web\Admin\PbxExtensionController;
+use App\Http\Controllers\Web\Admin\PbxIvrController;
 use App\Http\Controllers\Web\Admin\PbxLiveCallsController;
 use App\Http\Controllers\Web\Admin\PbxStatusController;
 use App\Http\Middleware\PbxAdmin;
@@ -83,6 +84,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('live-calls/api', [PbxLiveCallsController::class, 'api'])->name('live-calls.api');
             Route::post('live-calls/hangup', [PbxLiveCallsController::class, 'hangup'])->name('live-calls.hangup');
             Route::post('live-calls/originate', [PbxLiveCallsController::class, 'originate'])->name('live-calls.originate');
+            Route::post('live-calls/spy', [PbxLiveCallsController::class, 'spy'])->name('live-calls.spy');
+            Route::post('ivr/sync', [PbxIvrController::class, 'syncDialplan'])->name('ivr.sync');
+            Route::resource('ivr', PbxIvrController::class);
             Route::get('calls', [PbxCallLogController::class, 'index'])->name('calls.index');
             Route::post('calls/log', [PbxCallLogController::class, 'store'])->name('calls.store');
             Route::delete('calls/{call}', [PbxCallLogController::class, 'destroy'])->name('calls.destroy');
