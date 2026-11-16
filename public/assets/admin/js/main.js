@@ -139,21 +139,31 @@ i18next.on('languageChanged', () => {
   });
 });
 }
+let cardChartNew1 = null;
+let cardChart1 = null;
+let cardChart3 = null;
+let cardChart4 = null;
+let mainBarChart = null;
+
 const updateCharts = () => {
-  cardChart1.data.datasets[0].pointBackgroundColor = coreui.Utils.getStyle('--cui-primary');
-  mainBarChart.options.scales.x.ticks.color = coreui.Utils.getStyle('--cui-body-color');
-  mainBarChart.options.scales.y.ticks.color = coreui.Utils.getStyle('--cui-body-color');
-  mainBarChart.options.scales.x.grid.color = coreui.Utils.getStyle('--cui-border-color-translucent');
-  mainBarChart.options.scales.x.ticks.color = coreui.Utils.getStyle('--cui-body-color');
-  mainBarChart.options.scales.y.grid.color = coreui.Utils.getStyle('--cui-border-color-translucent');
-  mainBarChart.options.scales.y.ticks.color = coreui.Utils.getStyle('--cui-body-color');
-  cardChart1.update();
-  mainBarChart.update();
+  if (cardChart1 && cardChart1.data && typeof coreui !== 'undefined' && coreui.Utils) {
+    cardChart1.data.datasets[0].pointBackgroundColor = coreui.Utils.getStyle('--cui-primary');
+    cardChart1.update();
+  }
+  if (mainBarChart && mainBarChart.options && typeof coreui !== 'undefined' && coreui.Utils) {
+    mainBarChart.options.scales.x.ticks.color = coreui.Utils.getStyle('--cui-body-color');
+    mainBarChart.options.scales.y.ticks.color = coreui.Utils.getStyle('--cui-body-color');
+    mainBarChart.options.scales.x.grid.color = coreui.Utils.getStyle('--cui-border-color-translucent');
+    mainBarChart.options.scales.x.ticks.color = coreui.Utils.getStyle('--cui-body-color');
+    mainBarChart.options.scales.y.grid.color = coreui.Utils.getStyle('--cui-border-color-translucent');
+    mainBarChart.options.scales.y.ticks.color = coreui.Utils.getStyle('--cui-body-color');
+    mainBarChart.update();
+  }
 };
 
 if (typeof Chart !== 'undefined' && typeof coreui !== 'undefined') {
 // eslint-disable-next-line no-unused-vars
-const cardChartNew1 = document.getElementById('card-chart-new1') ? new Chart(document.getElementById('card-chart-new1'), {
+cardChartNew1 = document.getElementById('card-chart-new1') ? new Chart(document.getElementById('card-chart-new1'), {
   type: 'line',
   data: {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -195,7 +205,7 @@ const cardChartNew1 = document.getElementById('card-chart-new1') ? new Chart(doc
     }
   }
 });
-const cardChart1 = document.getElementById('card-chart1') ? new Chart(document.getElementById('card-chart1'), {
+cardChart1 = document.getElementById('card-chart1') ? new Chart(document.getElementById('card-chart1'), {
   type: 'line',
   data: {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -251,7 +261,7 @@ const cardChart1 = document.getElementById('card-chart1') ? new Chart(document.g
     }
   }
 });
-const cardChart3 = document.getElementById('card-chart3') ? new Chart(document.getElementById('card-chart3'), {
+cardChart3 = document.getElementById('card-chart3') ? new Chart(document.getElementById('card-chart3'), {
   type: 'line',
   data: {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -291,7 +301,7 @@ const cardChart3 = document.getElementById('card-chart3') ? new Chart(document.g
     }
   }
 });
-const cardChart4 = document.getElementById('card-chart4') ? new Chart(document.getElementById('card-chart4'), {
+cardChart4 = document.getElementById('card-chart4') ? new Chart(document.getElementById('card-chart4'), {
   type: 'bar',
   data: {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March', 'April'],
@@ -335,7 +345,7 @@ const cardChart4 = document.getElementById('card-chart4') ? new Chart(document.g
     }
   }
 });
-const mainBarChart = document.getElementById('main-bar-chart') ? new Chart(document.getElementById('main-bar-chart'), {
+mainBarChart = document.getElementById('main-bar-chart') ? new Chart(document.getElementById('main-bar-chart'), {
   type: 'bar',
   data: {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
