@@ -59,7 +59,7 @@
 
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light text-muted small text-uppercase">
+                    <thead class="table-custom-head text-muted small text-uppercase">
                         <tr>
                             <th class="ps-3 ps-md-4 py-3">{{ __('Group Name') }}</th>
                             <th class="py-3">{{ __('Dial Extension') }}</th>

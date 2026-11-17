@@ -64,7 +64,7 @@
 
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" id="live-channels-table">
-                    <thead class="table-light text-muted small text-uppercase">
+                    <thead class="table-custom-head text-muted small text-uppercase">
                         <tr>
                             <th class="ps-3 ps-md-4 py-3">{{ __('Caller') }}</th>
                             <th class="py-3">{{ __('Destination') }}</th>
@@ -349,13 +349,31 @@
 
     async function startSpy(channel, ext, mode) {
         const supervisorExt = getSelectedSupervisorExt();
-        const modeNames = {
-            'listen': '{{ __("Silent Listen") }}',
-            'whisper': '{{ __("Whisper Coaching (Only agent hears you)") }}',
-            'barge': '{{ __("3-Way Conference Barge") }}'
+        const modeMap = {
+            'listen': { code: '*55', label: '{{ __("Silent Listen") }}' },
+            'whisper': { code: '*56', label: '{{ __("Whisper Coaching") }}' },
+            'barge': { code: '*57', label: '{{ __("3-Way Conference Barge") }}' }
         };
 
-        const confirmMsg = `${modeNames[mode] || mode} on Ext ${ext}?\n\nAsterisk will ring your softphone (Ext ${supervisorExt}). Answer the softphone to connect.`;
+        const targetExt = (ext && ext !== 'Unknown') ? ext : channel.replace(/[^0-9]/g, '').substring(0, 3);
+        const actionInfo = modeMap[mode] || { code: '*55', label: mode };
+        const dialNumber = actionInfo.code + targetExt;
+        const callLabel = `${actionInfo.label} (Ext ${targetExt})`;
+
+        // Direct browser softphone join: connect directly into the call without incoming ring!
+        if (typeof window.pbxMakeCall === 'function') {
+            if (typeof togglePbxDialer === 'function') {
+                const card = document.getElementById('pbx-dialer-card');
+                if (card && !card.classList.contains('active')) {
+                    togglePbxDialer();
+                }
+            }
+            window.pbxMakeCall(dialNumber, callLabel);
+            return;
+        }
+
+        // Fallback: If web softphone is not initialized, fallback to server AMI Originate
+        const confirmMsg = `${actionInfo.label} on Ext ${targetExt}?\n\nAsterisk will ring your softphone (Ext ${supervisorExt}). Answer the softphone to connect.`;
         if (!confirm(confirmMsg)) return;
 
         try {
@@ -368,14 +386,13 @@
                 },
                 body: JSON.stringify({
                     admin_extension: supervisorExt,
-                    target: channel || ext,
+                    target: channel || targetExt,
                     mode: mode
                 })
             });
 
             const data = await res.json();
             if (data.success) {
-                // Automatically open softphone widget so admin can answer
                 if (typeof togglePbxDialer === 'function') {
                     const card = document.getElementById('pbx-dialer-card');
                     if (card && !card.classList.contains('active')) {

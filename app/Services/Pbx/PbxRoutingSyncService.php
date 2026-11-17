@@ -46,6 +46,18 @@ class PbxRoutingSyncService
             }
         }
 
+        // Dedicated helper context for parallel ring group dialing
+        $buf .= "[rg-member-dial]\n";
+        $buf .= "exten => _[0-9].,1,NoOp(Ring Group member \${EXTEN} called by \${CALLERID(num)})\n";
+        $buf .= " same => n,GotoIf(\$[\"\${CALLERID(num)}\" = \"\${EXTEN}\"]?skip_leg)\n";
+        $buf .= " same => n,Set(DIALSTR=\${PJSIP_DIAL_CONTACTS(\${EXTEN})})\n";
+        $buf .= " same => n,GotoIf(\$[\${LEN(\${DIALSTR})} > 0]?dial_leg:skip_leg)\n";
+        $buf .= " same => n(dial_leg),Dial(\${DIALSTR},30,r)\n";
+        $buf .= " same => n,Hangup()\n";
+        $buf .= " same => n(skip_leg),NoOp(Skipping unavailable or caller leg \${EXTEN})\n";
+        $buf .= " same => n,Busy(17)\n";
+        $buf .= " same => n,Hangup()\n\n";
+
         // 2. Outbound Routes in [from-internal]
         $buf .= "; -------------------------------------------------------------------\n";
         $buf .= "; Outbound Routes (PSTN / Carrier Trunk Dialing Rules)\n";

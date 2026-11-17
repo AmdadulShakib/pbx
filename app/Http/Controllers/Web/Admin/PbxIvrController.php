@@ -28,6 +28,7 @@ class PbxIvrController extends Controller
             'description'         => ['nullable', 'string', 'max:500'],
             'greeting_message'    => ['nullable', 'string', 'max:500'],
             'sound_prompt'        => ['nullable', 'string', 'max:100'],
+            'audio_file'          => ['nullable', 'file', 'mimes:wav,mp3,ogg,audio/wav,audio/x-wav,audio/mpeg', 'max:20480'],
             'timeout'             => ['nullable', 'integer', 'min:3', 'max:60'],
             'timeout_destination' => ['required', 'string', 'max:50'],
             'invalid_destination' => ['required', 'string', 'max:50'],
@@ -68,6 +69,8 @@ class PbxIvrController extends Controller
                     ]);
                 }
             }
+
+            $this->handleAudioUpload($request, $ivr);
         });
 
         return back()->with('ok', __('IVR Digital Receptionist created successfully.'));
@@ -83,6 +86,7 @@ class PbxIvrController extends Controller
             'description'         => ['nullable', 'string', 'max:500'],
             'greeting_message'    => ['nullable', 'string', 'max:500'],
             'sound_prompt'        => ['nullable', 'string', 'max:100'],
+            'audio_file'          => ['nullable', 'file', 'mimes:wav,mp3,ogg,audio/wav,audio/x-wav,audio/mpeg', 'max:20480'],
             'timeout'             => ['nullable', 'integer', 'min:3', 'max:60'],
             'timeout_destination' => ['required', 'string', 'max:50'],
             'invalid_destination' => ['required', 'string', 'max:50'],
@@ -126,9 +130,78 @@ class PbxIvrController extends Controller
                     ]);
                 }
             }
+
+            $this->handleAudioUpload($request, $ivr);
         });
 
         return back()->with('ok', __('IVR Digital Receptionist updated successfully.'));
+    }
+
+    protected function handleAudioUpload(Request $request, PbxIvr $ivr): void
+    {
+        if (!$request->hasFile('audio_file')) {
+            return;
+        }
+
+        $file = $request->file('audio_file');
+        if (!$file->isValid()) {
+            return;
+        }
+
+        $ext = strtolower($file->getClientOriginalExtension());
+        $filename = "ivr_{$ivr->extension}." . $ext;
+        $dir = public_path('recordings/ivr');
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+
+        $targetPath = $dir . '/' . $filename;
+        $file->move($dir, $filename);
+
+        // Also generate/convert to 8kHz mono PCM WAV for Asterisk
+        $wavPath = $dir . "/ivr_{$ivr->extension}.wav";
+        if ($ext !== 'wav') {
+            @exec("ffmpeg -y -i " . escapeshellarg($targetPath) . " -ar 8000 -ac 1 -c:a pcm_s16le " . escapeshellarg($wavPath));
+        }
+
+        // If running directly on host with Asterisk sounds directory
+        if (is_dir('/var/lib/asterisk/sounds/en')) {
+            @copy($wavPath, "/var/lib/asterisk/sounds/en/ivr-{$ivr->extension}.wav");
+            @copy($wavPath, "/var/lib/asterisk/sounds/en/ivr_{$ivr->extension}.wav");
+        }
+
+        $ivr->update([
+            'audio_file'   => $filename,
+            'sound_prompt' => "ivr-{$ivr->extension}",
+        ]);
+    }
+
+    public function audio($id)
+    {
+        $ivr = PbxIvr::findOrFail($id);
+        $candidates = [
+            public_path('recordings/ivr/' . $ivr->audio_file),
+            public_path('recordings/ivr/ivr_' . $ivr->extension . '.wav'),
+            storage_path('app/public/ivr/' . $ivr->audio_file),
+            "/var/lib/asterisk/sounds/en/ivr-{$ivr->extension}.wav",
+            "/var/lib/asterisk/sounds/en/{$ivr->sound_prompt}.wav",
+            "/var/lib/asterisk/sounds/en/ivr-welcome.wav",
+        ];
+
+        foreach ($candidates as $path) {
+            if (!empty($path) && file_exists($path)) {
+                return response()->file($path, [
+                    'Content-Type'  => 'audio/wav',
+                    'Accept-Ranges' => 'bytes',
+                ]);
+            }
+        }
+
+        if (!empty($ivr->audio_file)) {
+            return redirect("https://pbx.103.107.160.37.sslip.io/recordings/ivr/{$ivr->audio_file}");
+        }
+
+        return redirect("https://pbx.103.107.160.37.sslip.io/recordings/ivr-welcome.wav");
     }
 
     public function destroy($id)

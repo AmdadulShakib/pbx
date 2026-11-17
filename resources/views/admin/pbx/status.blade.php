@@ -61,7 +61,7 @@
                 @if($driver === 'asterisk' && empty($regs))
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
+                            <thead class="table-custom-head text-muted small text-uppercase">
                                 <tr>
                                     <th>{{ __('Extension') }}</th>
                                     <th>{{ __('Display Name') }}</th>
@@ -126,7 +126,7 @@
                 @else
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
+                            <thead class="table-custom-head text-muted small text-uppercase">
                                 <tr>
                                     <th>{{ __('User / Extension') }}</th>
                                     <th>{{ __('Contact IP / Port') }}</th>

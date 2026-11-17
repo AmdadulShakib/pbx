@@ -256,7 +256,37 @@ class AsteriskAmi
             }
         }
 
-        return $channels;
+        // Deduplicate bridged legs so 1 call (e.g. 101 -> 102) shows as 1 unified row
+        $deduped = [];
+        $processedChannels = [];
+
+        foreach ($channels as $chan) {
+            $name    = $chan['channel'];
+            $bridged = $chan['bridged'];
+
+            if (in_array($name, $processedChannels, true)) {
+                continue;
+            }
+
+            // Skip internal Local channel legs if there's a bridged peer
+            if (str_starts_with($name, 'Local/') && !empty($bridged)) {
+                $processedChannels[] = $name;
+                continue;
+            }
+
+            $processedChannels[] = $name;
+            if (!empty($bridged)) {
+                $processedChannels[] = $bridged;
+
+                if (preg_match('#(?:PJSIP|Local)/([0-9]+)#i', $bridged, $bm) && ($chan['callee'] === 'Internal' || $chan['callee'] === $chan['caller'])) {
+                    $chan['callee'] = $bm[1];
+                }
+            }
+
+            $deduped[] = $chan;
+        }
+
+        return $deduped;
     }
 
     /**

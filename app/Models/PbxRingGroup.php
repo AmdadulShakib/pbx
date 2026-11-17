@@ -45,25 +45,27 @@ class PbxRingGroup extends Model
             $step = 1;
             $out = "; Ring Group {$ext} (Hunt / Sequential)\n";
             $out .= "exten => {$ext},1,NoOp(Ring Group {$this->name} - Sequential)\n";
+            $out .= " same => n,MixMonitor(/var/spool/asterisk/monitor/\${UNIQUEID}.wav,b)\n";
             foreach ($members as $m) {
                 $m = trim($m);
                 if (!$m) continue;
                 $step++;
-                $out .= " same => n,Dial(PJSIP/{$m},{$huntTime})\n";
+                $out .= " same => n,Dial(Local/{$m}@rg-member-dial,{$huntTime},r)\n";
             }
         } else {
             // ringall (simultaneous) or random
             $channels = [];
             foreach ($members as $m) {
                 $m = trim($m);
-                if ($m) $channels[] = "PJSIP/{$m}";
+                if ($m) $channels[] = "Local/{$m}@rg-member-dial";
             }
             $dialTargets = implode('&', $channels);
 
             $out = "; Ring Group {$ext} (Ring All)\n";
             $out .= "exten => {$ext},1,NoOp(Ring Group {$this->name} - Simultaneous)\n";
+            $out .= " same => n,MixMonitor(/var/spool/asterisk/monitor/\${UNIQUEID}.wav,b)\n";
             if (!empty($dialTargets)) {
-                $out .= " same => n,Dial({$dialTargets},{$ringTime})\n";
+                $out .= " same => n,Dial({$dialTargets},{$ringTime},r)\n";
             }
         }
 

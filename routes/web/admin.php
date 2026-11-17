@@ -90,6 +90,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('live-calls/originate', [PbxLiveCallsController::class, 'originate'])->name('live-calls.originate');
             Route::post('live-calls/spy', [PbxLiveCallsController::class, 'spy'])->name('live-calls.spy');
             Route::post('ivr/sync', [PbxIvrController::class, 'syncDialplan'])->name('ivr.sync');
+            Route::get('ivr/{id}/audio', [PbxIvrController::class, 'audio'])->name('ivr.audio');
             Route::resource('ivr', PbxIvrController::class);
             Route::post('ring-groups/sync', [PbxRingGroupController::class, 'sync'])->name('ring-groups.sync');
             Route::resource('ring-groups', PbxRingGroupController::class);

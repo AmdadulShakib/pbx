@@ -59,7 +59,7 @@
 
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light text-muted small text-uppercase">
+                    <thead class="table-custom-head text-muted small text-uppercase">
                         <tr>
                             <th class="ps-3 ps-md-4 py-3">{{ __('IVR Name') }}</th>
                             <th class="py-3">{{ __('Dial Extension') }}</th>
@@ -78,6 +78,12 @@
                                         @if($ivr->description)
                                             <small class="text-muted d-block">{{ Str::limit($ivr->description, 45) }}</small>
                                         @endif
+                                        <div class="mt-1">
+                                            <a href="{{ route('admin.pbx.ivr.audio', $ivr->id) }}" target="_blank" class="badge bg-primary-subtle text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 py-1 px-2">
+                                                <i data-lucide="volume-2" style="width: 12px; height: 12px;"></i>
+                                                <span>{{ $ivr->audio_file ? __('Custom Audio') : __('Voice Prompt') }}</span>
+                                            </a>
+                                        </div>
                                     </div>
                                 </td>
 
@@ -164,7 +170,7 @@
 <div class="modal fade" id="createIvrModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
-            <form method="POST" action="{{ route('admin.pbx.ivr.store') }}">
+            <form method="POST" action="{{ route('admin.pbx.ivr.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header border-bottom py-3 px-4">
                     <h6 class="modal-title fw-bold text-dark">{{ __('Create Digital Receptionist (IVR)') }}</h6>
@@ -184,6 +190,12 @@
                         <div class="col-12">
                             <label class="form-label small text-muted text-uppercase fw-bold">{{ __('Description / Welcome Text') }}</label>
                             <textarea name="description" class="form-control form-control-sm" rows="2" placeholder="e.g. Thank you for calling VoxPulse. Press 1 for Sales, 2 for Support, or stay on the line."></textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small text-muted text-uppercase fw-bold">{{ __('Upload Custom Voice Announcement (.wav, .mp3)') }}</label>
+                            <input type="file" name="audio_file" accept=".wav,.mp3,audio/wav,audio/mpeg" class="form-control form-control-sm">
+                            <small class="text-muted d-block mt-1">{{ __('Upload custom greeting audio for Asterisk to play when callers dial this IVR.') }}</small>
                         </div>
 
                         <div class="col-md-4">
@@ -261,7 +273,7 @@
 <div class="modal fade" id="editIvrModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
-            <form id="editIvrForm" method="POST" action="">
+            <form id="editIvrForm" method="POST" action="" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="modal-header border-bottom py-3 px-4">
@@ -282,6 +294,18 @@
                         <div class="col-12">
                             <label class="form-label small text-muted text-uppercase fw-bold">{{ __('Description / Welcome Text') }}</label>
                             <textarea id="edit_description" name="description" class="form-control form-control-sm" rows="2"></textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small text-muted text-uppercase fw-bold">{{ __('Upload Custom Voice Announcement (.wav, .mp3)') }}</label>
+                            <input type="file" name="audio_file" accept=".wav,.mp3,audio/wav,audio/mpeg" class="form-control form-control-sm">
+                            <div id="edit_audio_player_container" class="mt-2 p-2 rounded bg-light border">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <span class="small text-muted fw-bold">{{ __('Current Audio Prompt:') }}</span>
+                                    <span id="edit_audio_label" class="small text-primary font-monospace">ivr-welcome.wav</span>
+                                </div>
+                                <audio id="edit_audio_player" controls class="w-100" style="height: 32px;"></audio>
+                            </div>
                         </div>
 
                         <div class="col-md-4">
@@ -385,6 +409,13 @@
         document.getElementById('edit_timeout_destination').value = ivr.timeout_destination || '101';
         document.getElementById('edit_invalid_destination').value = ivr.invalid_destination || '101';
         document.getElementById('edit_is_active').checked = !!ivr.is_active;
+
+        const audioPlayer = document.getElementById('edit_audio_player');
+        const audioLabel = document.getElementById('edit_audio_label');
+        if (audioPlayer) {
+            audioPlayer.src = `/admin/pbx/ivr/${ivr.id}/audio`;
+            audioLabel.textContent = ivr.audio_file ? ivr.audio_file : (ivr.sound_prompt || 'ivr-welcome') + '.wav';
+        }
 
         const container = document.getElementById('edit-options-container');
         container.innerHTML = '';

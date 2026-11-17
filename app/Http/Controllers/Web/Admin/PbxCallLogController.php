@@ -173,51 +173,31 @@ class PbxCallLogController extends Controller
             ]);
         }
 
-        // Return a dual-tone sample audio stream for demo/testing
-        return $this->generateSampleAudioResponse($call);
-    }
-
-    protected function generateSampleAudioResponse(PbxCallLog $call)
-    {
-        $sampleRate = 8000;
-        $seconds = min(max((int)$call->duration, 3), 10);
-        $totalSamples = $sampleRate * $seconds;
-        $dataSize = $totalSamples * 2;
-
-        $header = pack(
-            'A4VA4A4VvvVVvvA4V',
-            'RIFF',
-            36 + $dataSize,
-            'WAVE',
-            'fmt ',
-            16,
-            1,
-            1,
-            $sampleRate,
-            $sampleRate * 2,
-            2,
-            16,
-            'data',
-            $dataSize
-        );
-
-        $samples = '';
-        $freq1 = 440;
-        $freq2 = 554.37;
-        for ($i = 0; $i < $totalSamples; $i++) {
-            $t = $i / $sampleRate;
-            $cycle = fmod($t, 2.0);
-            $vol = $cycle < 1.0 ? sin(M_PI * $cycle) * 0.35 : 0.05;
-            $val = (sin(2 * M_PI * $freq1 * $t) + sin(2 * M_PI * $freq2 * $t)) * 0.5 * $vol;
-            $sample16 = (int)($val * 32767);
-            $samples .= pack('v', $sample16);
+        // Try streaming directly from host recording storage via reverse proxy / recordings URL
+        $targetFileName = $fileName ?: ($call->sip_call_id ? "{$call->sip_call_id}.wav" : null);
+        if ($targetFileName) {
+            $remoteUrl = "https://pbx.103.107.160.37.sslip.io/recordings/{$targetFileName}";
+            try {
+                $check = \Illuminate\Support\Facades\Http::withoutVerifying()->timeout(1.5)->head($remoteUrl);
+                if ($check->successful()) {
+                    return redirect($remoteUrl);
+                }
+            } catch (\Throwable $e) {}
         }
 
-        return response($header . $samples, 200, [
-            'Content-Type'        => 'audio/wav',
-            'Content-Disposition' => 'inline; filename="call_' . ($call->id) . '.wav"',
-            'Cache-Control'       => 'public, max-age=3600',
-        ]);
+        // Check if sample recording exists in public or sounds
+        $soundFallback = '/var/lib/asterisk/sounds/en/ivr-welcome.wav';
+        if (file_exists($soundFallback)) {
+            return response()->file($soundFallback, [
+                'Content-Type'        => 'audio/wav',
+                'Content-Disposition' => 'inline; filename="call_sample.wav"',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => __('No audio recording found for this call.')
+        ], 404);
     }
 
     public function destroy(PbxCallLog $call)

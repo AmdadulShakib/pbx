@@ -121,6 +121,8 @@
     }
 
     // Outgoing Ringback Tone (Tut-tut when calling someone)
+    let activeOscillators = [];
+
     function startOutgoingRingback() {
         stopAllAudioTones();
         const ctx = getAudioContext();
@@ -133,6 +135,7 @@
                 const osc2 = ctx.createOscillator();
                 const gain = ctx.createGain();
                 activeToneGain = gain;
+                activeOscillators = [osc1, osc2];
 
                 osc1.type = 'sine';
                 osc2.type = 'sine';
@@ -188,10 +191,20 @@
             clearInterval(activeRingback);
             activeRingback = null;
         }
+        if (activeOscillators && activeOscillators.length > 0) {
+            activeOscillators.forEach(osc => {
+                try {
+                    osc.stop();
+                    osc.disconnect();
+                } catch (e) {}
+            });
+            activeOscillators = [];
+        }
         if (activeToneGain) {
             try {
                 const ctx = getAudioContext();
                 if (ctx) {
+                    activeToneGain.gain.cancelScheduledValues(ctx.currentTime);
                     activeToneGain.gain.setValueAtTime(0, ctx.currentTime);
                 }
                 activeToneGain.disconnect();
@@ -541,6 +554,7 @@
         }
 
         console.log('[PBX Audio] Attaching remote audio stream:', stream.id);
+        stopAllAudioTones();
         remoteAudio.srcObject = stream;
         const playPromise = remoteAudio.play();
         if (playPromise !== undefined) {
@@ -627,10 +641,14 @@
             setupPeerConnection(data.peerconnection || session.connection);
         });
 
-        // 180 / 183 Ringing
-        session.on('progress', function () {
+        // 180 / 183 Ringing / Early Media
+        session.on('progress', function (e) {
             if (session !== currentSession) return;
-            console.log('[PBX] Remote phone is ringing...');
+            console.log('[PBX] Remote phone is ringing / session progress...');
+            if (e && (e.response && (e.response.status_code === 183 || e.response.body))) {
+                // Remote early media received (IVR announcement or carrier tone)
+                stopAllAudioTones();
+            }
             updateCallOverlayState('Ringing...', false);
             setStatus('ringing', 'Ringing...');
         });

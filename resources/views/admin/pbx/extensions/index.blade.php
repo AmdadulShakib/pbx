@@ -42,7 +42,7 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
+                        <thead class="table-custom-head text-muted small text-uppercase">
                             <tr>
                                 <th style="width: 120px;">{{ __('Extension') }}</th>
                                 <th>{{ __('Display Name') }}</th>
