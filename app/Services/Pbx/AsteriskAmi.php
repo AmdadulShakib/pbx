@@ -394,8 +394,8 @@ class AsteriskAmi
                 continue;
             }
 
-            // Skip internal Local channel dialer legs (e.g. Local/101@rg-member-dial)
-            if (str_starts_with($name, 'Local/')) {
+            // Skip internal Local helper legs created by ring group fanout
+            if (str_contains($name, '@rg-member-dial')) {
                 continue;
             }
 
