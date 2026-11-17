@@ -72,7 +72,7 @@ class PbxCallLogController extends Controller
             'callee'         => ['required', 'string', 'max:50'],
             'status'         => ['required', 'string', 'max:30'],
             'duration'       => ['nullable', 'integer', 'min:0'],
-            'direction'      => ['nullable', 'string', 'in:inbound,outbound,internal'],
+            'direction'      => ['nullable', 'string', 'in:inbound,outbound,outgoing,incoming,internal'],
             'sip_call_id'    => ['nullable', 'string', 'max:150'],
             'answered_by'    => ['nullable', 'string', 'max:100'],
             'recording_file' => ['nullable', 'string', 'max:255'],
@@ -96,8 +96,12 @@ class PbxCallLogController extends Controller
         $callerName = $callerExt ? ($callerExt->user?->name ?? $callerExt->name) : null;
         $calleeName = $calleeExt ? ($calleeExt->user?->name ?? $calleeExt->name) : null;
 
-        $direction = $data['direction'] ?? 'internal';
-        if (empty($direction)) {
+        $rawDir = strtolower($data['direction'] ?? 'internal');
+        if (in_array($rawDir, ['outbound', 'outgoing'], true)) {
+            $direction = 'outbound';
+        } elseif (in_array($rawDir, ['inbound', 'incoming'], true)) {
+            $direction = 'inbound';
+        } else {
             $direction = 'internal';
         }
 

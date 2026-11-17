@@ -83,15 +83,23 @@
                                             {{ substr($chan['caller'], 0, 3) }}
                                         </div>
                                         <div>
-                                            <div class="fw-bold text-dark font-monospace">Ext {{ $chan['caller'] }}</div>
-                                            <small class="text-muted d-block" style="font-size: 11px;">{{ $chan['app'] }}</small>
+                                            <div class="fw-bold text-dark font-monospace">
+                                                Ext {{ $chan['caller'] }}
+                                                @if(!empty($chan['caller_name']))
+                                                    <span class="fw-normal text-muted small ms-1">({{ $chan['caller_name'] }})</span>
+                                                @endif
+                                            </div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">{{ $chan['app'] ?: 'Voice' }}</small>
                                         </div>
                                     </div>
                                 </td>
 
                                 <td class="py-3">
                                     <span class="badge bg-light text-dark border font-monospace px-2 py-1">
-                                        {{ $chan['callee'] }}
+                                        {{ str_starts_with($chan['callee'], 'Ext') ? $chan['callee'] : 'Ext ' . $chan['callee'] }}
+                                        @if(!empty($chan['callee_name']))
+                                            <span class="fw-normal text-muted">({{ $chan['callee_name'] }})</span>
+                                        @endif
                                     </span>
                                 </td>
 
@@ -256,6 +264,18 @@
             const res = await fetch("{{ route('admin.pbx.live-calls.api') }}", {
                 headers: { 'Accept': 'application/json' }
             });
+            if (res.status === 401) {
+                const countBadge = document.getElementById('live-channel-count-badge');
+                if (countBadge) {
+                    countBadge.className = 'badge bg-warning text-dark rounded-pill px-2.5 py-1';
+                    countBadge.textContent = '{{ __("Session Paused") }}';
+                }
+                const lastUpdated = document.getElementById('last-updated-text');
+                if (lastUpdated) {
+                    lastUpdated.innerHTML = '<span class="text-warning small"><i data-lucide="alert-circle" style="width:12px;height:12px;" class="me-1"></i>{{ __("Admin session expired. Please refresh to reconnect.") }}</span>';
+                }
+                return;
+            }
             if (!res.ok) return;
             const data = await res.json();
             renderLiveChannels(data.channels || []);
@@ -267,6 +287,7 @@
 
     function renderLiveChannels(channels) {
         const countBadge = document.getElementById('live-channel-count-badge');
+        countBadge.className = 'badge bg-primary rounded-pill px-2.5 py-1';
         countBadge.textContent = channels.length + ' {{ __("Active") }}';
 
         const tbody = document.getElementById('live-channels-tbody');
@@ -290,6 +311,10 @@
 
         let html = '';
         channels.forEach(chan => {
+            const callerNameHtml = chan.caller_name ? `<span class="fw-normal text-muted small ms-1">(${chan.caller_name})</span>` : '';
+            const calleeDisplay = chan.callee.toString().startsWith('Ext') ? chan.callee : 'Ext ' + chan.callee;
+            const calleeNameHtml = chan.callee_name ? ` <span class="fw-normal text-muted">(${chan.callee_name})</span>` : '';
+
             html += `
                 <tr data-channel="${chan.channel}">
                     <td class="ps-3 ps-md-4 py-3">
@@ -298,14 +323,14 @@
                                 ${chan.caller.substring(0, 3)}
                             </div>
                             <div>
-                                <div class="fw-bold text-dark font-monospace">Ext ${chan.caller}</div>
+                                <div class="fw-bold text-dark font-monospace">Ext ${chan.caller}${callerNameHtml}</div>
                                 <small class="text-muted d-block" style="font-size: 11px;">${chan.app || 'Voice'}</small>
                             </div>
                         </div>
                     </td>
                     <td class="py-3">
                         <span class="badge bg-light text-dark border font-monospace px-2 py-1">
-                            ${chan.callee}
+                            ${calleeDisplay}${calleeNameHtml}
                         </span>
                     </td>
                     <td class="py-3">

@@ -188,19 +188,139 @@ class AsteriskAmi
 
     /**
      * Get active channels from Asterisk.
-     * Returns structured array of live ongoing calls.
+     * Uses official AMI CoreShowChannels action with rich event metadata, falling back to CLI.
+     * Returns structured array of live ongoing calls deduplicated into 1 row per conversation.
      */
     public function getActiveChannels(): array
     {
+        // 1. Try official AMI Action: CoreShowChannels (standard in Asterisk 13-21+)
         $raw = $this->query([
+            'action' => 'CoreShowChannels',
+        ]);
+
+        $rawChannels = [];
+        $current = null;
+
+        foreach ($raw as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                if ($current && !empty($current['channel'])) {
+                    $rawChannels[] = $current;
+                    $current = null;
+                }
+                continue;
+            }
+
+            if (preg_match('/^Event:\s*CoreShowChannel$/i', $line)) {
+                if ($current && !empty($current['channel'])) {
+                    $rawChannels[] = $current;
+                }
+                $current = [];
+                continue;
+            }
+
+            if (preg_match('/^Event:\s*CoreShowChannelsComplete$/i', $line)) {
+                if ($current && !empty($current['channel'])) {
+                    $rawChannels[] = $current;
+                    $current = null;
+                }
+                break;
+            }
+
+            if ($current !== null && strpos($line, ':') !== false) {
+                [$key, $val] = explode(':', $line, 2);
+                $key = strtolower(trim($key));
+                $val = trim($val);
+                $current[$key] = $val;
+            }
+        }
+        if ($current && !empty($current['channel'])) {
+            $rawChannels[] = $current;
+        }
+
+        if (!empty($rawChannels)) {
+            $channels = [];
+            foreach ($rawChannels as $item) {
+                $chanName      = $item['channel'] ?? '';
+                $callerNum     = $item['calleridnum'] ?? '';
+                $callerName    = $item['calleridname'] ?? '';
+                $connectedNum  = $item['connectedlinenum'] ?? '';
+                $connectedName = $item['connectedlinename'] ?? '';
+                $exten         = $item['exten'] ?? '';
+                $stateDesc     = $item['channelstatedesc'] ?? 'Active';
+                $app           = $item['application'] ?? 'Dial';
+                $appData       = $item['applicationdata'] ?? ($item['appdata'] ?? '');
+                $durationStr   = $item['duration'] ?? '00:00:00';
+                $bridgeId      = $item['bridgeid'] ?? '';
+                $linkedId      = $item['linkedid'] ?? '';
+                $uniqueId      = $item['uniqueid'] ?? '';
+
+                if ($callerNum === '<unknown>') $callerNum = '';
+                if ($callerName === '<unknown>') $callerName = '';
+                if ($connectedNum === '<unknown>') $connectedNum = '';
+                if ($connectedName === '<unknown>') $connectedName = '';
+
+                // Extract caller from channel name: PJSIP/101-0000001a -> 101
+                if (empty($callerNum) && preg_match('#/([0-9]+)-#', $chanName, $m)) {
+                    $callerNum = $m[1];
+                }
+
+                // Determine destination / callee
+                $callee = $connectedNum;
+                if (empty($callee) && !empty($exten) && $exten !== 's') {
+                    $callee = $exten;
+                }
+                if (empty($callee) && preg_match('#PJSIP/([0-9]+)#i', $appData, $m)) {
+                    $callee = $m[1];
+                }
+                if (empty($callee) && preg_match('#/([0-9]+)-#', $chanName, $m) && $m[1] !== $callerNum) {
+                    $callee = $m[1];
+                }
+
+                // State description
+                $stateLabel = match (strtolower($stateDesc)) {
+                    'up'              => 'Active / Connected',
+                    'ring', 'ringing' => 'Ringing',
+                    'dialing'         => 'Dialing',
+                    default           => ucfirst($stateDesc),
+                };
+
+                // Formatted duration: if HH:MM:SS with 00:xx:yy, simplify to xx:yy
+                $formattedDuration = $durationStr;
+                if (preg_match('/^00:([0-9]{2}:[0-9]{2})$/', $durationStr, $dm)) {
+                    $formattedDuration = $dm[1];
+                }
+
+                $channels[] = [
+                    'channel'            => $chanName,
+                    'caller'             => $callerNum ?: 'Unknown',
+                    'caller_name'        => $callerName,
+                    'callee'             => $callee ?: 'Internal',
+                    'callee_name'        => $connectedName,
+                    'state'              => $stateLabel,
+                    'raw_state'          => $stateDesc,
+                    'app'                => $app,
+                    'app_data'           => $appData,
+                    'duration'           => $durationStr,
+                    'formatted_duration' => $formattedDuration,
+                    'bridge_id'          => $bridgeId,
+                    'linked_id'          => $linkedId,
+                    'uniqueid'           => $uniqueId,
+                ];
+            }
+
+            return $this->deduplicateChannels($channels);
+        }
+
+        // 2. Fallback: core show channels concise
+        $fallbackRaw = $this->query([
             'action'  => 'command',
             'command' => 'core show channels concise',
         ]);
 
         $channels = [];
-        foreach ($raw as $line) {
+        foreach ($fallbackRaw as $line) {
             $line = trim($line);
-            // Clean 'Output: ' prefix from Asterisk AMI command output
             $line = preg_replace('/^Output:\s*/i', '', $line);
             $line = trim($line);
 
@@ -208,8 +328,6 @@ class AsteriskAmi
                 continue;
             }
 
-            // Asterisk concise format:
-            // channel!context!exten!priority!state!appl!data!cid!accountcode!amaflags!duration!bridged!uniqueid
             $parts = explode('!', $line);
             if (count($parts) >= 5) {
                 $chanName  = $parts[0] ?? '';
@@ -218,21 +336,17 @@ class AsteriskAmi
                 $state     = $parts[4] ?? 'Unknown';
                 $app       = $parts[5] ?? '';
                 $appData   = $parts[6] ?? '';
-                $duration  = isset($parts[10]) ? (int)$parts[10] : 0;
-                $bridged   = $parts[11] ?? '';
-                $uniqueId  = $parts[12] ?? '';
+                $duration  = isset($parts[11]) && is_numeric($parts[11]) ? (int)$parts[11] : (isset($parts[10]) && is_numeric($parts[10]) ? (int)$parts[10] : 0);
+                $uniqueId  = $parts[count($parts) - 1] ?? '';
 
-                // Extract caller from channel name if cid is empty
                 if (empty($callerCid) && preg_match('#/([0-9]+)-#', $chanName, $m)) {
                     $callerCid = $m[1];
                 }
 
-                // If dialed extension is empty or context default, extract from appData
                 if ((empty($dialedExt) || $dialedExt === 's') && preg_match('#PJSIP/([0-9]+)#i', $appData, $m)) {
                     $dialedExt = $m[1];
                 }
 
-                // Format state
                 $stateLabel = match (strtolower($state)) {
                     'up'              => 'Active / Connected',
                     'ring', 'ringing' => 'Ringing',
@@ -243,22 +357,34 @@ class AsteriskAmi
                 $channels[] = [
                     'channel'            => $chanName,
                     'caller'             => $callerCid ?: 'Unknown',
+                    'caller_name'        => '',
                     'callee'             => $dialedExt ?: 'Internal',
+                    'callee_name'        => '',
                     'state'              => $stateLabel,
                     'raw_state'          => $state,
                     'app'                => $app,
                     'app_data'           => $appData,
                     'duration'           => $duration,
                     'formatted_duration' => sprintf('%02d:%02d', floor($duration / 60), $duration % 60),
-                    'bridged'            => $bridged,
+                    'bridge_id'          => '',
+                    'linked_id'          => '',
                     'uniqueid'           => $uniqueId,
                 ];
             }
         }
 
-        // Deduplicate bridged legs so 1 call (e.g. 101 -> 102) shows as 1 unified row
+        return $this->deduplicateChannels($channels);
+    }
+
+    /**
+     * Deduplicate bridged channel legs into a single unified row per active call conversation.
+     */
+    protected function deduplicateChannels(array $channels): array
+    {
         $deduped = [];
         $seenPairs = [];
+        $seenBridges = [];
+        $seenLinkedIds = [];
         $seenChannels = [];
 
         foreach ($channels as $chan) {
@@ -268,29 +394,40 @@ class AsteriskAmi
                 continue;
             }
 
-            // Skip internal Local channel helper legs (e.g. Local/101@rg-member-dial)
+            // Skip internal Local channel dialer legs (e.g. Local/101@rg-member-dial)
             if (str_starts_with($name, 'Local/')) {
                 continue;
             }
 
-            // Extract numeric digits of caller and callee
-            $c1 = preg_replace('/[^0-9]/', '', $chan['caller']);
-            $c2 = preg_replace('/[^0-9]/', '', $chan['callee']);
+            // Group by Asterisk bridge_id if present
+            if (!empty($chan['bridge_id'])) {
+                if (isset($seenBridges[$chan['bridge_id']])) {
+                    continue;
+                }
+                $seenBridges[$chan['bridge_id']] = true;
+            }
+
+            // Group by LinkedID if present and shared between caller & callee legs
+            if (!empty($chan['linked_id'])) {
+                if (isset($seenLinkedIds[$chan['linked_id']])) {
+                    continue;
+                }
+                $seenLinkedIds[$chan['linked_id']] = true;
+            }
+
+            // Group by numeric extension pair (e.g. 101 <-> 103)
+            $c1 = preg_replace('/[^0-9]/', '', (string)$chan['caller']);
+            $c2 = preg_replace('/[^0-9]/', '', (string)$chan['callee']);
 
             if (!empty($c1) && !empty($c2) && $c1 !== $c2) {
                 $pairKey = min((int)$c1, (int)$c2) . '-' . max((int)$c1, (int)$c2);
                 if (isset($seenPairs[$pairKey])) {
-                    // Skip second channel leg of the same conversation
                     continue;
                 }
                 $seenPairs[$pairKey] = true;
             }
 
             $seenChannels[] = $name;
-            if (!empty($chan['bridged'])) {
-                $seenChannels[] = $chan['bridged'];
-            }
-
             $deduped[] = $chan;
         }
 

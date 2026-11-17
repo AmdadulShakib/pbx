@@ -16,7 +16,10 @@
     --ui-sidebar-hover: #1e293b;
 }
 
-html[data-theme='dark'] {
+html[data-theme='dark'],
+html[data-bs-theme='dark'],
+[data-coreui-theme='dark'],
+body[data-theme='dark'] {
     --ui-bg: #0b1220;
     --ui-surface: #111827;
     --ui-text: #e5e7eb;
@@ -1286,6 +1289,15 @@ html[data-bs-theme='dark'] .card-header,
   --cui-card-cap-bg: var(--ui-surface, #111827) !important;
   border-color: var(--ui-border, #1f2937) !important;
   color: var(--ui-text, #f1f5f9) !important;
+}
+
+.card-header.bg-transparent,
+.card-footer.bg-transparent,
+html[data-theme='dark'] .card-header.bg-transparent,
+html[data-bs-theme='dark'] .card-header.bg-transparent,
+[data-coreui-theme='dark'] .card-header.bg-transparent {
+  background-color: transparent !important;
+  background: transparent !important;
 }
 
 html[data-theme='dark'] .card-header h5,

@@ -56,8 +56,9 @@ class PbxRoutingController extends Controller
                 $failover = "Local/{$ringGroup->failover_destination}@internal-calls";
             }
 
-            // Return: ringgroup&Local/101@rg-member-dial&Local/102@rg-member-dial&25&Local/101@rg-member-dial
-            $result = "ringgroup&{$dialTargets}&{$timeout}&{$failover}";
+            // Return: ringgroup|Local/101@rg-member-dial&Local/102@rg-member-dial|25|Local/101@rg-member-dial
+            // Use pipe (|) delimiter so $dialTargets containing '&' is preserved as a single token!
+            $result = "ringgroup|{$dialTargets}|{$timeout}|{$failover}";
             return response($result, 200, ['Content-Type' => 'text/plain']);
         }
 
@@ -68,7 +69,7 @@ class PbxRoutingController extends Controller
 
         if ($ivr) {
             $context = "ivr-{$ivr->extension}";
-            $result = "ivr&{$context}&0&";
+            $result = "ivr|{$context}|0|";
             return response($result, 200, ['Content-Type' => 'text/plain']);
         }
 

@@ -101,7 +101,7 @@
     <!-- Filters & Table Card -->
     <div class="col-12">
         <div class="card border-0 shadow-sm">
-            <div class="card-header border-bottom py-3 px-3 px-md-4 d-flex flex-wrap align-items-center justify-content-between gap-3" style="background: transparent;">
+            <div class="card-header bg-transparent border-bottom py-3 px-3 px-md-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
                 <!-- Status Filter Pills -->
                 <div class="d-flex align-items-center gap-1.5 flex-wrap">
                     <a href="{{ route('admin.pbx.calls.index') }}" class="btn btn-sm {{ !request('status') && !request('direction') ? 'btn-primary' : 'btn-outline-secondary' }} px-3 py-1.5">
@@ -321,7 +321,7 @@
             </div>
 
             @if($logs->hasPages())
-                <div class="card-footer border-top py-3 px-3 px-md-4 d-flex flex-wrap align-items-center justify-content-between gap-3" style="background: transparent;">
+                <div class="card-footer bg-transparent border-top py-3 px-3 px-md-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
                     <div class="text-muted small">
                         {{ __('Showing :from to :to of :total call records', ['from' => $logs->firstItem() ?? 0, 'to' => $logs->lastItem() ?? 0, 'total' => $logs->total()]) }}
                     </div>

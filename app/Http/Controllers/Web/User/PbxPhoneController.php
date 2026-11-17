@@ -52,13 +52,18 @@ class PbxPhoneController extends Controller
                 ];
             });
 
+        $currentHost = request()->getHost();
+        $domain = $currentHost ?: config('pbx.domain');
+        $scheme = request()->secure() ? 'wss://' : 'ws://';
+        $wsUrl  = $scheme . $domain . '/ws';
+
         return response()->json([
             'assigned'  => true,
             'extension' => $ext->extension,
             'name'      => $ext->name,
             'password'  => $ext->password,
-            'domain'    => config('pbx.domain'),
-            'ws_url'    => config('pbx.ws_url'),
+            'domain'    => $domain,
+            'ws_url'    => $wsUrl,
             'contacts'  => $contacts,
         ])->header('Cache-Control', 'no-store');
     }
