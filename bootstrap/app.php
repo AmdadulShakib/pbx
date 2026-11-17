@@ -23,6 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api/v1',
         health: '/up',
     )->withMiddleware(function (Middleware $middleware) {
+        $middleware->validateCsrfTokens(except: [
+            'pbx/call-log',
+            'admin/pbx/calls/log',
+        ]);
+
         $middleware->redirectTo(
             guests: function (\Illuminate\Http\Request $request) {
                 if ($request->is('admin') || $request->is('admin/*')) {
