@@ -63,15 +63,15 @@
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-muted small text-uppercase fw-bold letter-spacing-1">{{ __('Registered Employees') }}</span>
+                    <span class="text-muted small text-uppercase fw-bold letter-spacing-1">{{ __('Carrier SIP Trunks') }}</span>
                     <div class="rounded-2 bg-light text-info p-1.5 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+                        <i data-lucide="network" style="width: 16px; height: 16px;"></i>
                     </div>
                 </div>
-                <div class="h3 fw-bold mb-1 text-dark">{{ $totalUsers ?? 0 }}</div>
+                <div class="h3 fw-bold mb-1 text-dark">{{ $totalTrunks ?? 0 }}</div>
                 <div class="d-flex align-items-center gap-1.5 small text-muted">
-                    <i data-lucide="shield" style="width: 13px; height: 13px;"></i>
-                    <span>{{ __('SIP Credential Mapped') }}</span>
+                    <i data-lucide="shield-check" style="width: 13px; height: 13px;"></i>
+                    <span>{{ __('Twilio • Telnyx • BTCL') }}</span>
                 </div>
             </div>
         </div>
@@ -81,15 +81,15 @@
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-muted small text-uppercase fw-bold letter-spacing-1">{{ __('Telephony Core') }}</span>
+                    <span class="text-muted small text-uppercase fw-bold letter-spacing-1">{{ __('Routing Groups & IVR') }}</span>
                     <div class="rounded-2 bg-light text-success p-1.5 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i data-lucide="server" style="width: 16px; height: 16px;"></i>
+                        <i data-lucide="layers" style="width: 16px; height: 16px;"></i>
                     </div>
                 </div>
-                <div class="h3 fw-bold mb-1 text-dark">Asterisk 20.6</div>
+                <div class="h3 fw-bold mb-1 text-dark">{{ $totalRingGroups ?? 0 }} <span class="fs-6 text-muted fw-normal">/ {{ $totalIvrs ?? 0 }} IVRs</span></div>
                 <div class="d-flex align-items-center gap-1.5 small text-success">
                     <span class="badge-dot-live"></span>
-                    <span>{{ __('PJSIP Engine Operational') }}</span>
+                    <span>{{ __('Multi-Tier Call Queues') }}</span>
                 </div>
             </div>
         </div>
@@ -99,15 +99,15 @@
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-muted small text-uppercase fw-bold letter-spacing-1">{{ __('Signaling Gateway') }}</span>
+                    <span class="text-muted small text-uppercase fw-bold letter-spacing-1">{{ __('Total CDR Call Logs') }}</span>
                     <div class="rounded-2 bg-light text-secondary p-1.5 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i data-lucide="lock" style="width: 16px; height: 16px;"></i>
+                        <i data-lucide="history" style="width: 16px; height: 16px;"></i>
                     </div>
                 </div>
-                <div class="h3 fw-bold mb-1 text-dark">WSS / TLS</div>
+                <div class="h3 fw-bold mb-1 text-dark">{{ $totalCalls ?? 0 }}</div>
                 <div class="d-flex align-items-center gap-1.5 small text-muted">
-                    <i data-lucide="cpu" style="width: 13px; height: 13px;"></i>
-                    <span>{{ __('Parallel Ring (Max 10)') }}</span>
+                    <i data-lucide="activity" style="width: 13px; height: 13px;"></i>
+                    <span>{{ __('Inbound & Outbound Traffic') }}</span>
                 </div>
             </div>
         </div>
@@ -193,6 +193,83 @@
                                             <i data-lucide="plus" class="me-1" style="width: 13px; height: 13px;"></i>
                                             {{ __('Create Extension') }}
                                         </a>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Call Activity Card (CDR Real-Time Snapshot) -->
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-header bg-transparent py-3 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="card-title mb-0 fw-bold text-dark d-flex align-items-center gap-2">
+                        <i data-lucide="history" class="text-primary" style="width: 18px; height: 18px;"></i>
+                        <span>{{ __('Recent Call Activity (CDR)') }}</span>
+                    </h6>
+                    <small class="text-muted">{{ __('Latest incoming, outgoing, and internal call records') }}</small>
+                </div>
+                <a href="{{ route('admin.pbx.calls.index') }}" class="btn btn-outline-secondary btn-sm">
+                    {{ __('View All Calls') }}
+                </a>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{{ __('Caller') }}</th>
+                                <th>{{ __('Destination') }}</th>
+                                <th>{{ __('Direction') }}</th>
+                                <th>{{ __('Duration') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th class="text-end pe-3">{{ __('Timestamp') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentCalls as $call)
+                                <tr>
+                                    <td>
+                                        <span class="fw-semibold font-monospace text-dark">{{ $call->caller }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="font-monospace text-dark">{{ $call->callee }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-secondary border text-uppercase" style="font-size: 11px;">
+                                            {{ $call->direction }}
+                                        </span>
+                                    </td>
+                                    <td class="font-monospace small">
+                                        {{ gmdate('i:s', $call->duration) }}
+                                    </td>
+                                    <td>
+                                        @if($call->status === 'answered')
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0.5" style="font-size: 11px;">
+                                                {{ __('Answered') }}
+                                            </span>
+                                        @elseif($call->status === 'busy')
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0.5" style="font-size: 11px;">
+                                                {{ __('Busy') }}
+                                            </span>
+                                        @else
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0.5" style="font-size: 11px;">
+                                                {{ __('No Answer') }}
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end pe-3 text-muted small">
+                                        {{ $call->created_at?->diffForHumans() ?? 'Just now' }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted small">
+                                        {{ __('No calls recorded yet.') }}
                                     </td>
                                 </tr>
                             @endforelse

@@ -211,17 +211,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         searchInput.addEventListener('input', function () {
             var term = searchInput.value.toLowerCase().trim();
+            var items = menu.querySelectorAll('[data-sidebar-item]');
+            var headings = menu.querySelectorAll('.sidebar-section-heading');
+
             if (!term) {
                 items.forEach(function (item) {
                     item.classList.remove('d-none');
                 });
+                headings.forEach(function (h) {
+                    h.classList.remove('d-none');
+                });
                 groups.forEach(function (group) {
                     group.classList.remove('d-none');
-                    var collapse = group.querySelector('.collapse');
-                    if (collapse) {
-                        var isActive = group.getAttribute('data-group-active') === '1';
-                        collapse.classList.toggle('show', isActive);
-                    }
                 });
                 return;
             }
@@ -231,6 +232,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 item.classList.toggle('d-none', !label.includes(term));
             });
 
+            headings.forEach(function (heading) {
+                var next = heading.nextElementSibling;
+                var hasVisible = false;
+                while (next && !next.classList.contains('sidebar-section-heading')) {
+                    if (next.hasAttribute('data-sidebar-item') && !next.classList.contains('d-none')) {
+                        hasVisible = true;
+                        break;
+                    }
+                    next = next.nextElementSibling;
+                }
+                heading.classList.toggle('d-none', !hasVisible);
+            });
+
             groups.forEach(function (group) {
                 var groupLabel = (group.getAttribute('data-sidebar-label') || '').toLowerCase();
                 var childVisible = Array.from(group.querySelectorAll('[data-sidebar-item]')).some(function (child) {
@@ -238,10 +252,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 var showGroup = groupLabel.includes(term) || childVisible;
                 group.classList.toggle('d-none', !showGroup);
-                var collapse = group.querySelector('.collapse');
-                if (collapse) {
-                    collapse.classList.add('show');
-                }
             });
         });
     }

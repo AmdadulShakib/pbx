@@ -67,9 +67,18 @@ class AdminController extends Controller
         $extensions = \App\Models\PbxExtension::with('user')->orderBy('extension')->get();
         $totalExtensions = $extensions->count();
         $totalUsers = \App\Models\User::count();
+        $totalTrunks = \App\Models\PbxTrunk::count();
+        $totalRingGroups = \App\Models\PbxRingGroup::count();
+        $totalIvrs = \App\Models\PbxIvr::count();
+        $totalCalls = \App\Models\PbxCallLog::count();
+        $recentCalls = \App\Models\PbxCallLog::latest()->take(6)->get();
         $driver = config('pbx.driver', 'asterisk');
 
-        return view('admin.dashboard', compact('widgets', 'extensions', 'totalExtensions', 'totalUsers', 'driver'));
+        return view('admin.dashboard', compact(
+            'widgets', 'extensions', 'totalExtensions', 'totalUsers', 
+            'totalTrunks', 'totalRingGroups', 'totalIvrs', 'totalCalls', 
+            'recentCalls', 'driver'
+        ));
     }
 
     protected function buildWidget($config, array $modules): ?array

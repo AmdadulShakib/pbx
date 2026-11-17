@@ -164,15 +164,15 @@ class PbxIvrController extends Controller
 
             foreach ($ivr->options as $opt) {
                 $dialplan .= "exten => {$opt->digit},1,NoOp(IVR [{$ivr->extension}] Option {$opt->digit} -> {$opt->destination} [{$opt->label}])\n";
-                $dialplan .= " same => n,Goto(internal-calls,{$opt->destination},1)\n";
+                $dialplan .= " same => n,Goto(from-internal,{$opt->destination},1)\n";
             }
 
             // Timeout & Invalid
             $dialplan .= "exten => t,1,NoOp(IVR [{$ivr->extension}] Timeout -> {$ivr->timeout_destination})\n";
-            $dialplan .= " same => n,Goto(internal-calls,{$ivr->timeout_destination},1)\n";
+            $dialplan .= " same => n,Goto(from-internal,{$ivr->timeout_destination},1)\n";
 
             $dialplan .= "exten => i,1,NoOp(IVR [{$ivr->extension}] Invalid -> {$ivr->invalid_destination})\n";
-            $dialplan .= " same => n,Goto(internal-calls,{$ivr->invalid_destination},1)\n\n";
+            $dialplan .= " same => n,Goto(from-internal,{$ivr->invalid_destination},1)\n\n";
         }
 
         // Trigger Asterisk dialplan reload
