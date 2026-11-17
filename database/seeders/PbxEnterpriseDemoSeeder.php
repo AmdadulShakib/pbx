@@ -345,47 +345,49 @@ class PbxEnterpriseDemoSeeder extends Seeder
         }
 
         // 8. Realistic CDR Call History (35 Entries)
-        if (PbxCallLog::count() < 10) {
-            $cdrSamples = [
-                ['caller' => '+14155552671', 'callee' => '500', 'type' => 'inbound', 'disposition' => 'ANSWERED', 'dur' => 245, 'minutes_ago' => 14],
-                ['caller' => '101', 'callee' => '103', 'type' => 'internal', 'disposition' => 'ANSWERED', 'dur' => 182, 'minutes_ago' => 38],
-                ['caller' => '+8801711223344', 'callee' => '601', 'type' => 'inbound', 'disposition' => 'ANSWERED', 'dur' => 420, 'minutes_ago' => 65],
-                ['caller' => '104', 'callee' => '01719876543', 'type' => 'outbound', 'disposition' => 'ANSWERED', 'dur' => 95, 'minutes_ago' => 92],
-                ['caller' => '+12125557890', 'callee' => '600', 'type' => 'inbound', 'disposition' => 'NO ANSWER', 'dur' => 25, 'minutes_ago' => 120],
-                ['caller' => '103', 'callee' => '+13125551234', 'type' => 'outbound', 'disposition' => 'ANSWERED', 'dur' => 512, 'minutes_ago' => 155],
-                ['caller' => '105', 'callee' => '106', 'type' => 'internal', 'disposition' => 'ANSWERED', 'dur' => 74, 'minutes_ago' => 190],
-                ['caller' => '+8801819283746', 'callee' => '500', 'type' => 'inbound', 'disposition' => 'ANSWERED', 'dur' => 310, 'minutes_ago' => 230],
-                ['caller' => '107', 'callee' => '104', 'type' => 'internal', 'disposition' => 'BUSY', 'dur' => 12, 'minutes_ago' => 275],
-                ['caller' => '101', 'callee' => '999', 'type' => 'internal', 'disposition' => 'ANSWERED', 'dur' => 45, 'minutes_ago' => 310],
-                ['caller' => '+16505559876', 'callee' => '601', 'type' => 'inbound', 'disposition' => 'ANSWERED', 'dur' => 198, 'minutes_ago' => 360],
-                ['caller' => '108', 'callee' => '01811223344', 'type' => 'outbound', 'disposition' => 'ANSWERED', 'dur' => 160, 'minutes_ago' => 420],
-                ['caller' => '+8801912345678', 'callee' => '500', 'type' => 'inbound', 'disposition' => 'ANSWERED', 'dur' => 280, 'minutes_ago' => 480],
-                ['caller' => '102', 'callee' => '101', 'type' => 'internal', 'disposition' => 'ANSWERED', 'dur' => 340, 'minutes_ago' => 550],
-                ['caller' => '+14085551122', 'callee' => '600', 'type' => 'inbound', 'disposition' => 'NO ANSWER', 'dur' => 22, 'minutes_ago' => 610],
-                ['caller' => '104', 'callee' => '108', 'type' => 'internal', 'disposition' => 'ANSWERED', 'dur' => 88, 'minutes_ago' => 700],
-                ['caller' => '103', 'callee' => '+14155550099', 'type' => 'outbound', 'disposition' => 'ANSWERED', 'dur' => 415, 'minutes_ago' => 820],
-                ['caller' => '+8801755667788', 'callee' => '601', 'type' => 'inbound', 'disposition' => 'ANSWERED', 'dur' => 230, 'minutes_ago' => 960],
-                ['caller' => '106', 'callee' => '101', 'type' => 'internal', 'disposition' => 'ANSWERED', 'dur' => 110, 'minutes_ago' => 1100],
-                ['caller' => '105', 'callee' => '01611223344', 'type' => 'outbound', 'disposition' => 'ANSWERED', 'dur' => 320, 'minutes_ago' => 1250],
-            ];
+        PbxCallLog::truncate();
+        $cdrSamples = [
+            ['caller' => '+14155552671', 'caller_name' => 'Acme Corp (Inbound DID)', 'callee' => '500', 'callee_name' => 'Main Reception IVR', 'answered_by' => 'Ext 101 (Sarah Jenkins)', 'type' => 'inbound', 'disposition' => 'answered', 'dur' => 245, 'minutes_ago' => 14],
+            ['caller' => '101', 'caller_name' => 'Sarah Jenkins', 'callee' => '103', 'callee_name' => 'David Miller', 'answered_by' => 'Ext 103 (David Miller)', 'type' => 'internal', 'disposition' => 'answered', 'dur' => 182, 'minutes_ago' => 38],
+            ['caller' => '+8801711223344', 'caller_name' => 'Grameen Subscriber', 'callee' => '601', 'callee_name' => 'Support Desk Group', 'answered_by' => 'Ext 104 (Jessica Taylor)', 'type' => 'inbound', 'disposition' => 'answered', 'dur' => 420, 'minutes_ago' => 65],
+            ['caller' => '104', 'caller_name' => 'Jessica Taylor', 'callee' => '01719876543', 'callee_name' => 'Client Line (Dhaka)', 'answered_by' => '01719876543', 'type' => 'outbound', 'disposition' => 'answered', 'dur' => 95, 'minutes_ago' => 92],
+            ['caller' => '+12125557890', 'caller_name' => 'New York Lead', 'callee' => '600', 'callee_name' => 'Enterprise Sales Group', 'answered_by' => null, 'type' => 'inbound', 'disposition' => 'no-answer', 'dur' => 25, 'minutes_ago' => 120],
+            ['caller' => '103', 'caller_name' => 'David Miller', 'callee' => '+13125551234', 'callee_name' => 'Chicago Enterprise Partner', 'answered_by' => '+13125551234', 'type' => 'outbound', 'disposition' => 'answered', 'dur' => 512, 'minutes_ago' => 155],
+            ['caller' => '105', 'caller_name' => 'Michael Chen', 'callee' => '106', 'callee_name' => 'Elena Rostova', 'answered_by' => 'Ext 106 (Elena Rostova)', 'type' => 'internal', 'disposition' => 'answered', 'dur' => 74, 'minutes_ago' => 190],
+            ['caller' => '+8801819283746', 'caller_name' => 'Robi Customer DID', 'callee' => '500', 'callee_name' => 'Main Reception IVR', 'answered_by' => 'Ext 103 (David Miller)', 'type' => 'inbound', 'disposition' => 'answered', 'dur' => 310, 'minutes_ago' => 230],
+            ['caller' => '107', 'caller_name' => 'Alex Rivera', 'callee' => '104', 'callee_name' => 'Jessica Taylor', 'answered_by' => null, 'type' => 'internal', 'disposition' => 'busy', 'dur' => 12, 'minutes_ago' => 275],
+            ['caller' => '101', 'caller_name' => 'Sarah Jenkins', 'callee' => '999', 'callee_name' => 'Voice Echo Test (*43)', 'answered_by' => 'Ext 999 (Asterisk Engine)', 'type' => 'internal', 'disposition' => 'answered', 'dur' => 45, 'minutes_ago' => 310],
+            ['caller' => '+16505559876', 'caller_name' => 'Bay Area Tech', 'callee' => '601', 'callee_name' => 'Support Desk Group', 'answered_by' => 'Ext 108 (Farhan Ahmed)', 'type' => 'inbound', 'disposition' => 'answered', 'dur' => 198, 'minutes_ago' => 360],
+            ['caller' => '108', 'caller_name' => 'Farhan Ahmed', 'callee' => '01811223344', 'callee_name' => 'Chittagong Regional Office', 'answered_by' => '01811223344', 'type' => 'outbound', 'disposition' => 'answered', 'dur' => 160, 'minutes_ago' => 420],
+            ['caller' => '+8801912345678', 'caller_name' => 'Banglalink Caller', 'callee' => '500', 'callee_name' => 'Main Reception IVR', 'answered_by' => 'Ext 106 (Elena Rostova)', 'type' => 'inbound', 'disposition' => 'answered', 'dur' => 280, 'minutes_ago' => 480],
+            ['caller' => '102', 'caller_name' => 'James Wilson', 'callee' => '101', 'callee_name' => 'Sarah Jenkins', 'answered_by' => 'Ext 101 (Sarah Jenkins)', 'type' => 'internal', 'disposition' => 'answered', 'dur' => 340, 'minutes_ago' => 550],
+            ['caller' => '+14085551122', 'caller_name' => 'San Jose Prospective', 'callee' => '600', 'callee_name' => 'Enterprise Sales Group', 'answered_by' => null, 'type' => 'inbound', 'disposition' => 'missed', 'dur' => 22, 'minutes_ago' => 610],
+            ['caller' => '104', 'caller_name' => 'Jessica Taylor', 'callee' => '108', 'callee_name' => 'Farhan Ahmed', 'answered_by' => 'Ext 108 (Farhan Ahmed)', 'type' => 'internal', 'disposition' => 'answered', 'dur' => 88, 'minutes_ago' => 700],
+            ['caller' => '103', 'caller_name' => 'David Miller', 'callee' => '+14155550099', 'callee_name' => 'San Francisco Head Office', 'answered_by' => '+14155550099', 'type' => 'outbound', 'disposition' => 'answered', 'dur' => 415, 'minutes_ago' => 820],
+            ['caller' => '+8801755667788', 'caller_name' => 'Dhaka Enterprise Account', 'callee' => '601', 'callee_name' => 'Support Desk Group', 'answered_by' => 'Ext 107 (Alex Rivera)', 'type' => 'inbound', 'disposition' => 'answered', 'dur' => 230, 'minutes_ago' => 960],
+            ['caller' => '106', 'caller_name' => 'Elena Rostova', 'callee' => '101', 'callee_name' => 'Sarah Jenkins', 'answered_by' => 'Ext 101 (Sarah Jenkins)', 'type' => 'internal', 'disposition' => 'answered', 'dur' => 110, 'minutes_ago' => 1100],
+            ['caller' => '105', 'caller_name' => 'Michael Chen', 'callee' => '01611223344', 'callee_name' => 'Airtel Bangladesh DID', 'answered_by' => '01611223344', 'type' => 'outbound', 'disposition' => 'answered', 'dur' => 320, 'minutes_ago' => 1250],
+        ];
 
-            foreach ($cdrSamples as $s) {
-                $startedAt = Carbon::now()->subMinutes($s['minutes_ago']);
-                $endedAt   = (clone $startedAt)->addSeconds($s['dur']);
+        foreach ($cdrSamples as $i => $s) {
+            $startedAt = Carbon::now()->subMinutes($s['minutes_ago']);
+            $endedAt   = (clone $startedAt)->addSeconds($s['dur']);
+            $isAnswered = ($s['disposition'] === 'answered');
 
-                PbxCallLog::create([
-                    'caller'      => $s['caller'],
-                    'caller_name' => $s['caller'],
-                    'callee'      => $s['callee'],
-                    'callee_name' => $s['callee'],
-                    'direction'   => $s['type'],
-                    'status'      => strtolower(str_replace(' ', '_', $s['disposition'])),
-                    'duration'    => $s['dur'],
-                    'sip_call_id' => 'SIP-' . bin2hex(random_bytes(8)),
-                    'started_at'  => $startedAt,
-                    'ended_at'    => $endedAt,
-                ]);
-            }
+            PbxCallLog::create([
+                'caller'         => $s['caller'],
+                'caller_name'    => $s['caller_name'],
+                'callee'         => $s['callee'],
+                'callee_name'    => $s['callee_name'],
+                'answered_by'    => $s['answered_by'],
+                'direction'      => $s['type'],
+                'status'         => $s['disposition'],
+                'duration'       => $s['dur'],
+                'sip_call_id'    => 'SIP-' . bin2hex(random_bytes(8)),
+                'recording_file' => $isAnswered ? ('rec_demo_' . str_pad($i + 1, 2, '0', STR_PAD_LEFT) . '.wav') : null,
+                'started_at'     => $startedAt,
+                'ended_at'       => $endedAt,
+            ]);
         }
     }
 }

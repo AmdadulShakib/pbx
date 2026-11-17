@@ -100,6 +100,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('trunks/sync', [PbxTrunkController::class, 'sync'])->name('trunks.sync');
             Route::resource('trunks', PbxTrunkController::class);
             Route::get('calls', [PbxCallLogController::class, 'index'])->name('calls.index');
+            Route::get('calls/{call}/recording', [PbxCallLogController::class, 'recording'])->name('calls.recording');
             Route::post('calls/log', [PbxCallLogController::class, 'store'])->name('calls.store');
             Route::delete('calls/{call}', [PbxCallLogController::class, 'destroy'])->name('calls.destroy');
             Route::post('calls/clear', [PbxCallLogController::class, 'clearAll'])->name('calls.clear');

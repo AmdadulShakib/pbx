@@ -7,6 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name', 'Admin'))</title>
+    <script>
+        (function() {
+            var theme = localStorage.getItem('admin-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            document.documentElement.setAttribute('data-coreui-theme', theme);
+        })();
+    </script>
     @php
         $faviconIco = public_path('branding/favicon.ico');
         $faviconPng = public_path('branding/favicon.png');

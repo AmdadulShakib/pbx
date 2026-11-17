@@ -17,14 +17,26 @@ class PbxCallLog extends Model
         'caller_name',
         'callee',
         'callee_name',
+        'answered_by',
         'direction',
         'status',
         'duration',
         'sip_call_id',
+        'recording_file',
         'notes',
         'started_at',
         'ended_at',
     ];
+
+    public function getRecordingUrlAttribute(): string
+    {
+        return route('admin.pbx.calls.recording', $this->id);
+    }
+
+    public function hasRecording(): bool
+    {
+        return !empty($this->recording_file) && $this->status === 'answered' && $this->duration > 0;
+    }
 
     protected $casts = [
         'duration'   => 'integer',

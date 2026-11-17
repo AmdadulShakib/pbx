@@ -62,15 +62,17 @@ class PbxCallLogController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'caller'      => ['required', 'string', 'max:50'],
-            'callee'      => ['required', 'string', 'max:50'],
-            'status'      => ['required', 'string', 'max:30'],
-            'duration'    => ['nullable', 'integer', 'min:0'],
-            'direction'   => ['nullable', 'string', 'in:inbound,outbound,internal'],
-            'sip_call_id' => ['nullable', 'string', 'max:150'],
-            'started_at'  => ['nullable', 'date'],
-            'ended_at'    => ['nullable', 'date'],
-            'notes'       => ['nullable', 'string', 'max:500'],
+            'caller'         => ['required', 'string', 'max:50'],
+            'callee'         => ['required', 'string', 'max:50'],
+            'status'         => ['required', 'string', 'max:30'],
+            'duration'       => ['nullable', 'integer', 'min:0'],
+            'direction'      => ['nullable', 'string', 'in:inbound,outbound,internal'],
+            'sip_call_id'    => ['nullable', 'string', 'max:150'],
+            'answered_by'    => ['nullable', 'string', 'max:100'],
+            'recording_file' => ['nullable', 'string', 'max:255'],
+            'started_at'     => ['nullable', 'date'],
+            'ended_at'       => ['nullable', 'date'],
+            'notes'          => ['nullable', 'string', 'max:500'],
         ]);
 
         $callerExt = PbxExtension::with('user')->where('extension', $data['caller'])->first();
@@ -93,19 +95,37 @@ class PbxCallLogController extends Controller
             $direction = 'internal';
         }
 
+        $status = strtolower($data['status']);
+        $duration = (int)($data['duration'] ?? 0);
+
+        // Derive answered_by if answered but not explicitly provided
+        $answeredBy = $data['answered_by'] ?? null;
+        if (empty($answeredBy) && $status === 'answered') {
+            $answeredBy = $calleeExt ? "Ext {$calleeExt->extension} ({$calleeName})" : "Ext {$data['callee']}";
+        }
+
+        // Auto recording filename if call was answered and has duration
+        $recordingFile = $data['recording_file'] ?? null;
+        if (empty($recordingFile) && $status === 'answered' && $duration > 0) {
+            $sipId = $data['sip_call_id'] ?? null;
+            $recordingFile = $sipId ? "{$sipId}.wav" : "rec_" . date('Ymd_His') . "_{$data['caller']}_{$data['callee']}.wav";
+        }
+
         $log = PbxCallLog::create([
-            'user_id'     => $userId,
-            'caller'      => $data['caller'],
-            'caller_name' => $callerName,
-            'callee'      => $data['callee'],
-            'callee_name' => $calleeName,
-            'direction'   => $direction,
-            'status'      => strtolower($data['status']),
-            'duration'    => (int)($data['duration'] ?? 0),
-            'sip_call_id' => $data['sip_call_id'] ?? null,
-            'notes'       => $data['notes'] ?? null,
-            'started_at'  => !empty($data['started_at']) ? Carbon::parse($data['started_at']) : now()->subSeconds((int)($data['duration'] ?? 0)),
-            'ended_at'    => !empty($data['ended_at']) ? Carbon::parse($data['ended_at']) : now(),
+            'user_id'        => $userId,
+            'caller'         => $data['caller'],
+            'caller_name'    => $callerName,
+            'callee'         => $data['callee'],
+            'callee_name'    => $calleeName,
+            'answered_by'    => $answeredBy,
+            'direction'      => $direction,
+            'status'         => $status,
+            'duration'       => $duration,
+            'sip_call_id'    => $data['sip_call_id'] ?? null,
+            'recording_file' => $recordingFile,
+            'notes'          => $data['notes'] ?? null,
+            'started_at'     => !empty($data['started_at']) ? Carbon::parse($data['started_at']) : now()->subSeconds($duration),
+            'ended_at'       => !empty($data['ended_at']) ? Carbon::parse($data['ended_at']) : now(),
         ]);
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -116,6 +136,88 @@ class PbxCallLogController extends Controller
         }
 
         return back()->with('ok', 'Call record saved.');
+    }
+
+    public function recording(PbxCallLog $call)
+    {
+        $fileName = $call->recording_file;
+        $searchDirs = [
+            '/var/spool/asterisk/monitor',
+            storage_path('app/recordings'),
+            public_path('recordings'),
+        ];
+
+        $filePath = null;
+        if (!empty($fileName)) {
+            foreach ($searchDirs as $dir) {
+                if (file_exists("{$dir}/{$fileName}")) {
+                    $filePath = "{$dir}/{$fileName}";
+                    break;
+                }
+            }
+        }
+
+        if (!$filePath && !empty($call->sip_call_id)) {
+            foreach ($searchDirs as $dir) {
+                if (file_exists("{$dir}/{$call->sip_call_id}.wav")) {
+                    $filePath = "{$dir}/{$call->sip_call_id}.wav";
+                    break;
+                }
+            }
+        }
+
+        if ($filePath && file_exists($filePath)) {
+            return response()->file($filePath, [
+                'Content-Type'        => 'audio/wav',
+                'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"',
+            ]);
+        }
+
+        // Return a dual-tone sample audio stream for demo/testing
+        return $this->generateSampleAudioResponse($call);
+    }
+
+    protected function generateSampleAudioResponse(PbxCallLog $call)
+    {
+        $sampleRate = 8000;
+        $seconds = min(max((int)$call->duration, 3), 10);
+        $totalSamples = $sampleRate * $seconds;
+        $dataSize = $totalSamples * 2;
+
+        $header = pack(
+            'A4VA4A4VvvVVvvA4V',
+            'RIFF',
+            36 + $dataSize,
+            'WAVE',
+            'fmt ',
+            16,
+            1,
+            1,
+            $sampleRate,
+            $sampleRate * 2,
+            2,
+            16,
+            'data',
+            $dataSize
+        );
+
+        $samples = '';
+        $freq1 = 440;
+        $freq2 = 554.37;
+        for ($i = 0; $i < $totalSamples; $i++) {
+            $t = $i / $sampleRate;
+            $cycle = fmod($t, 2.0);
+            $vol = $cycle < 1.0 ? sin(M_PI * $cycle) * 0.35 : 0.05;
+            $val = (sin(2 * M_PI * $freq1 * $t) + sin(2 * M_PI * $freq2 * $t)) * 0.5 * $vol;
+            $sample16 = (int)($val * 32767);
+            $samples .= pack('v', $sample16);
+        }
+
+        return response($header . $samples, 200, [
+            'Content-Type'        => 'audio/wav',
+            'Content-Disposition' => 'inline; filename="call_' . ($call->id) . '.wav"',
+            'Cache-Control'       => 'public, max-age=3600',
+        ]);
     }
 
     public function destroy(PbxCallLog $call)

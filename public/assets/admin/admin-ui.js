@@ -9,9 +9,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var storedTheme = localStorage.getItem('admin-theme');
     if (storedTheme) {
         html.setAttribute('data-theme', storedTheme);
+        html.setAttribute('data-bs-theme', storedTheme);
+        html.setAttribute('data-coreui-theme', storedTheme);
         updateThemeIcon(storedTheme);
     } else {
-        updateThemeIcon(html.getAttribute('data-theme') || 'light');
+        var current = html.getAttribute('data-theme') || 'light';
+        html.setAttribute('data-bs-theme', current);
+        html.setAttribute('data-coreui-theme', current);
+        updateThemeIcon(current);
     }
 
     window.initLucideIcons = function (scope) {
@@ -57,6 +62,8 @@ document.addEventListener('DOMContentLoaded', function () {
             var current = html.getAttribute('data-theme') || 'light';
             var next = current === 'dark' ? 'light' : 'dark';
             html.setAttribute('data-theme', next);
+            html.setAttribute('data-bs-theme', next);
+            html.setAttribute('data-coreui-theme', next);
             localStorage.setItem('admin-theme', next);
             updateThemeIcon(next);
             window.initLucideIcons(document);

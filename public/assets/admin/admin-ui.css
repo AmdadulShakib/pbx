@@ -1256,62 +1256,88 @@ html[data-theme='dark'] .table-hover > tbody > tr:hover > * {
    Senior Designer Dark Mode Harmonization (Zero Mismatched White Bars)
    ========================================================================== */
 html[data-theme='dark'] .text-dark,
+html[data-bs-theme='dark'] .text-dark,
 [data-coreui-theme='dark'] .text-dark {
   color: var(--ui-text, #f1f5f9) !important;
 }
 
 html[data-theme='dark'] .bg-white,
+html[data-bs-theme='dark'] .bg-white,
 [data-coreui-theme='dark'] .bg-white {
-  background-color: var(--ui-surface, #1e293b) !important;
+  background-color: var(--ui-surface, #111827) !important;
   color: var(--ui-text, #f1f5f9) !important;
 }
 
 html[data-theme='dark'] .card,
+html[data-bs-theme='dark'] .card,
 [data-coreui-theme='dark'] .card {
-  background-color: var(--ui-surface, #1e293b) !important;
-  border-color: var(--ui-border, #334155) !important;
+  background-color: var(--ui-surface, #111827) !important;
+  --bs-card-bg: var(--ui-surface, #111827) !important;
+  --cui-card-bg: var(--ui-surface, #111827) !important;
+  border-color: var(--ui-border, #1f2937) !important;
   color: var(--ui-text, #f1f5f9) !important;
 }
 
 html[data-theme='dark'] .card-header,
+html[data-bs-theme='dark'] .card-header,
 [data-coreui-theme='dark'] .card-header {
-  background-color: transparent !important;
-  border-color: var(--ui-border, #334155) !important;
+  background-color: var(--ui-surface, #111827) !important;
+  --bs-card-cap-bg: var(--ui-surface, #111827) !important;
+  --cui-card-cap-bg: var(--ui-surface, #111827) !important;
+  border-color: var(--ui-border, #1f2937) !important;
   color: var(--ui-text, #f1f5f9) !important;
 }
 
 html[data-theme='dark'] .card-header h5,
 html[data-theme='dark'] .card-header h6,
+html[data-bs-theme='dark'] .card-header h5,
+html[data-bs-theme='dark'] .card-header h6,
 [data-coreui-theme='dark'] .card-header h5,
 [data-coreui-theme='dark'] .card-header h6 {
   color: var(--ui-text, #f1f5f9) !important;
 }
 
 html[data-theme='dark'] .card-footer,
+html[data-bs-theme='dark'] .card-footer,
 [data-coreui-theme='dark'] .card-footer {
-  background-color: transparent !important;
-  border-color: var(--ui-border, #334155) !important;
+  background-color: var(--ui-surface, #111827) !important;
+  border-color: var(--ui-border, #1f2937) !important;
 }
 
 html[data-theme='dark'] .table-light,
+html[data-bs-theme='dark'] .table-light,
 [data-coreui-theme='dark'] .table-light,
 html[data-theme='dark'] .table-light th,
+html[data-bs-theme='dark'] .table-light th,
 [data-coreui-theme='dark'] .table-light th {
   background-color: #0f172a !important;
   color: #94a3b8 !important;
-  border-color: #334155 !important;
+  border-color: #1f2937 !important;
 }
 
 html[data-theme='dark'] .bg-light,
+html[data-bs-theme='dark'] .bg-light,
 [data-coreui-theme='dark'] .bg-light {
   background-color: #0f172a !important;
   color: #e2e8f0 !important;
-  border-color: #334155 !important;
+  border-color: #1f2937 !important;
 }
 
 html[data-theme='dark'] .admin-footer,
+html[data-bs-theme='dark'] .admin-footer,
 [data-coreui-theme='dark'] .admin-footer {
-  background-color: var(--ui-bg, #0f172a) !important;
-  border-color: var(--ui-border, #334155) !important;
+  background-color: var(--ui-bg, #0b1220) !important;
+  border-color: var(--ui-border, #1f2937) !important;
+}
+
+.admin-footer .container-fluid {
+  padding-right: 140px;
+}
+
+@media (max-width: 768px) {
+  .admin-footer .container-fluid {
+    padding-right: 15px;
+    padding-bottom: 55px;
+  }
 }
 

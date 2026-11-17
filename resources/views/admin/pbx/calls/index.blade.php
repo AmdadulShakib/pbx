@@ -138,9 +138,11 @@
                         <tr>
                             <th class="ps-3 ps-md-4 py-3">{{ __('From (Caller)') }}</th>
                             <th class="py-3">{{ __('To (Destination)') }}</th>
+                            <th class="py-3">{{ __('Answered By') }}</th>
                             <th class="py-3">{{ __('Direction') }}</th>
                             <th class="py-3">{{ __('Duration') }}</th>
                             <th class="py-3">{{ __('Status') }}</th>
+                            <th class="py-3">{{ __('Recording') }}</th>
                             <th class="py-3">{{ __('Timestamp') }}</th>
                             <th class="text-end pe-3 pe-md-4 py-3">{{ __('Actions') }}</th>
                         </tr>
@@ -169,6 +171,22 @@
                                             <span class="text-muted small">{{ $log->callee_name }}</span>
                                         @endif
                                     </div>
+                                </td>
+
+                                <td class="py-3">
+                                    @if($log->status === 'answered')
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle bg-success-subtle text-success fw-bold d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 11px;">
+                                                <i data-lucide="user-check" style="width: 14px; height: 14px;"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold text-dark small">{{ $log->answered_by ?? ($log->callee_name ? 'Ext ' . $log->callee . ' (' . $log->callee_name . ')' : 'Ext ' . $log->callee) }}</div>
+                                                <small class="text-muted" style="font-size: 11px;">{{ __('Answered Call') }}</small>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="text-muted small fst-italic">{{ __('Not Answered') }}</span>
+                                    @endif
                                 </td>
 
                                 <td class="py-3">
@@ -215,6 +233,21 @@
                                             <i data-lucide="x" style="width: 12px; height: 12px;"></i>
                                             <span>{{ ucfirst($log->status) }}</span>
                                         </span>
+                                    @endif
+                                </td>
+
+                                <td class="py-3">
+                                    @if($log->status === 'answered' && $log->duration > 0)
+                                        <div class="d-flex align-items-center gap-1.5">
+                                            <audio controls preload="none" style="height: 28px; width: 140px; max-width: 100%;">
+                                                <source src="{{ route('admin.pbx.calls.recording', $log->id) }}" type="audio/wav">
+                                            </audio>
+                                            <a href="{{ route('admin.pbx.calls.recording', $log->id) }}" download="call_rec_{{ $log->id }}.wav" class="btn btn-sm btn-outline-secondary p-1" title="{{ __('Download Audio Recording') }}">
+                                                <i data-lucide="download" style="width: 13px; height: 13px;"></i>
+                                            </a>
+                                        </div>
+                                    @else
+                                        <span class="text-muted small">—</span>
                                     @endif
                                 </td>
 
