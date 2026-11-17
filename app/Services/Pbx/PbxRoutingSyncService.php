@@ -34,10 +34,11 @@ class PbxRoutingSyncService
         $buf .= "; Generated at: " . date('Y-m-d H:i:s') . "\n";
         $buf .= "; ===================================================================\n\n";
 
-        // 1. Ring Groups in [from-internal]
+        // 1. Ring Groups in [internal-calls]
         $buf .= "; -------------------------------------------------------------------\n";
         $buf .= "; Ring Groups (Department Hunt / Simultaneous Groups)\n";
         $buf .= "; -------------------------------------------------------------------\n";
+        $buf .= "[internal-calls-ringgroups]\n";
         if ($ringGroups->isEmpty()) {
             $buf .= "; (No active ring groups configured)\n\n";
         } else {
@@ -78,13 +79,13 @@ class PbxRoutingSyncService
         if ($inboundRoutes->isEmpty()) {
             $buf .= "; (No active inbound routes configured - fallback to 101)\n";
             $buf .= "exten => _X.,1,NoOp(Inbound Call with no matching route, routing to Ext 101)\n";
-            $buf .= " same => n,Goto(from-internal,101,1)\n\n";
+            $buf .= " same => n,Goto(internal-calls,101,1)\n\n";
         } else {
             foreach ($inboundRoutes as $inbound) {
                 $buf .= $inbound->generateDialplan() . "\n";
             }
             $buf .= "exten => s,1,NoOp(Catch-all fallback for unspecified DID)\n";
-            $buf .= " same => n,Goto(from-internal,101,1)\n\n";
+            $buf .= " same => n,Goto(internal-calls,101,1)\n\n";
         }
 
         // 4. IVR Digital Receptionists

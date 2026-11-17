@@ -757,8 +757,8 @@
         try {
             const parts = duration.split(':');
             const sec = parts.length === 2 ? (parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10)) : 0;
-            const myExt = currentExt ? currentExt.extension : '101';
-            const myName = currentExt ? (currentExt.name || currentExt.display_name || 'Agent') : 'Agent';
+            const myExt = (userCreds && userCreds.extension) ? userCreds.extension : '101';
+            const myName = (userCreds && userCreds.name) ? userCreds.name : 'Agent';
 
             const callerNum = (session._direction === 'outgoing') ? myExt : ext;
             const calleeNum = (session._direction === 'outgoing') ? ext : myExt;

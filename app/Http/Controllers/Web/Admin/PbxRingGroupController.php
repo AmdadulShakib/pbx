@@ -48,6 +48,10 @@ class PbxRingGroupController extends Controller
 
         PbxRingGroup::create($validated);
 
+        try {
+            $this->syncService->syncAll();
+        } catch (\Throwable $e) {}
+
         return back()->with('ok', __('Ring Group created successfully.'));
     }
 
@@ -73,6 +77,10 @@ class PbxRingGroupController extends Controller
 
         $ringGroup->update($validated);
 
+        try {
+            $this->syncService->syncAll();
+        } catch (\Throwable $e) {}
+
         return back()->with('ok', __('Ring Group updated successfully.'));
     }
 
@@ -80,6 +88,10 @@ class PbxRingGroupController extends Controller
     {
         $ringGroup = PbxRingGroup::findOrFail($id);
         $ringGroup->delete();
+
+        try {
+            $this->syncService->syncAll();
+        } catch (\Throwable $e) {}
 
         return back()->with('ok', __('Ring Group removed successfully.'));
     }

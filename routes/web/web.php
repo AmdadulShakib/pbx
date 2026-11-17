@@ -24,6 +24,8 @@ Route::controller(PasswordController::class)->group(function() {
 });
 
 Route::post('pbx/call-log', [\App\Http\Controllers\Web\Admin\PbxCallLogController::class, 'store'])->name('pbx.call-log');
+Route::get('api/pbx/lookup', [\App\Http\Controllers\Web\Admin\PbxRoutingController::class, 'lookup'])->name('pbx.routing.lookup');
+
 
 //AllDynamicDataStart
 //AllDynamicDataEnd

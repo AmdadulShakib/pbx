@@ -78,7 +78,7 @@ class PbxRingGroup extends Model
         } else {
             // extension / voicemail fallback
             $dest = $this->failover_destination ?: '101';
-            $out .= " same => n,Goto(from-internal,{$dest},1)\n";
+            $out .= " same => n,Goto(internal-calls,{$dest},1)\n";
         }
 
         return $out;

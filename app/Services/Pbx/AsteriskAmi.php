@@ -258,29 +258,37 @@ class AsteriskAmi
 
         // Deduplicate bridged legs so 1 call (e.g. 101 -> 102) shows as 1 unified row
         $deduped = [];
-        $processedChannels = [];
+        $seenPairs = [];
+        $seenChannels = [];
 
         foreach ($channels as $chan) {
-            $name    = $chan['channel'];
-            $bridged = $chan['bridged'];
+            $name = $chan['channel'];
 
-            if (in_array($name, $processedChannels, true)) {
+            if (in_array($name, $seenChannels, true)) {
                 continue;
             }
 
-            // Skip internal Local channel legs if there's a bridged peer
-            if (str_starts_with($name, 'Local/') && !empty($bridged)) {
-                $processedChannels[] = $name;
+            // Skip internal Local channel helper legs (e.g. Local/101@rg-member-dial)
+            if (str_starts_with($name, 'Local/')) {
                 continue;
             }
 
-            $processedChannels[] = $name;
-            if (!empty($bridged)) {
-                $processedChannels[] = $bridged;
+            // Extract numeric digits of caller and callee
+            $c1 = preg_replace('/[^0-9]/', '', $chan['caller']);
+            $c2 = preg_replace('/[^0-9]/', '', $chan['callee']);
 
-                if (preg_match('#(?:PJSIP|Local)/([0-9]+)#i', $bridged, $bm) && ($chan['callee'] === 'Internal' || $chan['callee'] === $chan['caller'])) {
-                    $chan['callee'] = $bm[1];
+            if (!empty($c1) && !empty($c2) && $c1 !== $c2) {
+                $pairKey = min((int)$c1, (int)$c2) . '-' . max((int)$c1, (int)$c2);
+                if (isset($seenPairs[$pairKey])) {
+                    // Skip second channel leg of the same conversation
+                    continue;
                 }
+                $seenPairs[$pairKey] = true;
+            }
+
+            $seenChannels[] = $name;
+            if (!empty($chan['bridged'])) {
+                $seenChannels[] = $chan['bridged'];
             }
 
             $deduped[] = $chan;

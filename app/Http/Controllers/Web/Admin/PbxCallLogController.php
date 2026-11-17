@@ -5,14 +5,20 @@ namespace App\Http\Controllers\Web\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PbxCallLog;
 use App\Models\PbxExtension;
+use App\Services\Pbx\AsteriskCdrSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class PbxCallLogController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, AsteriskCdrSyncService $cdrSync)
     {
-        $query = PbxCallLog::with('user')->latest();
+        // Auto-sync recent completed Asterisk calls from CDR
+        try {
+            $cdrSync->syncRecent(100);
+        } catch (\Throwable $e) {}
+
+        $query = PbxCallLog::with(['user', 'callerExtension.user', 'calleeExtension.user'])->latest();
 
         if ($request->filled('status')) {
             $status = $request->input('status');

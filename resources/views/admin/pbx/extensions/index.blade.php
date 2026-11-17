@@ -18,8 +18,8 @@
             </div>
         @endif
 
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-transparent py-3 d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom">
+        <div class="card shadow-sm border-0" style="background: var(--ui-surface, #111827);">
+            <div class="card-header border-bottom py-3 d-flex flex-wrap align-items-center justify-content-between gap-2" style="background: transparent;">
                 <div>
                     <h5 class="card-title mb-0 fw-bold">
                         <i data-lucide="phone" class="me-2 text-primary" style="width: 20px; height: 20px;"></i>

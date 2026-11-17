@@ -101,16 +101,16 @@
     <!-- Filters & Table Card -->
     <div class="col-12">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-bottom py-3 px-3 px-md-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="card-header border-bottom py-3 px-3 px-md-4 d-flex flex-wrap align-items-center justify-content-between gap-3" style="background: transparent;">
                 <!-- Status Filter Pills -->
                 <div class="d-flex align-items-center gap-1.5 flex-wrap">
-                    <a href="{{ route('admin.pbx.calls.index') }}" class="btn btn-sm {{ !request('status') && !request('direction') ? 'btn-primary' : 'btn-light' }} px-3 py-1.5">
+                    <a href="{{ route('admin.pbx.calls.index') }}" class="btn btn-sm {{ !request('status') && !request('direction') ? 'btn-primary' : 'btn-outline-secondary' }} px-3 py-1.5">
                         {{ __('All Calls') }} ({{ $totalCalls }})
                     </a>
-                    <a href="{{ route('admin.pbx.calls.index', ['status' => 'answered']) }}" class="btn btn-sm {{ request('status') === 'answered' ? 'btn-success' : 'btn-light' }} px-3 py-1.5">
+                    <a href="{{ route('admin.pbx.calls.index', ['status' => 'answered']) }}" class="btn btn-sm {{ request('status') === 'answered' ? 'btn-success' : 'btn-outline-secondary' }} px-3 py-1.5">
                         {{ __('Answered') }} ({{ $answeredCalls }})
                     </a>
-                    <a href="{{ route('admin.pbx.calls.index', ['status' => 'missed']) }}" class="btn btn-sm {{ request('status') === 'missed' ? 'btn-danger' : 'btn-light' }} px-3 py-1.5">
+                    <a href="{{ route('admin.pbx.calls.index', ['status' => 'missed']) }}" class="btn btn-sm {{ request('status') === 'missed' ? 'btn-danger' : 'btn-outline-secondary' }} px-3 py-1.5">
                         {{ __('Missed / Failed') }} ({{ $missedCalls }})
                     </a>
                 </div>
@@ -121,13 +121,13 @@
                         <input type="hidden" name="status" value="{{ request('status') }}">
                     @endif
                     <div class="input-group input-group-sm" style="max-width: 260px;">
-                        <span class="input-group-text bg-light border-end-0">
+                        <span class="input-group-text border-end-0">
                             <i data-lucide="search" style="width: 14px; height: 14px;"></i>
                         </span>
-                        <input type="text" name="search" class="form-control bg-light border-start-0" placeholder="{{ __('Search ext or employee...') }}" value="{{ request('search') }}">
+                        <input type="text" name="search" class="form-control border-start-0" placeholder="{{ __('Search ext or employee...') }}" value="{{ request('search') }}">
                     </div>
                     @if(request('search'))
-                        <a href="{{ route('admin.pbx.calls.index') }}" class="btn btn-light btn-sm">{{ __('Clear') }}</a>
+                        <a href="{{ route('admin.pbx.calls.index') }}" class="btn btn-outline-secondary btn-sm">{{ __('Clear') }}</a>
                     @endif
                 </form>
             </div>
@@ -149,39 +149,67 @@
                     </thead>
                     <tbody>
                         @forelse($logs as $log)
+                            @php
+                                $callerUser = $log->callerExtension?->user ?? $log->user;
+                                $callerAvatar = $callerUser?->image ? asset($callerUser->image) : null;
+                                $callerInitial = strtoupper(substr($log->caller_name ?: $log->caller, 0, 1));
+
+                                $calleeUser = $log->calleeExtension?->user;
+                                $calleeAvatar = $calleeUser?->image ? asset($calleeUser->image) : null;
+                                $calleeInitial = strtoupper(substr($log->callee_name ?: $log->callee, 0, 1));
+                            @endphp
                             <tr>
                                 <td class="ps-3 ps-md-4 py-3">
                                     <div class="d-flex align-items-center gap-2.5">
-                                        <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center fw-bold text-dark" style="width: 34px; height: 34px; font-size: 13px;">
-                                            {{ substr($log->caller, 0, 2) }}
-                                        </div>
+                                        @if($callerAvatar)
+                                            <img src="{{ $callerAvatar }}" alt="{{ $log->caller_name }}" class="rounded-circle border" style="width: 36px; height: 36px; object-fit: cover;">
+                                        @else
+                                            <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; font-size: 13px;">
+                                                {{ $callerInitial }}
+                                            </div>
+                                        @endif
                                         <div>
                                             <div class="fw-semibold text-dark">{{ $log->caller_name ?: ('Ext ' . $log->caller) }}</div>
-                                            <div class="text-muted small">Ext: {{ $log->caller }}</div>
+                                            <div class="text-muted small">
+                                                <span class="badge bg-secondary-subtle text-secondary py-0.5 px-1.5 font-monospace" style="font-size: 10px;">Ext {{ $log->caller }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
 
                                 <td class="py-3">
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="badge bg-light text-dark border px-2 py-1 font-monospace">
-                                            {{ $log->callee }}
-                                        </div>
-                                        @if($log->callee_name)
-                                            <span class="text-muted small">{{ $log->callee_name }}</span>
+                                        @if($calleeAvatar)
+                                            <img src="{{ $calleeAvatar }}" alt="{{ $log->callee_name }}" class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;">
+                                        @else
+                                            <div class="rounded-circle bg-info-subtle text-info border border-info-subtle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 11px;">
+                                                {{ $calleeInitial }}
+                                            </div>
                                         @endif
+                                        <div>
+                                            <div class="fw-semibold text-dark small">{{ $log->callee_name ?: ('Ext ' . $log->callee) }}</div>
+                                            <span class="badge bg-secondary-subtle text-secondary py-0.5 px-1.5 font-monospace" style="font-size: 10px;">Ext {{ $log->callee }}</span>
+                                        </div>
                                     </div>
                                 </td>
 
                                 <td class="py-3">
                                     @if($log->status === 'answered')
+                                        @php
+                                            $ansUser = $log->calleeExtension?->user;
+                                            $ansAvatar = $ansUser?->image ? asset($ansUser->image) : null;
+                                        @endphp
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="rounded-circle bg-success-subtle text-success fw-bold d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 11px;">
-                                                <i data-lucide="user-check" style="width: 14px; height: 14px;"></i>
-                                            </div>
+                                            @if($ansAvatar)
+                                                <img src="{{ $ansAvatar }}" class="rounded-circle border border-success" style="width: 28px; height: 28px; object-fit: cover;">
+                                            @else
+                                                <div class="rounded-circle bg-success-subtle text-success border border-success-subtle fw-bold d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 11px;">
+                                                    <i data-lucide="user-check" style="width: 14px; height: 14px;"></i>
+                                                </div>
+                                            @endif
                                             <div>
                                                 <div class="fw-semibold text-dark small">{{ $log->answered_by ?? ($log->callee_name ? 'Ext ' . $log->callee . ' (' . $log->callee_name . ')' : 'Ext ' . $log->callee) }}</div>
-                                                <small class="text-muted" style="font-size: 11px;">{{ __('Answered Call') }}</small>
+                                                <small class="text-success fw-medium" style="font-size: 10px;">{{ __('Answered') }}</small>
                                             </div>
                                         </div>
                                     @else
@@ -293,8 +321,13 @@
             </div>
 
             @if($logs->hasPages())
-                <div class="card-footer bg-transparent border-0 py-3 px-3 px-md-4">
-                    {{ $logs->links() }}
+                <div class="card-footer border-top py-3 px-3 px-md-4 d-flex flex-wrap align-items-center justify-content-between gap-3" style="background: transparent;">
+                    <div class="text-muted small">
+                        {{ __('Showing :from to :to of :total call records', ['from' => $logs->firstItem() ?? 0, 'to' => $logs->lastItem() ?? 0, 'total' => $logs->total()]) }}
+                    </div>
+                    <div>
+                        {{ $logs->links() }}
+                    </div>
                 </div>
             @endif
         </div>

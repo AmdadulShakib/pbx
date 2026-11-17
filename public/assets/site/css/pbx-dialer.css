@@ -244,67 +244,76 @@ html[data-theme="dark"],
 /* Header bar */
 .pbx-card-header,
 .pbx-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-    background-color: var(--pbx-surface-base);
-    border-bottom: 1px solid var(--pbx-border-subtle);
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 12px 14px !important;
+    background-color: var(--pbx-surface-base) !important;
+    border-bottom: 1px solid var(--pbx-border-subtle) !important;
     user-select: none;
-    width: 100%;
-    box-sizing: border-box;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .pbx-user-pill,
 .pbx-user-profile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
 }
 
 .pbx-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
 }
 
 .pbx-user-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: var(--pbx-radius-md);
-    background-color: var(--pbx-surface-elevated);
-    border: 1px solid var(--pbx-border-strong);
-    color: var(--pbx-text-primary);
-    font-weight: 700;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    border-radius: var(--pbx-radius-md) !important;
+    background-color: var(--pbx-surface-elevated) !important;
+    border: 1px solid var(--pbx-border-strong) !important;
+    color: var(--pbx-text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
 }
 
 .pbx-user-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    min-width: 0 !important;
 }
 
 .pbx-user-name {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--pbx-text-primary);
-    max-width: 180px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: -0.01em;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: var(--pbx-text-primary) !important;
+    max-width: 170px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    letter-spacing: -0.01em !important;
+    line-height: 1.2 !important;
 }
 
 .pbx-user-status-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
 }
 
 .pbx-badge-ext {

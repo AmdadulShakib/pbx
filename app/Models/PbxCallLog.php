@@ -49,6 +49,16 @@ class PbxCallLog extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function callerExtension()
+    {
+        return $this->belongsTo(PbxExtension::class, 'caller', 'extension');
+    }
+
+    public function calleeExtension()
+    {
+        return $this->belongsTo(PbxExtension::class, 'callee', 'extension');
+    }
+
     public function getFormattedDurationAttribute(): string
     {
         $seconds = $this->duration ?? 0;
