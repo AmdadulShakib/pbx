@@ -168,11 +168,14 @@
         </div>
 
         <!-- View: Team Bridge Voice Rooms -->
-        <div id="pbx-view-rooms" class="pbx-tab-view" style="display: none;">
-            <div style="padding: 12px 14px 8px 14px; border-bottom: 1px solid var(--pbx-border-subtle);">
+        <div id="pbx-view-rooms" class="pbx-tab-view" style="display: none; position: relative;">
+            <div style="padding: 10px 14px 8px 14px; border-bottom: 1px solid var(--pbx-border-subtle);">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
                     <span style="font-weight: 700; font-size: 12px; color: var(--pbx-text-primary);">{{ __('Team Bridge Voice Rooms') }}</span>
-                    <span class="badge bg-primary" style="font-size: 10px;">{{ __('Asterisk ConfBridge') }}</span>
+                    <button type="button" class="btn btn-sm btn-primary py-0 px-2 d-inline-flex align-items-center gap-1" style="font-size: 11px; height: 24px; border-radius: 6px;" onclick="pbxToggleCreateRoomDrawer()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>{{ __('+ New Room') }}</span>
+                    </button>
                 </div>
                 <div style="color: var(--pbx-text-muted); font-size: 11px;">{{ __('Multi-party conference rooms where all team members talk together.') }}</div>
             </div>
@@ -180,6 +183,45 @@
                 <div class="pbx-empty-state">
                     <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
                     <div>{{ __('Loading conference rooms...') }}</div>
+                </div>
+            </div>
+
+            <!-- Create Quick Voice Room Drawer -->
+            <div class="pbx-conf-drawer" id="pbx-create-room-drawer" style="top: 0; bottom: 0; left: 0; right: 0; max-height: 100%; border-radius: var(--pbx-radius-lg); background: #ffffff; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: flex; flex-direction: column;">
+                <div class="pbx-drawer-header" style="border-bottom: 1px solid var(--pbx-border-subtle); padding: 12px 14px;">
+                    <span class="d-inline-flex align-items-center gap-1.5 fw-bold" style="font-size: 13px; color: var(--pbx-text-primary);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="text-primary"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        {{ __('Create Team Voice Room') }}
+                    </span>
+                    <button type="button" onclick="pbxToggleCreateRoomDrawer()" style="background:none; border:none; font-size: 18px; color: var(--pbx-text-muted); cursor:pointer;">&times;</button>
+                </div>
+                <div style="padding: 14px 16px; flex: 1; overflow-y: auto;">
+                    <form id="pbx-quick-room-form" onsubmit="event.preventDefault(); pbxSubmitQuickRoom();">
+                        <div class="mb-2.5">
+                            <label class="form-label text-dark small fw-bold mb-1">{{ __('Room Name / Topic') }} <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="pbx-new-room-name" placeholder="{{ __('e.g. Design Sync, Sales Huddle') }}" required maxlength="100">
+                        </div>
+                        <div class="row g-2 mb-2.5">
+                            <div class="col-6">
+                                <label class="form-label text-dark small fw-bold mb-1">{{ __('Extension') }}</label>
+                                <input type="text" class="form-control form-control-sm font-monospace" id="pbx-new-room-number" placeholder="{{ __('Auto (703-799)') }}" pattern="7[0-9]{2}">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-dark small fw-bold mb-1">{{ __('Optional PIN') }}</label>
+                                <input type="text" class="form-control form-control-sm font-monospace" id="pbx-new-room-pin" placeholder="{{ __('e.g. 1234') }}" maxlength="10">
+                            </div>
+                        </div>
+                        <div class="p-2 mb-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0; font-size: 11px; color: #64748b; line-height: 1.4;">
+                            <strong class="text-dark">{{ __('Quick tip:') }}</strong> {{ __('Leave PIN blank for an open room. If set, participants will be prompted for PIN on joining.') }}
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-light border flex-grow-1" onclick="pbxToggleCreateRoomDrawer()">{{ __('Cancel') }}</button>
+                            <button type="submit" class="btn btn-sm btn-primary flex-grow-1 d-inline-flex align-items-center justify-content-center gap-1" id="pbx-create-room-submit-btn">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                <span>{{ __('Create & Join') }}</span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

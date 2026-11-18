@@ -381,6 +381,7 @@ class PbxPhoneController extends Controller
                 'exten'    => $room,
                 'priority' => 1,
                 'callerid' => "Team Bridge {$room} <{$room}>",
+                'variable' => 'PIN_BYPASS=1',
                 'timeout'  => 30000,
             ]);
 
@@ -480,6 +481,70 @@ class PbxPhoneController extends Controller
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Quick Create Conference Room directly from softphone dialpad / widget.
+     */
+    public function conferenceQuickCreate(Request $request, AsteriskAmi $ami): JsonResponse
+    {
+        $validated = $request->validate([
+            'name'        => 'required|string|max:100',
+            'room_number' => 'nullable|string|regex:/^7[0-9]{2}$/|unique:pbx_conferences,room_number',
+            'pin'         => 'nullable|string|max:10',
+        ]);
+
+        // Auto-assign next available room number between 703 and 799 if not provided
+        $roomNumber = $validated['room_number'] ?? null;
+        if (empty($roomNumber)) {
+            $usedRooms = PbxConference::pluck('room_number')->toArray();
+            for ($i = 703; $i <= 799; $i++) {
+                $cand = (string) $i;
+                if (!in_array($cand, $usedRooms)) {
+                    $roomNumber = $cand;
+                    break;
+                }
+            }
+            if (!$roomNumber) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'All conference rooms between 703 and 799 are currently allocated.',
+                ], 422);
+            }
+        }
+
+        $user = auth()->user();
+        $conf = PbxConference::create([
+            'room_number'      => $roomNumber,
+            'name'             => $validated['name'],
+            'description'      => 'Quick room created by ' . ($user?->name ?? 'Staff'),
+            'pin'              => !empty($validated['pin']) ? trim($validated['pin']) : null,
+            'max_participants' => 50,
+            'record'           => false,
+            'enabled'          => true,
+        ]);
+
+        // Sync PIN into Asterisk AstDB
+        try {
+            if (!empty($conf->pin)) {
+                $ami->command("database put CONF_PIN {$conf->room_number} {$conf->pin}");
+            } else {
+                $ami->command("database del CONF_PIN {$conf->room_number}");
+            }
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success' => true,
+            'message' => "Team Voice Room {$conf->room_number} ({$conf->name}) created successfully!",
+            'room'    => [
+                'extension'     => (string) $conf->room_number,
+                'name'          => $conf->name,
+                'user_name'     => 'Team Bridge Room ' . $conf->room_number,
+                'avatar'        => null,
+                'is_conference' => true,
+                'pin'           => $conf->pin,
+            ],
+        ]);
     }
 }
 

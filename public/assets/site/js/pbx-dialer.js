@@ -592,6 +592,10 @@
     window.pbxDialDigit = function (digit) {
         getAudioContext();
         playDtmfTone(digit);
+        if (currentSession && !currentSession.isEnded()) {
+            window.pbxSendDtmf(digit);
+            return;
+        }
         const display = $('pbx-display-input');
         if (display && display.textContent.length < 15) {
             display.textContent += digit;
@@ -644,9 +648,17 @@
         const match = userCreds.contacts?.find((c) => String(c.extension) === val);
         if (match) {
             matchEl.textContent = `${match.name} (${match.user_name || 'Colleague'})`;
-        } else {
-            matchEl.textContent = '';
+            return;
         }
+
+        const confMatch = userCreds.conferences?.find((c) => String(c.extension) === val);
+        if (confMatch) {
+            const pinSub = confMatch.pin ? ` • PIN: ${confMatch.pin}` : ' • Open Bridge';
+            matchEl.innerHTML = `<span style="color:#2563eb;font-weight:700;">👥 ${escapeHtml(confMatch.name)}</span><span style="color:#64748b;font-size:11px;"> (${pinSub})</span>`;
+            return;
+        }
+
+        matchEl.textContent = '';
     }
 
     // =========================================================================
@@ -754,6 +766,79 @@
         });
         container.innerHTML = html;
     }
+
+    // =========================================================================
+    // Quick Create Conference Room (Directly from Softphone Widget)
+    // =========================================================================
+    window.pbxToggleCreateRoomDrawer = function () {
+        const drawer = $('pbx-create-room-drawer');
+        if (!drawer) return;
+        drawer.classList.toggle('active');
+        if (drawer.classList.contains('active')) {
+            $('pbx-new-room-name')?.focus();
+        }
+    };
+
+    window.pbxSubmitQuickRoom = async function () {
+        const nameInput = $('pbx-new-room-name');
+        const numInput = $('pbx-new-room-number');
+        const pinInput = $('pbx-new-room-pin');
+        const submitBtn = $('pbx-create-room-submit-btn');
+
+        const name = nameInput ? nameInput.value.trim() : '';
+        const roomNumber = numInput ? numInput.value.trim() : '';
+        const pin = pinInput ? pinInput.value.trim() : '';
+
+        if (!name) {
+            alert('Please enter a room name.');
+            return;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Creating...</span>';
+        }
+
+        try {
+            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const res = await fetch('/user/pbx/conference/quick-create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ name: name, room_number: roomNumber || null, pin: pin || null })
+            });
+
+            const data = await res.json();
+            if (data.success && data.room) {
+                // Add to userCreds.conferences
+                if (!userCreds.conferences) userCreds.conferences = [];
+                userCreds.conferences.push(data.room);
+                renderTeamRoomsList();
+
+                // Close drawer and reset form
+                $('pbx-create-room-drawer')?.classList.remove('active');
+                if (nameInput) nameInput.value = '';
+                if (numInput) numInput.value = '';
+                if (pinInput) pinInput.value = '';
+
+                // Instantly join newly created room!
+                pbxJoinTeamBridge(data.room.extension);
+            } else {
+                alert(data.message || 'Failed to create room.');
+            }
+        } catch (e) {
+            console.error('[PBX] Create quick room error:', e);
+            alert('Error creating conference room: ' + e.message);
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Create & Join</span>';
+            }
+        }
+    };
 
     // =========================================================================
     // Call History / Recents (Persisted in localStorage)
@@ -992,21 +1077,32 @@
         isCallMuted = false;
         isCallHeld = false;
 
-        // Ultra-fast ICE candidate gathering:
-        // Do NOT wait for multi-second timeouts. Once local/STUN candidates start gathering,
-        // trigger ready() within 100ms so INVITE or 200 OK is transmitted instantly!
+        // Robust ICE candidate gathering:
+        // Trigger ready() as soon as null candidate arrives OR public reflexive (srflx) candidate is gathered,
+        // with a short 350ms fallback to avoid delaying call setup while ensuring media passes NAT.
         let iceDone = false;
         let iceTimer = null;
         session.on('icecandidate', function (event) {
             if (iceDone) return;
+            if (!event || !event.candidate) {
+                iceDone = true;
+                if (iceTimer) clearTimeout(iceTimer);
+                try { if (event && typeof event.ready === 'function') event.ready(); } catch (err) {}
+                return;
+            }
+            if (event.candidate.candidate && event.candidate.candidate.includes('typ srflx')) {
+                iceDone = true;
+                if (iceTimer) clearTimeout(iceTimer);
+                try { if (typeof event.ready === 'function') event.ready(); } catch (err) {}
+                return;
+            }
             if (!iceTimer) {
                 iceTimer = setTimeout(() => {
                     if (!iceDone && event && typeof event.ready === 'function') {
                         iceDone = true;
-                        console.log('[PBX WebRTC] Fast ICE timer reached (100ms). Sending SDP immediately.');
                         try { event.ready(); } catch (err) {}
                     }
-                }, 100);
+                }, 350);
             }
         });
 
@@ -1219,9 +1315,29 @@
             if (hero1on1) hero1on1.style.display = 'none';
             if (heroConf) heroConf.style.display = 'flex';
             const badgeEl = $('pbx-conf-room-badge');
-            if (badgeEl) badgeEl.textContent = 'Room ' + rawExt;
+            const confMatch = userCreds?.conferences?.find(c => String(c.extension) === String(rawExt));
+            const confPin = confMatch ? confMatch.pin : null;
+
+            if (badgeEl) {
+                badgeEl.innerHTML = confPin 
+                    ? `Room ${escapeHtml(rawExt)} <span style="background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700;margin-left:4px;">PIN: ${escapeHtml(confPin)}</span>`
+                    : `Room ${escapeHtml(rawExt)}`;
+            }
             const nameEl = $('pbx-conf-name');
             if (nameEl) nameEl.textContent = name || ('Team Bridge Room ' + rawExt);
+
+            // If room has PIN, display a quick-send helper button in the live banner
+            const bannerContainer = $('pbx-conf-ringing-banner-container');
+            if (bannerContainer && confPin) {
+                bannerContainer.innerHTML = `
+                    <div style="background:#fef3c7; border:1px solid #fde68a; border-radius:6px; padding:6px 10px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; font-size:11px;">
+                        <span style="color:#92400e; font-weight:600;">🔒 Room PIN: <code>${escapeHtml(confPin)}</code></span>
+                        <button type="button" class="btn btn-sm btn-warning py-0 px-2 fw-bold" style="font-size:10px; border-radius:4px;" onclick="pbxSendConferencePin('${escapeHtml(confPin)}')">
+                            Send PIN (${escapeHtml(confPin)}#)
+                        </button>
+                    </div>`;
+            }
+
             startConfPolling(rawExt);
         } else {
             stopConfPolling();
@@ -1857,12 +1973,28 @@
         playDtmfTone(digit);
         if (currentSession) {
             try {
-                currentSession.sendDTMF(digit);
-                console.log('[PBX DTMF] Sent tone:', digit);
+                currentSession.sendDTMF(digit, { transportType: 'RFC2833' });
+                console.log('[PBX DTMF] Sent RFC2833 tone:', digit);
             } catch (e) {
-                console.warn('[PBX DTMF] Send error:', e);
+                try {
+                    currentSession.sendDTMF(digit, { transportType: 'INFO' });
+                    console.log('[PBX DTMF] Fallback sent INFO tone:', digit);
+                } catch (err) {
+                    console.warn('[PBX DTMF] Send error:', err);
+                }
             }
         }
+    };
+
+    window.pbxSendConferencePin = function (pin) {
+        if (!pin || !currentSession) return;
+        console.log('[PBX DTMF] Automatically transmitting conference PIN:', pin);
+        const digits = (String(pin).trim() + '#').split('');
+        digits.forEach((d, idx) => {
+            setTimeout(() => {
+                window.pbxSendDtmf(d);
+            }, idx * 160);
+        });
     };
 
     window.pbxToggleTransferPanel = function () {
@@ -2199,7 +2331,8 @@
                     'pbxRejectIncoming', 'pbxDial', 'pbxQuickCall', 'pbxCallColleague',
                     'pbxJoinTeamBridge', 'pbxCallContact', 'pbxMakeCall', 'pbxDialDigit',
                     'pbxResetDialerPosition', 'pbxToggleInviteDrawer', 'pbxInviteToConference',
-                    'pbxCancelConferenceInvite', 'pbxConferenceAction'
+                    'pbxCancelConferenceInvite', 'pbxConferenceAction', 'pbxToggleCreateRoomDrawer',
+                    'pbxSubmitQuickRoom', 'pbxSendConferencePin'
                 ];
                 pbxMethods.forEach((name) => {
                     if (typeof window[name] === 'function') {

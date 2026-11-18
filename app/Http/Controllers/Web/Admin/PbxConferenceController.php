@@ -75,7 +75,7 @@ class PbxConferenceController extends Controller
     /**
      * Store a newly created conference room.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AsteriskAmi $ami): RedirectResponse
     {
         $validated = $request->validate([
             'room_number'      => 'required|string|max:20|unique:pbx_conferences,room_number',
@@ -91,7 +91,15 @@ class PbxConferenceController extends Controller
         $validated['record']           = $request->boolean('record');
         $validated['enabled']          = $request->boolean('enabled', true);
 
-        PbxConference::create($validated);
+        $conf = PbxConference::create($validated);
+
+        try {
+            if (!empty($conf->pin)) {
+                $ami->command("database put CONF_PIN {$conf->room_number} {$conf->pin}");
+            } else {
+                $ami->command("database del CONF_PIN {$conf->room_number}");
+            }
+        } catch (\Throwable $e) {}
 
         return redirect()->route('admin.pbx.conferences.index')
             ->with('success', "Team Bridge Room {$validated['room_number']} created successfully.");
@@ -100,7 +108,7 @@ class PbxConferenceController extends Controller
     /**
      * Update an existing conference room.
      */
-    public function update(Request $request, PbxConference $conference): RedirectResponse
+    public function update(Request $request, PbxConference $conference, AsteriskAmi $ami): RedirectResponse
     {
         $validated = $request->validate([
             'room_number'      => 'required|string|max:20|unique:pbx_conferences,room_number,' . $conference->id,
@@ -118,6 +126,14 @@ class PbxConferenceController extends Controller
 
         $conference->update($validated);
 
+        try {
+            if (!empty($conference->pin)) {
+                $ami->command("database put CONF_PIN {$conference->room_number} {$conference->pin}");
+            } else {
+                $ami->command("database del CONF_PIN {$conference->room_number}");
+            }
+        } catch (\Throwable $e) {}
+
         return redirect()->route('admin.pbx.conferences.index')
             ->with('success', "Team Bridge Room {$conference->room_number} updated successfully.");
     }
@@ -125,10 +141,14 @@ class PbxConferenceController extends Controller
     /**
      * Delete a conference room.
      */
-    public function destroy(PbxConference $conference): RedirectResponse
+    public function destroy(PbxConference $conference, AsteriskAmi $ami): RedirectResponse
     {
         $num = $conference->room_number;
         $conference->delete();
+
+        try {
+            $ami->command("database del CONF_PIN {$num}");
+        } catch (\Throwable $e) {}
 
         return redirect()->route('admin.pbx.conferences.index')
             ->with('success', "Team Bridge Room {$num} deleted successfully.");
