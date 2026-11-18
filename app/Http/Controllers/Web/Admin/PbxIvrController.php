@@ -150,36 +150,86 @@ class PbxIvrController extends Controller
 
         $ext = strtolower($file->getClientOriginalExtension());
         $filename = "ivr_{$ivr->extension}." . $ext;
-        $dir = public_path('recordings/ivr');
+        $dir = public_path('uploads/ivr');
         if (!is_dir($dir)) {
             @mkdir($dir, 0777, true);
+        }
+        $recDir = public_path('recordings/ivr');
+        if (!is_dir($recDir)) {
+            @mkdir($recDir, 0777, true);
         }
 
         $targetPath = $dir . '/' . $filename;
         $file->move($dir, $filename);
 
-        // Also generate/convert to 8kHz mono PCM WAV for Asterisk
-        $wavPath = $dir . "/ivr_{$ivr->extension}.wav";
-        if ($ext !== 'wav') {
-            @exec("ffmpeg -y -i " . escapeshellarg($targetPath) . " -ar 8000 -ac 1 -c:a pcm_s16le " . escapeshellarg($wavPath));
+        // Keep copy in recordings/ivr
+        @copy($targetPath, $recDir . '/' . $filename);
+
+        // Standard Asterisk 8kHz 16-bit mono PCM WAV
+        $wavPath = $dir . "/ivr-{$ivr->extension}.wav";
+        $ffmpegCmd = "ffmpeg -y -i " . escapeshellarg($targetPath) . " -ar 8000 -ac 1 -c:a pcm_s16le " . escapeshellarg($wavPath) . " 2>&1";
+        @exec($ffmpegCmd);
+
+        // Fallback: If conversion failed or ffmpeg not available and already wav, copy target
+        if (!file_exists($wavPath) && $ext === 'wav') {
+            @copy($targetPath, $wavPath);
         }
 
-        // If running directly on host with Asterisk sounds directory
-        if (is_dir('/var/lib/asterisk/sounds/en')) {
-            @copy($wavPath, "/var/lib/asterisk/sounds/en/ivr-{$ivr->extension}.wav");
-            @copy($wavPath, "/var/lib/asterisk/sounds/en/ivr_{$ivr->extension}.wav");
+        if (file_exists($wavPath)) {
+            @copy($wavPath, $recDir . "/ivr-{$ivr->extension}.wav");
+            @copy($wavPath, $recDir . "/ivr_{$ivr->extension}.wav");
+        }
+
+        // Target sound locations where Asterisk looks for sound prompts
+        $soundDirs = [
+            '/var/lib/asterisk/sounds/en',
+            '/usr/share/asterisk/sounds/en_US_f_Allison',
+            '/var/lib/asterisk/sounds',
+        ];
+
+        foreach ($soundDirs as $soundDir) {
+            if (is_dir($soundDir)) {
+                if (file_exists($wavPath)) {
+                    @copy($wavPath, "{$soundDir}/ivr-{$ivr->extension}.wav");
+                    @copy($wavPath, "{$soundDir}/ivr_{$ivr->extension}.wav");
+                    @chmod("{$soundDir}/ivr-{$ivr->extension}.wav", 0666);
+                    @chmod("{$soundDir}/ivr_{$ivr->extension}.wav", 0666);
+
+                    // If extension is 500, replace ivr-welcome so default dialplans play this audio
+                    if ($ivr->extension === '500') {
+                        @copy($wavPath, "{$soundDir}/ivr-welcome.wav");
+                        @chmod("{$soundDir}/ivr-welcome.wav", 0666);
+                    } elseif ($ivr->extension === '501') {
+                        @copy($wavPath, "{$soundDir}/ivr-afterhours.wav");
+                        @chmod("{$soundDir}/ivr-afterhours.wav", 0666);
+                    }
+                }
+            }
         }
 
         $ivr->update([
             'audio_file'   => $filename,
             'sound_prompt' => "ivr-{$ivr->extension}",
         ]);
+
+        // Attempt Asterisk AMI dialplan reload
+        try {
+            app(AsteriskAmi::class)->query([
+                'action'  => 'command',
+                'command' => 'dialplan reload',
+            ]);
+        } catch (\Throwable $e) {
+            // Ignore if AMI is momentarily busy
+        }
     }
 
     public function audio($id)
     {
         $ivr = PbxIvr::findOrFail($id);
         $candidates = [
+            public_path('uploads/ivr/' . $ivr->audio_file),
+            public_path('uploads/ivr/ivr-' . $ivr->extension . '.wav'),
+            public_path('uploads/ivr/ivr_' . $ivr->extension . '.wav'),
             public_path('recordings/ivr/' . $ivr->audio_file),
             public_path('recordings/ivr/ivr_' . $ivr->extension . '.wav'),
             storage_path('app/public/ivr/' . $ivr->audio_file),

@@ -100,23 +100,46 @@
                                         <span class="text-muted small">{{ $ext->created_at?->format('d M Y, h:i A') ?? 'N/A' }}</span>
                                     </td>
                                     <td class="text-end">
-                                        <div class="d-inline-flex align-items-center gap-1">
-                                            <button type="button" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 px-2.5 py-1" onclick="openDeviceSetupModal('{{ $ext->extension }}', '{{ addslashes($ext->name) }}', '{{ addslashes($ext->password) }}', '{{ addslashes($ext->user?->name ?? '') }}')" title="{{ __('Add to Telephone Device / IP Phone') }}">
-                                                <i data-lucide="smartphone" style="width: 13px; height: 13px;"></i>
-                                                <span>{{ __('Device Setup') }}</span>
+                                        <div class="d-inline-flex align-items-center gap-1.5 justify-content-end">
+                                            <!-- Device Setup Modal Button (Icon Only) -->
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-primary p-0 d-inline-flex align-items-center justify-content-center" 
+                                                    style="width: 32px; height: 32px; border-radius: 8px;" 
+                                                    onclick="openDeviceSetupModal('{{ $ext->extension }}', '{{ addslashes($ext->name) }}', '{{ addslashes($ext->password) }}', '{{ addslashes($ext->user?->name ?? '') }}')" 
+                                                    title="{{ __('Telephone Device & IP Phone Setup') }}" 
+                                                    data-bs-toggle="tooltip">
+                                                <i data-lucide="smartphone" style="width: 15px; height: 15px;"></i>
                                             </button>
-                                            <button type="button" class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1 px-2.5 py-1" onclick="if (typeof togglePbxDialer === 'function') { togglePbxDialer(); pbxCallContact('{{ $ext->extension }}', '{{ $ext->name }}'); }" title="{{ __('Call with Softphone') }}">
-                                                <i data-lucide="phone-call" style="width: 13px; height: 13px;"></i>
-                                                <span>{{ __('Call') }}</span>
+
+                                            <!-- WebRTC Softphone Call Button (Icon Only) -->
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-success p-0 d-inline-flex align-items-center justify-content-center" 
+                                                    style="width: 32px; height: 32px; border-radius: 8px;" 
+                                                    onclick="if (typeof togglePbxDialer === 'function') { togglePbxDialer(); pbxCallContact('{{ $ext->extension }}', '{{ $ext->name }}'); }" 
+                                                    title="{{ __('Call with Softphone') }}" 
+                                                    data-bs-toggle="tooltip">
+                                                <i data-lucide="phone-call" style="width: 15px; height: 15px;"></i>
                                             </button>
-                                            <a href="{{ route('admin.pbx.extensions.edit', $ext) }}" class="btn btn-outline-secondary btn-sm p-1" title="{{ __('Edit') }}">
-                                                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+
+                                            <!-- Edit Extension Button (Icon Only) -->
+                                            <a href="{{ route('admin.pbx.extensions.edit', $ext) }}" 
+                                               class="btn btn-sm btn-outline-secondary p-0 d-inline-flex align-items-center justify-content-center" 
+                                               style="width: 32px; height: 32px; border-radius: 8px;" 
+                                               title="{{ __('Edit Extension') }}" 
+                                               data-bs-toggle="tooltip">
+                                                <i data-lucide="pencil" style="width: 15px; height: 15px;"></i>
                                             </a>
-                                            <form action="{{ route('admin.pbx.extensions.destroy', $ext) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this extension?') }}')">
+
+                                            <!-- Delete Extension Button (Icon Only) -->
+                                            <form action="{{ route('admin.pbx.extensions.destroy', $ext) }}" method="POST" class="d-inline m-0" onsubmit="return confirm('{{ __('Are you sure you want to delete this extension?') }}')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-danger btn-sm p-1" title="{{ __('Delete') }}">
-                                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                                <button type="submit" 
+                                                        class="btn btn-sm btn-outline-danger p-0 d-inline-flex align-items-center justify-content-center" 
+                                                        style="width: 32px; height: 32px; border-radius: 8px;" 
+                                                        title="{{ __('Delete Extension') }}" 
+                                                        data-bs-toggle="tooltip">
+                                                    <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -360,5 +383,12 @@
             }
         });
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
 </script>
 @endpush

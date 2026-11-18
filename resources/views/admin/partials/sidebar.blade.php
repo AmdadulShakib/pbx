@@ -168,21 +168,21 @@
     </div>
 
     <!-- Bottom Operator Deck -->
-    <div class="sidebar-footer border-top p-3 mt-auto d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center gap-2 overflow-hidden">
-            <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; font-size: 12px;">
+    <div class="sidebar-footer border-top p-3 mt-auto d-flex align-items-center justify-content-between" style="background: #0b1220; border-color: rgba(255, 255, 255, 0.1) !important;">
+        <div class="d-flex align-items-center gap-2.5 overflow-hidden">
+            <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 12px; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);">
                 {{ strtoupper(substr(auth('admin')->user()->name ?? 'AD', 0, 2)) }}
             </div>
             <div class="overflow-hidden">
-                <div class="small fw-bold text-truncate text-light" style="max-width: 140px;">{{ auth('admin')->user()->name ?? 'Administrator' }}</div>
-                <div class="text-muted text-truncate" style="font-size: 10.5px;">{{ __('Telecom Supervisor') }}</div>
+                <div class="fw-bold text-truncate text-white" style="max-width: 140px; font-size: 13.5px; line-height: 1.2;">{{ auth('admin')->user()->name ?? 'Administrator' }}</div>
+                <div class="text-truncate" style="font-size: 11px; color: #94a3b8; font-weight: 500; margin-top: 2px;">{{ __('Telecom Supervisor') }}</div>
             </div>
         </div>
 
         <form method="POST" action="{{ route('admin.logout') }}" class="m-0">
             @csrf
-            <button type="submit" class="btn btn-icon btn-sm btn-outline-secondary p-1 text-muted" title="{{ __('Logout') }}">
-                <i data-lucide="log-out" style="width: 15px; height: 15px;"></i>
+            <button type="submit" class="btn btn-sm border-0 p-1.5 rounded-2 text-white-50" style="background: rgba(255, 255, 255, 0.08); width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;" title="{{ __('Logout') }}" onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'; this.style.color='#f87171';" onmouseout="this.style.background='rgba(255, 255, 255, 0.08)'; this.style.color='rgba(255,255,255,0.5)';">
+                <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
             </button>
         </form>
     </div>
