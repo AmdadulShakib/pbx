@@ -22,7 +22,7 @@ class PbxPhoneController extends Controller
         $ext = $this->myExtension();
         $contacts = PbxExtension::where('enabled', true)
             ->when($ext, fn($q) => $q->where('id', '!=', $ext->id))
-            ->with('user:id,name,email')
+            ->with('user:id,name,email,avatar')
             ->orderBy('extension')
             ->get();
 
@@ -51,9 +51,11 @@ class PbxPhoneController extends Controller
             ]);
         }
 
+        $ext->load('user:id,name,email,avatar');
+
         $contacts = PbxExtension::where('enabled', true)
             ->where('id', '!=', $ext->id)
-            ->with('user:id,name,email')
+            ->with('user:id,name,email,avatar')
             ->orderBy('extension')
             ->get()
             ->map(function ($c) {
@@ -61,8 +63,57 @@ class PbxPhoneController extends Controller
                     'extension' => $c->extension,
                     'name'      => $c->name,
                     'user_name' => $c->user?->name,
+                    'avatar'    => $c->user?->avatar_url,
                 ];
             });
+
+        // Team Bridge Conference Rooms (Multi-Party Asterisk ConfBridge)
+        $conferenceRooms = [];
+        try {
+            $conferenceRooms = \App\Models\PbxConference::where('enabled', true)
+                ->orderBy('room_number', 'asc')
+                ->get()
+                ->map(function ($room) {
+                    return [
+                        'extension'     => (string) $room->room_number,
+                        'name'          => $room->name,
+                        'user_name'     => 'Team Bridge Room ' . $room->room_number,
+                        'avatar'        => null,
+                        'is_conference' => true,
+                        'pin'           => $room->pin,
+                    ];
+                })
+                ->toArray();
+        } catch (\Throwable $e) {}
+
+        if (empty($conferenceRooms)) {
+            $conferenceRooms = [
+                [
+                    'extension'     => '700',
+                    'name'          => 'Company All-Hands Bridge',
+                    'user_name'     => 'Team Bridge Room 700',
+                    'avatar'        => null,
+                    'is_conference' => true,
+                    'pin'           => null,
+                ],
+                [
+                    'extension'     => '701',
+                    'name'          => 'Executive Boardroom',
+                    'user_name'     => 'Leadership Bridge 701',
+                    'avatar'        => null,
+                    'is_conference' => true,
+                    'pin'           => '1234',
+                ],
+                [
+                    'extension'     => '702',
+                    'name'          => 'Support & Operations Bridge',
+                    'user_name'     => 'War Room 702',
+                    'avatar'        => null,
+                    'is_conference' => true,
+                    'pin'           => null,
+                ],
+            ];
+        }
 
         $currentHost = request()->getHost();
         $domain = $currentHost ?: config('pbx.domain');
@@ -70,13 +121,16 @@ class PbxPhoneController extends Controller
         $wsUrl  = $scheme . $domain . '/ws';
 
         return response()->json([
-            'assigned'  => true,
-            'extension' => $ext->extension,
-            'name'      => $ext->name,
-            'password'  => $ext->password,
-            'domain'    => $domain,
-            'ws_url'    => $wsUrl,
-            'contacts'  => $contacts,
+            'assigned'    => true,
+            'extension'   => $ext->extension,
+            'name'        => $ext->name,
+            'user_name'   => $ext->user?->name,
+            'avatar'      => $ext->user?->avatar_url,
+            'password'    => $ext->password,
+            'domain'      => $domain,
+            'ws_url'      => $wsUrl,
+            'contacts'    => $contacts,
+            'conferences' => $conferenceRooms,
         ])->header('Cache-Control', 'no-store');
     }
 

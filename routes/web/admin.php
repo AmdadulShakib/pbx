@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\Admin\Auth\LoginController;
 use App\Http\Controllers\Web\Admin\BusinessSettingsController;
 use App\Http\Controllers\Web\Admin\CategoryController;
 use App\Http\Controllers\Web\Admin\PbxCallLogController;
+use App\Http\Controllers\Web\Admin\PbxConferenceController;
 use App\Http\Controllers\Web\Admin\PbxExtensionController;
 use App\Http\Controllers\Web\Admin\PbxHotDeskController;
 use App\Http\Controllers\Web\Admin\PbxInboundRouteController;
@@ -88,6 +89,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware(PbxAdmin::class)->prefix('pbx')->name('pbx.')->group(function () {
             Route::get('phone-window', [PbxPhoneController::class, 'window'])->name('phone.window');
             Route::resource('extensions', PbxExtensionController::class)->except('show');
+            Route::get('conferences/api/status', [PbxConferenceController::class, 'liveStatus'])->name('conferences.api.status');
+            Route::resource('conferences', PbxConferenceController::class);
             Route::post('hot-desking/{hotDesk}/assign', [PbxHotDeskController::class, 'assign'])->name('hot-desking.assign');
             Route::post('hot-desking/{hotDesk}/release', [PbxHotDeskController::class, 'release'])->name('hot-desking.release');
             Route::get('hot-desking/api/status', [PbxHotDeskController::class, 'apiStatus'])->name('hot-desking.api.status');

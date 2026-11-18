@@ -256,11 +256,81 @@ html[data-theme="dark"],
     pointer-events: auto !important;
     transform: none !important;
     z-index: 999999 !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 .pbx-dialer-card.in-pip-mode .pbx-minimize-btn,
 .pbx-dialer-card.in-pip-mode .pbx-incall-minimize-btn {
     display: none !important;
+}
+
+/* Picture-in-Picture Responsive In-Call Layout (Google Meet Compact Spec) */
+.pbx-dialer-card.in-pip-mode .pbx-call-overlay {
+    padding: 8px 12px 10px 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-avatar-halo,
+.pbx-dialer-card.in-pip-mode .pbx-call-avatar {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 auto 4px auto !important;
+    font-size: 18px !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-call-name {
+    font-size: 14px !important;
+    margin-bottom: 2px !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-call-ext-pill {
+    padding: 1px 8px !important;
+    font-size: 10px !important;
+    margin-bottom: 3px !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-call-duration {
+    font-size: 20px !important;
+    margin-top: 2px !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-audio-waves {
+    height: 14px !important;
+    margin-top: 4px !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-incall-grid {
+    gap: 5px !important;
+    margin: 6px 0 !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-grid-btn {
+    padding: 5px 2px !important;
+    gap: 3px !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-btn-icon {
+    width: 28px !important;
+    height: 28px !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-btn-label {
+    font-size: 9.5px !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-hangup-wrap {
+    padding-top: 2px !important;
+    flex-shrink: 0 !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-hangup-btn {
+    width: 44px !important;
+    height: 44px !important;
 }
 
 /* Floating In-Call PiP Mini Bar (Google Meet Style - Draggable Anywhere) */
@@ -1571,4 +1641,208 @@ html[data-theme="dark"] .pbx-recent-icon.missed,
     gap: 6px;
     font-size: 11px;
     color: var(--pbx-text-dim);
+}
+
+/* ==========================================================================
+   AVATAR IMAGES & EXECUTIVE MEDIA STYLING
+   ========================================================================== */
+.pbx-call-avatar img,
+.pbx-user-avatar img,
+.pbx-contact-avatar img,
+.pbx-incoming-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.pbx-contact-avatar {
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   TEAM BRIDGE / MULTI-PARTY CONFERENCE STYLES
+   ========================================================================== */
+.pbx-team-bridge-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(16, 185, 129, 0.12));
+    border: 1px solid rgba(37, 99, 235, 0.3);
+    border-radius: var(--pbx-radius-md);
+    padding: 8px 12px;
+    margin: 8px 16px 4px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pbx-team-bridge-pill:hover {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.22), rgba(16, 185, 129, 0.22));
+    border-color: var(--pbx-brand);
+    transform: translateY(-1px);
+}
+
+.pbx-bridge-pill-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pbx-bridge-pill-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pbx-bridge-pill-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--pbx-text-primary);
+    line-height: 1.2;
+}
+
+.pbx-bridge-pill-sub {
+    font-size: 10px;
+    color: var(--pbx-text-muted);
+}
+
+.pbx-bridge-pill-btn {
+    background: #10b981;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pbx-contact-row.is-conference {
+    background: rgba(37, 99, 235, 0.05);
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+.pbx-contact-row.is-conference .pbx-contact-avatar {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   RESPONSIVE COMPACT MODES & PICTURE-IN-PICTURE MEDIA QUERIES
+   ========================================================================== */
+.pbx-call-overlay {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.pbx-call-overlay::-webkit-scrollbar {
+    width: 4px;
+}
+
+.pbx-call-overlay::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 4px;
+}
+
+@media (max-height: 520px) {
+    .pbx-call-overlay {
+        padding: 6px 12px 10px 12px;
+        justify-content: space-between;
+    }
+    .pbx-avatar-halo,
+    .pbx-call-avatar {
+        width: 44px !important;
+        height: 44px !important;
+        margin: 0 auto 3px auto !important;
+        font-size: 16px !important;
+    }
+    .pbx-call-name {
+        font-size: 13px !important;
+        margin-bottom: 2px !important;
+    }
+    .pbx-call-ext-pill {
+        font-size: 9.5px !important;
+        padding: 1px 6px !important;
+        margin-bottom: 2px !important;
+    }
+    .pbx-call-duration {
+        font-size: 18px !important;
+        margin-top: 2px !important;
+    }
+    .pbx-audio-waves {
+        height: 12px !important;
+        margin-top: 2px !important;
+    }
+    .pbx-incall-grid {
+        gap: 4px !important;
+        margin: 4px 0 !important;
+    }
+    .pbx-grid-btn {
+        padding: 4px 2px !important;
+        gap: 2px !important;
+    }
+    .pbx-btn-icon {
+        width: 26px !important;
+        height: 26px !important;
+    }
+    .pbx-btn-icon svg {
+        width: 15px !important;
+        height: 15px !important;
+    }
+    .pbx-btn-label {
+        font-size: 9px !important;
+    }
+    .pbx-hangup-wrap {
+        padding-top: 2px !important;
+        flex-shrink: 0 !important;
+    }
+    .pbx-hangup-btn {
+        width: 42px !important;
+        height: 42px !important;
+    }
+    .pbx-hangup-btn svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+}
+
+@media (max-height: 380px) {
+    .pbx-call-overlay {
+        padding: 4px 8px 6px 8px;
+    }
+    .pbx-avatar-halo,
+    .pbx-call-avatar {
+        width: 34px !important;
+        height: 34px !important;
+        margin: 0 auto 2px auto !important;
+        font-size: 14px !important;
+    }
+    .pbx-audio-waves {
+        display: none !important;
+    }
+    .pbx-call-duration {
+        font-size: 16px !important;
+    }
+    .pbx-btn-label {
+        display: none !important;
+    }
+    .pbx-incall-grid {
+        gap: 3px !important;
+        margin: 2px 0 !important;
+    }
+    .pbx-grid-btn {
+        padding: 3px 2px !important;
+    }
+    .pbx-hangup-btn {
+        width: 38px !important;
+        height: 38px !important;
+    }
 }

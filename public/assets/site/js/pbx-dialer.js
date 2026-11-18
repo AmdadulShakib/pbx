@@ -476,9 +476,9 @@
                 const targetNum = currentSession._targetNum || (currentSession.remote_identity ? currentSession.remote_identity.uri.user : 'Caller');
 
                 if (nameEl) nameEl.textContent = overlayName || targetName || targetNum;
-                const cleanExt = (overlayExt || targetNum || '').replace(/^Ext:?\s*/i, '').trim();
+                const cleanExt = (overlayExt || targetNum || '').replace(/^(ext:?\s*)+/i, '').trim();
                 const callStatus = currentSession._callStatusText || 'Connected';
-                if (subEl) subEl.textContent = `Ext ${cleanExt} • ${callStatus}`;
+                if (subEl) subEl.textContent = cleanExt ? `Ext ${cleanExt} • ${callStatus}` : callStatus;
 
                 const muteBtn = $('pbx-pip-mute-btn');
                 if (muteBtn) {
@@ -528,6 +528,16 @@
             card.style.right = '';
             card.style.bottom = '';
         }
+        // Auto-close Document Picture-in-Picture window if active (Google Meet standard)
+        if (pbxPipWindow && !pbxPipWindow.closed) {
+            try {
+                pbxPipWindow.close();
+            } catch (e) {
+                console.warn('[PBX] Error closing PiP window:', e);
+            }
+            pbxPipWindow = null;
+        }
+
         syncInCallPipBar();
     };
 
@@ -616,25 +626,60 @@
     // =========================================================================
     // Colleagues Directory & Quick Call
     // =========================================================================
-    function renderContactsList(contacts) {
+    function renderContactsList(contacts, conferences) {
         const container = $('pbx-contacts-container');
         if (!container) return;
 
+        let html = '';
+
+        // 1. Render Team Bridge Conference Rooms at top of contacts
+        const confList = (conferences && conferences.length > 0) ? conferences : (userCreds && userCreds.conferences ? userCreds.conferences : []);
+        if (confList && confList.length > 0) {
+            html += `<div style="padding: 10px 14px 4px 14px; font-size: 10px; font-weight: 700; color: var(--pbx-text-dim); text-transform: uppercase; letter-spacing: 0.6px; display: flex; align-items: center; gap: 6px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Team Audio Bridges</span>
+            </div>`;
+
+            confList.forEach((conf) => {
+                html += `
+                <div class="pbx-contact-row is-conference" data-ext="${conf.extension}" data-name="${conf.name.toLowerCase()}">
+                    <div class="pbx-contact-info">
+                        <div class="pbx-contact-avatar" style="background:#2563eb; color:#ffffff;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </div>
+                        <div class="pbx-contact-meta">
+                            <div class="pbx-contact-name" style="color:#2563eb; font-weight:700;">${conf.name}</div>
+                            <div class="pbx-contact-sub">Room ${conf.extension} • Multi-Party Conference</div>
+                        </div>
+                    </div>
+                    <button type="button" class="pbx-contact-call-btn" style="background:#10b981; border-color:#10b981; color:#fff;" onclick="pbxCallContact('${conf.extension}', '${conf.name}')" title="Join ${conf.name}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </button>
+                </div>`;
+            });
+
+            html += `<div style="padding: 12px 14px 4px 14px; font-size: 10px; font-weight: 700; color: var(--pbx-text-dim); text-transform: uppercase; letter-spacing: 0.6px;">Colleagues Directory</div>`;
+        }
+
+        // 2. Render Colleagues
         if (!contacts || contacts.length === 0) {
-            container.innerHTML = '<div class="pbx-empty-state">No other colleagues assigned to extensions.</div>';
+            html += '<div class="pbx-empty-state">No other colleagues assigned to extensions.</div>';
+            container.innerHTML = html;
             return;
         }
 
-        let html = '';
         contacts.forEach((c) => {
             const name = c.name || `Extension ${c.extension}`;
             const sub = c.user_name || 'Extension ' + c.extension;
             const initial = name.charAt(0).toUpperCase();
+            const avatarContent = c.avatar
+                ? `<img src="${c.avatar}" alt="${name}" onerror="this.onerror=null; this.parentElement.textContent='${initial}'">`
+                : initial;
 
             html += `
             <div class="pbx-contact-row" data-ext="${c.extension}" data-name="${name.toLowerCase()}">
                 <div class="pbx-contact-info">
-                    <div class="pbx-contact-avatar">${initial}</div>
+                    <div class="pbx-contact-avatar">${avatarContent}</div>
                     <div class="pbx-contact-meta">
                         <div class="pbx-contact-name">${name}</div>
                         <div class="pbx-contact-sub">Ext ${c.extension} • ${sub}</div>
@@ -669,6 +714,11 @@
         updateCalleeNameMatch();
         switchPbxTab('keypad');
         pbxMakeCall(extNumber, extName);
+    };
+
+    window.pbxJoinTeamBridge = function (roomNumber) {
+        const room = String(roomNumber || '700').trim();
+        window.pbxCallContact(room, 'Team Bridge Room ' + room);
     };
 
     // =========================================================================
@@ -792,7 +842,10 @@
         getAudioContext();
         ensureRemoteAudioUnlocked();
 
-        showCallOverlay('Calling...', displayName, num);
+        const match = (userCreds && userCreds.contacts) ? userCreds.contacts.find((c) => String(c.extension) === String(num)) : null;
+        const targetAvatar = match ? match.avatar : null;
+
+        showCallOverlay('Calling...', displayName, num, targetAvatar);
         startOutgoingRingback();
 
         const domain = (userCreds && userCreds.domain) ? userCreds.domain : window.location.hostname;
@@ -1109,14 +1162,30 @@
     }
 
     // Call Overlay State & Timer
-    function showCallOverlay(status, name, ext) {
+    function showCallOverlay(status, name, ext, avatarUrl) {
         const overlay = $('pbx-call-overlay');
         if (!overlay) return;
 
+        const rawExt = String(ext || '').replace(/^(ext:?\s*)+/i, '').trim();
         $('pbx-overlay-name').textContent = name || 'Internal Call';
-        $('pbx-overlay-ext').textContent = 'Ext ' + ext;
+        $('pbx-overlay-ext').textContent = rawExt ? ('Ext ' + rawExt) : '';
         $('pbx-overlay-timer').textContent = '00:00';
-        $('pbx-overlay-avatar').textContent = (name ? name.charAt(0).toUpperCase() : (ext ? ext.charAt(0) : '?'));
+
+        // Auto-lookup avatar if not explicitly provided
+        if (!avatarUrl && userCreds && userCreds.contacts) {
+            const m = userCreds.contacts.find(c => String(c.extension) === String(rawExt));
+            if (m && m.avatar) avatarUrl = m.avatar;
+        }
+
+        const avatarEl = $('pbx-overlay-avatar');
+        if (avatarEl) {
+            const initial = (name ? name.charAt(0).toUpperCase() : (rawExt ? rawExt.charAt(0) : '?'));
+            if (avatarUrl) {
+                avatarEl.innerHTML = `<img src="${avatarUrl}" alt="${name || 'Contact'}" onerror="this.onerror=null; this.parentElement.textContent='${initial}'">`;
+            } else {
+                avatarEl.textContent = initial;
+            }
+        }
 
         updateCallOverlayState(status, false);
 
@@ -1247,6 +1316,16 @@
             setStatus('online', 'Online');
         } else {
             setStatus('offline', 'Offline');
+        }
+
+        // Auto-close Document Picture-in-Picture window if active (Google Meet standard)
+        if (pbxPipWindow && !pbxPipWindow.closed) {
+            try {
+                pbxPipWindow.close();
+            } catch (e) {
+                console.warn('[PBX] Error closing PiP window:', e);
+            }
+            pbxPipWindow = null;
         }
 
         syncInCallPipBar();
@@ -1441,7 +1520,9 @@
         currentSession = session;
 
         const callerExt = session.remote_identity?.uri?.user || session._targetNum || 'Unknown';
-        const callerName = session.remote_identity?.display_name || ('Extension ' + callerExt);
+        const contactMatch = (userCreds && userCreds.contacts) ? userCreds.contacts.find((c) => String(c.extension) === String(callerExt)) : null;
+        const callerName = session.remote_identity?.display_name || (contactMatch ? contactMatch.name : ('Extension ' + callerExt));
+        const callerAvatar = contactMatch ? contactMatch.avatar : null;
         session._targetNum = callerExt;
         session._targetName = callerName;
 
@@ -1452,7 +1533,14 @@
         const avatarEl = $('pbx-incoming-avatar');
         if (callerEl) callerEl.textContent = callerName;
         if (extEl) extEl.textContent = 'Ext ' + callerExt;
-        if (avatarEl) avatarEl.textContent = callerName ? callerName.charAt(0).toUpperCase() : '?';
+        if (avatarEl) {
+            const initial = callerName ? callerName.charAt(0).toUpperCase() : '?';
+            if (callerAvatar) {
+                avatarEl.innerHTML = `<img src="${callerAvatar}" alt="${callerName}" onerror="this.onerror=null; this.parentElement.textContent='${initial}'">`;
+            } else {
+                avatarEl.textContent = initial;
+            }
+        }
 
         const incomingModal = $('pbx-incoming-modal');
         if (incomingModal) incomingModal.classList.add('active');
@@ -1485,9 +1573,11 @@
         if (fab) fab.classList.remove('is-incoming');
 
         const callerExt = currentSession.remote_identity?.uri?.user || currentSession._targetNum || '';
-        const callerName = currentSession.remote_identity?.display_name || (callerExt ? 'Ext ' + callerExt : 'Caller');
+        const contactMatch = (userCreds && userCreds.contacts) ? userCreds.contacts.find((c) => String(c.extension) === String(callerExt)) : null;
+        const callerName = currentSession.remote_identity?.display_name || (contactMatch ? contactMatch.name : (callerExt ? 'Ext ' + callerExt : 'Caller'));
+        const callerAvatar = contactMatch ? contactMatch.avatar : null;
 
-        showCallOverlay('Connecting...', callerName, callerExt);
+        showCallOverlay('Connecting...', callerName, callerExt, callerAvatar);
 
         const options = {
             mediaConstraints: { audio: true, video: false },
@@ -1560,10 +1650,17 @@
             const avatar = $('pbx-header-avatar');
             if (userDisplay) userDisplay.textContent = data.name;
             if (extBadge) extBadge.textContent = 'Ext ' + data.extension;
-            if (avatar) avatar.textContent = data.name.charAt(0).toUpperCase();
+            if (avatar) {
+                const initial = data.name ? data.name.charAt(0).toUpperCase() : '?';
+                if (data.avatar) {
+                    avatar.innerHTML = `<img src="${data.avatar}" alt="${data.name}" onerror="this.onerror=null; this.parentElement.textContent='${initial}'">`;
+                } else {
+                    avatar.textContent = initial;
+                }
+            }
 
-            // Populate Colleagues & Recents
-            renderContactsList(data.contacts || []);
+            // Populate Colleagues & Team Bridge Rooms
+            renderContactsList(data.contacts || [], data.conferences || []);
             renderRecentsList();
 
             // Check if JsSIP is loaded
@@ -1687,7 +1784,9 @@
                     'pbxToggleInCallKeypad', 'pbxToggleTransferPanel', 'pbxExecuteTransfer',
                     'pbxShowConsultColleagues', 'pbxSendDtmf', 'pbxBackspace', 'switchPbxTab',
                     'togglePbxDialer', 'closePbxDialer', 'pbxPopoutWindow', 'pbxAnswerIncoming',
-                    'pbxRejectIncoming', 'pbxDial', 'pbxQuickCall', 'pbxCallColleague'
+                    'pbxRejectIncoming', 'pbxDial', 'pbxQuickCall', 'pbxCallColleague',
+                    'pbxJoinTeamBridge', 'pbxCallContact', 'pbxMakeCall', 'pbxDialDigit',
+                    'pbxResetDialerPosition'
                 ];
                 pbxMethods.forEach((name) => {
                     if (typeof window[name] === 'function') {

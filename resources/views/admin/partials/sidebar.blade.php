@@ -67,6 +67,12 @@
                             'route'    => 'admin.pbx.hot-desking.index',
                             'patterns' => ['admin.pbx.hot-desking.*'],
                         ],
+                        [
+                            'label'    => __('Team Bridge / Conf'),
+                            'icon'     => 'users',
+                            'route'    => 'admin.pbx.conferences.index',
+                            'patterns' => ['admin.pbx.conferences.*'],
+                        ],
                     ],
                 ],
                 [

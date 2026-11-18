@@ -123,6 +123,23 @@
                 </div>
             </div>
 
+            <!-- Team Bridge Shortcut Pill -->
+            <div class="pbx-team-bridge-pill" onclick="if (typeof pbxJoinTeamBridge === 'function') pbxJoinTeamBridge('700');" title="{{ __('Join Company Multi-Party Voice Room') }}">
+                <div class="pbx-bridge-pill-left">
+                    <div class="pbx-bridge-pill-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div>
+                        <div class="pbx-bridge-pill-title">{{ __('Team Bridge (Ext 700)') }}</div>
+                        <div class="pbx-bridge-pill-sub">{{ __('Multi-party conference room') }}</div>
+                    </div>
+                </div>
+                <button type="button" class="pbx-bridge-pill-btn">
+                    <span>{{ __('Join') }}</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
+
             <!-- 12-Key Dialpad -->
             <div class="pbx-keypad-grid">
                 <button type="button" class="pbx-key-btn" onclick="pbxDialDigit('1')"><span class="num">1</span><span class="sub">&nbsp;</span></button>
@@ -300,9 +317,18 @@
                     <button type="button" onclick="pbxToggleTransferPanel()">&times;</button>
                 </div>
                 <div class="p-3">
+                    <!-- Quick Bridge Transfer Button -->
+                    <div class="d-flex align-items-center justify-content-between mb-2.5 p-2 rounded bg-primary-subtle border border-primary-subtle" onclick="document.getElementById('pbx-transfer-target').value='700'; pbxExecuteTransfer();" style="cursor: pointer;" title="{{ __('Instantly bridge current call to Team Bridge 700') }}">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary font-monospace">700</span>
+                            <span class="small fw-bold text-primary">{{ __('Move to Team Bridge') }}</span>
+                        </div>
+                        <span class="badge bg-success small">{{ __('Join 700') }}</span>
+                    </div>
+
                     <label class="form-label text-white small fw-bold mb-1">{{ __('Transfer to Extension:') }}</label>
                     <div class="input-group mb-2">
-                        <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="pbx-transfer-target" placeholder="e.g. 10003">
+                        <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="pbx-transfer-target" placeholder="e.g. 10003 or 700">
                         <button class="btn btn-primary btn-sm" type="button" onclick="pbxExecuteTransfer()">
                             {{ __('Transfer') }}
                         </button>

@@ -51,16 +51,24 @@ use HasFactory;
 
     public function getAvatarUrlAttribute(): ?string
     {
-        if ($this->avatar) {
-            if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
-                return $this->avatar;
-            }
-            if (file_exists(public_path($this->avatar))) {
-                return asset($this->avatar);
-            }
+        if (!$this->avatar) {
             return null;
         }
-        return null;
+
+        if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+            return $this->avatar;
+        }
+
+        $cleaned = ltrim($this->avatar, '/');
+        if (file_exists(public_path($cleaned))) {
+            return asset($cleaned);
+        }
+
+        if (file_exists(storage_path('app/public/' . $cleaned))) {
+            return asset('storage/' . $cleaned);
+        }
+
+        return asset($cleaned);
     }
 
     public function getImageAttribute(): ?string

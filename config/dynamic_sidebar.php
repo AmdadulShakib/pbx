@@ -38,6 +38,12 @@ return [
             ],
             [
                 'type' => 'route',
+                'label' => 'Team Bridge / Conf',
+                'icon' => 'users',
+                'route' => 'admin.pbx.conferences.index',
+            ],
+            [
+                'type' => 'route',
                 'label' => 'Ring Groups',
                 'icon' => 'users-2',
                 'route' => 'admin.pbx.ring-groups.index',
