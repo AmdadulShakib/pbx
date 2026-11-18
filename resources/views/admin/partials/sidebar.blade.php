@@ -171,7 +171,10 @@
     <div class="sidebar-footer border-top p-3 mt-auto d-flex align-items-center justify-content-between" style="background: #0b1220; border-color: rgba(255, 255, 255, 0.1) !important;">
         <div class="d-flex align-items-center gap-2.5 overflow-hidden">
             @if(auth('admin')->user()?->avatar_url)
-                <img src="{{ auth('admin')->user()->avatar_url }}" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 36px; height: 36px; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);" alt="Avatar">
+                <img src="{{ auth('admin')->user()->avatar_url }}" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 36px; height: 36px; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);" alt="Avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="rounded-circle bg-primary text-white fw-bold align-items-center justify-content-center flex-shrink-0" style="display: none; width: 36px; height: 36px; font-size: 12px; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);">
+                    {{ strtoupper(substr(auth('admin')->user()->name ?? 'AD', 0, 2)) }}
+                </div>
             @else
                 <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 12px; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);">
                     {{ strtoupper(substr(auth('admin')->user()->name ?? 'AD', 0, 2)) }}

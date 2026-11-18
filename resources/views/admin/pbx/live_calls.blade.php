@@ -182,36 +182,45 @@
                 <p class="text-muted small mb-3">{{ __('Monitor active calls in real time. Click any action button above, and Asterisk will instantly call your softphone to bridge you into the call.') }}</p>
 
                 <div class="list-group list-group-flush border rounded-3 mb-3 small">
-                    <div class="list-group-item d-flex align-items-center justify-content-between py-2">
+                    <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-0 bg-transparent">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-primary-subtle text-primary">🎧 Listen</span>
-                            <span class="text-dark">{{ __('Silent Monitor') }}</span>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center gap-1.5 px-2 py-1">
+                                <i data-lucide="headphones" style="width: 12px; height: 12px;"></i>
+                                <span>{{ __('Silent Monitor') }}</span>
+                            </span>
                         </div>
-                        <span class="font-monospace text-muted">*55&lt;ext&gt;</span>
+                        <span class="font-monospace small text-muted bg-light px-2 py-0.5 rounded border">*55&lt;ext&gt;</span>
                     </div>
-                    <div class="list-group-item d-flex align-items-center justify-content-between py-2">
+                    <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-0 bg-transparent">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-warning-subtle text-warning">🗣️ Whisper</span>
-                            <span class="text-dark">{{ __('Coach Agent Only') }}</span>
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle d-inline-flex align-items-center gap-1.5 px-2 py-1">
+                                <i data-lucide="mic" style="width: 12px; height: 12px;"></i>
+                                <span>{{ __('Coach Agent Only') }}</span>
+                            </span>
                         </div>
-                        <span class="font-monospace text-muted">*56&lt;ext&gt;</span>
+                        <span class="font-monospace small text-muted bg-light px-2 py-0.5 rounded border">*56&lt;ext&gt;</span>
                     </div>
-                    <div class="list-group-item d-flex align-items-center justify-content-between py-2">
+                    <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-0 bg-transparent">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-success-subtle text-success">👥 Barge</span>
-                            <span class="text-dark">{{ __('Join 3-Way Call') }}</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1.5 px-2 py-1">
+                                <i data-lucide="users" style="width: 12px; height: 12px;"></i>
+                                <span>{{ __('Join 3-Way Call') }}</span>
+                            </span>
                         </div>
-                        <span class="font-monospace text-muted">*57&lt;ext&gt;</span>
+                        <span class="font-monospace small text-muted bg-light px-2 py-0.5 rounded border">*57&lt;ext&gt;</span>
                     </div>
                 </div>
 
-                <div class="bg-light p-2.5 rounded-3 border">
-                    <div class="fw-bold small text-dark mb-1 d-flex align-items-center gap-1.5">
-                        <i data-lucide="info" style="width: 14px; height: 14px;"></i>
+                <div class="p-3 rounded-3 border" style="background: rgba(37, 99, 235, 0.04); border-color: rgba(37, 99, 235, 0.15) !important;">
+                    <div class="fw-bold small text-primary mb-1 d-flex align-items-center gap-1.5">
+                        <i data-lucide="info" style="width: 15px; height: 15px;"></i>
                         <span>{{ __('In-Call DTMF Mode Switching') }}</span>
                     </div>
-                    <p class="text-muted mb-0" style="font-size: 12px; line-height: 1.4;">
-                        {{ __('While monitoring, press') }} <kbd class="bg-dark text-white px-1">4</kbd> {{ __('for Silent Listen,') }} <kbd class="bg-dark text-white px-1">5</kbd> {{ __('for Whisper, or') }} <kbd class="bg-dark text-white px-1">6</kbd> {{ __('for Barge on your dialpad at any time.') }}
+                    <p class="text-muted mb-0" style="font-size: 12px; line-height: 1.5;">
+                        {{ __('While monitoring, press') }} 
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-1.5 py-0.5">4</span> {{ __('for Listen,') }} 
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle font-monospace px-1.5 py-0.5">5</span> {{ __('for Whisper, or') }} 
+                        <span class="badge bg-success-subtle text-success border border-success-subtle font-monospace px-1.5 py-0.5">6</span> {{ __('for Barge on your keypad.') }}
                     </p>
                 </div>
             </div>

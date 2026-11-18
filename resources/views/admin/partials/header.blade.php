@@ -50,11 +50,11 @@
                             {{ strtoupper(substr(auth('admin')->user()->name ?? 'AD', 0, 2)) }}
                         </div>
                     @endif
-                    <span class="small fw-semibold d-none d-lg-inline text-dark">{{ auth('admin')->user()->name ?? 'Admin' }}</span>
+                    <span class="small fw-semibold d-none d-lg-inline">{{ auth('admin')->user()->name ?? 'Admin' }}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" style="min-width: 220px;">
                     <li class="px-3 py-1.5">
-                        <div class="fw-bold text-dark small">{{ auth('admin')->user()->name ?? 'Administrator' }}</div>
+                        <div class="fw-bold small">{{ auth('admin')->user()->name ?? 'Administrator' }}</div>
                         <div class="text-muted" style="font-size: 11px;">{{ auth('admin')->user()->email ?? 'admin@voxpulse.com' }}</div>
                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle mt-1 font-monospace" style="font-size: 10px;">{{ __('Super Admin') }}</span>
                     </li>

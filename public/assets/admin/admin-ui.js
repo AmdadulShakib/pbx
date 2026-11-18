@@ -59,6 +59,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (themeToggle) {
         themeToggle.addEventListener('click', function () {
+            try {
+                var tt = bootstrap.Tooltip.getInstance(themeToggle);
+                if (tt) tt.hide();
+            } catch (e) {}
+
             var current = html.getAttribute('data-theme') || 'light';
             var next = current === 'dark' ? 'light' : 'dark';
             html.setAttribute('data-theme', next);

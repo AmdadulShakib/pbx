@@ -332,7 +332,7 @@
                         {{ __('Showing :from to :to of :total call records', ['from' => $logs->firstItem() ?? 0, 'to' => $logs->lastItem() ?? 0, 'total' => $logs->total()]) }}
                     </div>
                     <div>
-                        {{ $logs->links() }}
+                        {{ $logs->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             @endif

@@ -48,29 +48,29 @@
                             <label class="form-label fw-bold">{{ __('PBX Engine / Backend Server') }} <span class="text-danger">*</span></label>
                             <div class="row g-3">
                                 <div class="col-12 col-md-6">
-                                    <label class="engine-card d-block p-3 rounded-3 border cursor-pointer transition {{ $driver === 'asterisk' ? 'border-primary bg-primary-subtle shadow-sm' : 'border-light-subtle bg-body' }}" for="driver_asterisk" style="cursor: pointer;">
+                                    <label class="engine-card d-block p-3 rounded-3 cursor-pointer {{ $driver === 'asterisk' ? 'active-engine' : '' }}" for="driver_asterisk">
                                         <div class="d-flex align-items-start gap-3">
                                             <input class="form-check-input mt-1" type="radio" name="driver" id="driver_asterisk" value="asterisk" {{ $driver === 'asterisk' ? 'checked' : '' }} onchange="updateEngineCardSelection(); updateDefaultWsUrl();">
                                             <div class="flex-grow-1">
                                                 <div class="d-flex align-items-center justify-content-between mb-1">
-                                                    <span class="fw-bold text-dark fs-6">Asterisk (PJSIP + WebRTC)</span>
+                                                    <span class="fw-bold fs-6 engine-title">Asterisk (PJSIP + WebRTC)</span>
                                                     <span class="badge bg-success-subtle text-success border border-success-subtle py-0.5 px-2 font-monospace" style="font-size: 11px;">{{ __('Recommended') }}</span>
                                                 </div>
-                                                <p class="text-muted small mb-0">{{ __('High-performance PJSIP stack, WebRTC WebSocket proxy on port 8088 (/ws), and full SIP trunking support.') }}</p>
+                                                <p class="text-muted small mb-0 engine-desc">{{ __('High-performance PJSIP stack, WebRTC WebSocket proxy on port 8088 (/ws), and full SIP trunking support.') }}</p>
                                             </div>
                                         </div>
                                     </label>
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <label class="engine-card d-block p-3 rounded-3 border cursor-pointer transition {{ $driver === 'freeswitch' ? 'border-primary bg-primary-subtle shadow-sm' : 'border-light-subtle bg-body' }}" for="driver_freeswitch" style="cursor: pointer;">
+                                    <label class="engine-card d-block p-3 rounded-3 cursor-pointer {{ $driver === 'freeswitch' ? 'active-engine' : '' }}" for="driver_freeswitch">
                                         <div class="d-flex align-items-start gap-3">
                                             <input class="form-check-input mt-1" type="radio" name="driver" id="driver_freeswitch" value="freeswitch" {{ $driver === 'freeswitch' ? 'checked' : '' }} onchange="updateEngineCardSelection(); updateDefaultWsUrl();">
                                             <div class="flex-grow-1">
                                                 <div class="d-flex align-items-center justify-content-between mb-1">
-                                                    <span class="fw-bold text-dark fs-6">FreeSWITCH (mod_sofia)</span>
+                                                    <span class="fw-bold fs-6 engine-title">FreeSWITCH (mod_sofia)</span>
                                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-0.5 px-2 font-monospace" style="font-size: 11px;">ESL 8021</span>
                                                 </div>
-                                                <p class="text-muted small mb-0">{{ __('Event Socket Library (ESL) interface with WebRTC WebSocket on port 5066 / 7443.') }}</p>
+                                                <p class="text-muted small mb-0 engine-desc">{{ __('Event Socket Library (ESL) interface with WebRTC WebSocket on port 5066 / 7443.') }}</p>
                                             </div>
                                         </div>
                                     </label>
@@ -303,15 +303,11 @@
         const freeswitchCard = document.querySelector('label[for="driver_freeswitch"]');
         
         if (isAsterisk) {
-            asteriskCard.classList.add('border-primary', 'bg-primary-subtle', 'shadow-sm');
-            asteriskCard.classList.remove('border-light-subtle', 'bg-body');
-            freeswitchCard.classList.remove('border-primary', 'bg-primary-subtle', 'shadow-sm');
-            freeswitchCard.classList.add('border-light-subtle', 'bg-body');
+            asteriskCard.classList.add('active-engine');
+            freeswitchCard.classList.remove('active-engine');
         } else {
-            freeswitchCard.classList.add('border-primary', 'bg-primary-subtle', 'shadow-sm');
-            freeswitchCard.classList.remove('border-light-subtle', 'bg-body');
-            asteriskCard.classList.remove('border-primary', 'bg-primary-subtle', 'shadow-sm');
-            asteriskCard.classList.add('border-light-subtle', 'bg-body');
+            freeswitchCard.classList.add('active-engine');
+            asteriskCard.classList.remove('active-engine');
         }
     }
     function updateDefaultWsUrl() {

@@ -1660,3 +1660,208 @@ html[data-bs-theme='dark'] .table-custom-head th,
   }
 }
 
+/* ==========================================================================
+   Comprehensive Dark Mode, Topbar, Sidebar & Pagination Polish
+   ========================================================================== */
+
+/* 1. Topbar Dark Mode & Light Mode */
+html[data-theme='dark'] .admin-topbar,
+html[data-bs-theme='dark'] .admin-topbar {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+html[data-theme='dark'] .admin-topbar .btn-light,
+html[data-bs-theme='dark'] .admin-topbar .btn-light {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #e2e8f0 !important;
+}
+html[data-theme='dark'] .admin-topbar .btn-light:hover,
+html[data-bs-theme='dark'] .admin-topbar .btn-light:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+}
+html[data-theme='dark'] .admin-topbar .dropdown-toggle,
+html[data-bs-theme='dark'] .admin-topbar .dropdown-toggle {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+}
+html[data-theme='dark'] .admin-topbar .dropdown-toggle span,
+html[data-bs-theme='dark'] .admin-topbar .dropdown-toggle span {
+    color: #ffffff !important;
+}
+
+/* 2. Page Header & Typography */
+html[data-theme='dark'] .page-title,
+html[data-bs-theme='dark'] .page-title {
+    color: #ffffff !important;
+}
+html[data-theme='dark'] .page-header,
+html[data-bs-theme='dark'] .page-header {
+    background: transparent !important;
+}
+html[data-theme='dark'] .text-dark,
+html[data-bs-theme='dark'] .text-dark {
+    color: #f1f5f9 !important;
+}
+
+/* 3. Cards in Dark Mode */
+html[data-theme='dark'] .card,
+html[data-bs-theme='dark'] .card {
+    background: #111827 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #e2e8f0 !important;
+}
+html[data-theme='dark'] .card-header,
+html[data-bs-theme='dark'] .card-header {
+    background: transparent !important;
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+html[data-theme='dark'] .card-title,
+html[data-bs-theme='dark'] .card-title,
+html[data-theme='dark'] .card-header h5,
+html[data-bs-theme='dark'] .card-header h5,
+html[data-theme='dark'] .card-header h6,
+html[data-bs-theme='dark'] .card-header h6 {
+    color: #ffffff !important;
+}
+
+/* 4. Form Controls in Dark Mode */
+html[data-theme='dark'] .form-label,
+html[data-bs-theme='dark'] .form-label {
+    color: #cbd5e1 !important;
+}
+html[data-theme='dark'] .form-control,
+html[data-theme='dark'] .form-select,
+html[data-bs-theme='dark'] .form-control,
+html[data-bs-theme='dark'] .form-select {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+html[data-theme='dark'] .form-control:focus,
+html[data-theme='dark'] .form-select:focus,
+html[data-bs-theme='dark'] .form-control:focus,
+html[data-bs-theme='dark'] .form-select:focus {
+    background-color: #0f172a !important;
+    border-color: #3b82f6 !important;
+    color: #ffffff !important;
+}
+html[data-theme='dark'] .input-group-text,
+html[data-bs-theme='dark'] .input-group-text {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+/* 5. Pagination Styling & Massive Chevron Bug Fix */
+.pagination svg,
+nav[role="navigation"] svg {
+    width: 14px !important;
+    height: 14px !important;
+    max-width: 14px !important;
+    max-height: 14px !important;
+    display: inline-block !important;
+    vertical-align: middle;
+}
+.pagination {
+    margin-bottom: 0 !important;
+    gap: 4px;
+}
+.page-item .page-link {
+    border-radius: 6px !important;
+    font-size: 13px;
+    padding: 0.35rem 0.65rem;
+    line-height: 1.4;
+}
+html[data-theme='dark'] .page-item .page-link,
+html[data-bs-theme='dark'] .page-item .page-link {
+    background-color: #111827;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+}
+html[data-theme='dark'] .page-item.active .page-link,
+html[data-bs-theme='dark'] .page-item.active .page-link {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+/* 6. Clean Sidebar Collapse Rules */
+.sidebar-collapsed .admin-sidebar {
+    width: 72px !important;
+    flex: 0 0 72px !important;
+    transition: width 0.2s ease, flex-basis 0.2s ease;
+}
+.sidebar-collapsed .admin-sidebar .sidebar-brand {
+    padding: 0 0.5rem !important;
+    justify-content: center !important;
+}
+.sidebar-collapsed .admin-sidebar .sidebar-brand .badge,
+.sidebar-collapsed .admin-sidebar .sidebar-brand .brand-logo {
+    display: none !important;
+}
+.sidebar-collapsed .admin-sidebar .sidebar-search {
+    display: none !important;
+}
+.sidebar-collapsed .admin-sidebar .sidebar-section-heading {
+    display: none !important;
+}
+.sidebar-collapsed .admin-sidebar .nav-link span,
+.sidebar-collapsed .admin-sidebar .nav-link .badge {
+    display: none !important;
+}
+.sidebar-collapsed .admin-sidebar .nav-link {
+    justify-content: center !important;
+    padding: 0.6rem !important;
+    margin: 3px 0 !important;
+}
+.sidebar-collapsed .admin-sidebar .nav-link i,
+.sidebar-collapsed .admin-sidebar .nav-link svg {
+    margin: 0 !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+.sidebar-collapsed .admin-sidebar .sidebar-footer {
+    padding: 0.75rem 0.25rem !important;
+    justify-content: center !important;
+}
+.sidebar-collapsed .admin-sidebar .sidebar-footer .overflow-hidden,
+.sidebar-collapsed .admin-sidebar .sidebar-footer form {
+    display: none !important;
+}
+
+/* 7. Engine Selector Cards (Settings Page) */
+.engine-card {
+    transition: all 0.2s ease;
+    border: 1.5px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    cursor: pointer;
+}
+.engine-card:hover {
+    border-color: #3b82f6 !important;
+    transform: translateY(-1px);
+}
+.engine-card.active-engine {
+    border-color: #2563eb !important;
+    background: rgba(37, 99, 235, 0.05) !important;
+    box-shadow: 0 0 0 1px #2563eb !important;
+}
+html[data-theme='dark'] .engine-card,
+html[data-bs-theme='dark'] .engine-card {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    background: #0f172a !important;
+}
+html[data-theme='dark'] .engine-card:hover,
+html[data-bs-theme='dark'] .engine-card:hover {
+    border-color: #60a5fa !important;
+}
+html[data-theme='dark'] .engine-card.active-engine,
+html[data-bs-theme='dark'] .engine-card.active-engine {
+    border-color: #3b82f6 !important;
+    background: rgba(59, 130, 246, 0.12) !important;
+    box-shadow: 0 0 0 1px #3b82f6 !important;
+}
+
