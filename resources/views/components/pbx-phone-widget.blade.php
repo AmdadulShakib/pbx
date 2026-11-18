@@ -20,8 +20,18 @@
         </div>
     </button>
 
-    <!-- Floating In-Call PiP Mini Bar (Active Call Floating Widget) -->
+    <!-- Floating In-Call PiP Mini Bar (Active Call Floating Widget - Fully Draggable like Google Meet) -->
     <div class="pbx-incall-pip-bar" id="pbx-incall-pip-bar" style="display: none;">
+        <div class="pbx-pip-drag-handle" title="{{ __('Drag to move anywhere on screen') }}">
+            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+                <circle cx="2.5" cy="2.5" r="1.5"/>
+                <circle cx="7.5" cy="2.5" r="1.5"/>
+                <circle cx="2.5" cy="8" r="1.5"/>
+                <circle cx="7.5" cy="8" r="1.5"/>
+                <circle cx="2.5" cy="13.5" r="1.5"/>
+                <circle cx="7.5" cy="13.5" r="1.5"/>
+            </svg>
+        </div>
         <div class="pbx-pip-badge">
             <span class="pbx-pip-live-dot"></span>
             <span class="pbx-pip-timer" id="pbx-pip-timer">00:00</span>
@@ -31,12 +41,19 @@
             <div class="pbx-pip-sub" id="pbx-pip-sub">{{ __('Voice Call Active') }}</div>
         </div>
         <div class="pbx-pip-actions">
+            <!-- Mute Toggle -->
             <button type="button" class="pbx-pip-action-btn" id="pbx-pip-mute-btn" onclick="if (typeof pbxToggleMute === 'function') pbxToggleMute(event);" title="{{ __('Mute Microphone') }}">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             </button>
+            <!-- Hangup Call -->
             <button type="button" class="pbx-pip-action-btn pbx-pip-hangup" onclick="if (typeof pbxHangup === 'function') pbxHangup(event);" title="{{ __('End Call') }}">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.39.39.39 1.02 0 1.41l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
             </button>
+            <!-- Float Over All Tabs & Software (Meet OS PiP Mode) -->
+            <button type="button" class="pbx-pip-action-btn pbx-popout-btn" onclick="if (typeof pbxPopoutWindow === 'function') pbxPopoutWindow();" title="{{ __('Float over all software & tabs (Google Meet Picture-in-Picture)') }}">
+                <svg class="pbx-pip-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="10" width="8" height="6" rx="1"/></svg>
+            </button>
+            <!-- Expand Softphone -->
             <button type="button" class="pbx-pip-action-btn pbx-pip-expand" onclick="togglePbxDialer()" title="{{ __('Expand Softphone') }}">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
             </button>
@@ -152,6 +169,24 @@
 
         <!-- ACTIVE CALL SCREEN OVERLAY (Premium PBX Call State) -->
         <div class="pbx-call-overlay" id="pbx-call-overlay">
+            <!-- In-Call Top Header Bar (Minimize & Meet-Style Floating PiP) -->
+            <div class="pbx-incall-topbar">
+                <div class="pbx-incall-top-status">
+                    <span class="pbx-live-pulse-dot"></span>
+                    <span class="pbx-incall-state-text" id="pbx-incall-top-state">{{ __('Voice Call Active') }}</span>
+                </div>
+                <div class="pbx-incall-top-actions">
+                    <!-- Google Meet Style OS-Level Floating PiP Window (Always on Top over all software) -->
+                    <button type="button" class="pbx-icon-btn pbx-popout-btn" onclick="if (typeof pbxPopoutWindow === 'function') pbxPopoutWindow();" title="{{ __('Float over all software & tabs (Google Meet Picture-in-Picture)') }}">
+                        <svg class="pbx-pip-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="10" width="8" height="6" rx="1"/></svg>
+                    </button>
+                    <!-- Minimize to Draggable Floating PiP Pill -->
+                    <button type="button" class="pbx-icon-btn pbx-incall-minimize-btn" onclick="if (typeof closePbxDialer === 'function') closePbxDialer(); else togglePbxDialer();" title="{{ __('Minimize to floating bar') }}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                </div>
+            </div>
+
             <!-- Callee Info -->
             <div class="pbx-call-hero">
                 <div class="pbx-avatar-halo" id="pbx-avatar-halo">

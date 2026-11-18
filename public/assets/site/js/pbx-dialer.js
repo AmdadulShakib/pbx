@@ -234,6 +234,215 @@
         }
     }
 
+    function restorePipBarPosition() {
+        const pipBar = $('pbx-incall-pip-bar');
+        if (!pipBar) return;
+        try {
+            const saved = sessionStorage.getItem('pbx_pip_pos');
+            if (saved) {
+                const pos = JSON.parse(saved);
+                const rect = pipBar.getBoundingClientRect();
+                const maxLeft = Math.max(10, window.innerWidth - (rect.width || 340) - 12);
+                const maxTop = Math.max(10, window.innerHeight - (rect.height || 54) - 12);
+                const left = Math.max(12, Math.min(maxLeft, pos.left));
+                const top = Math.max(12, Math.min(maxTop, pos.top));
+                pipBar.style.position = 'fixed';
+                pipBar.style.left = left + 'px';
+                pipBar.style.top = top + 'px';
+                pipBar.style.right = 'auto';
+                pipBar.style.bottom = 'auto';
+            }
+        } catch (e) {}
+    }
+
+    function initPipBarDraggable() {
+        const pipBar = $('pbx-incall-pip-bar');
+        if (!pipBar || pipBar._dragInit) return;
+        pipBar._dragInit = true;
+
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let initialLeft = 0, initialTop = 0;
+        let hasMoved = false;
+
+        function onPointerDown(e) {
+            // Don't drag if clicking buttons
+            if (e.target.closest('button')) return;
+
+            isDragging = true;
+            hasMoved = false;
+            startX = e.clientX ?? (e.touches && e.touches[0].clientX) ?? 0;
+            startY = e.clientY ?? (e.touches && e.touches[0].clientY) ?? 0;
+
+            const rect = pipBar.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+
+            pipBar.style.position = 'fixed';
+            pipBar.style.left = initialLeft + 'px';
+            pipBar.style.top = initialTop + 'px';
+            pipBar.style.right = 'auto';
+            pipBar.style.bottom = 'auto';
+
+            pipBar.classList.add('is-dragging');
+
+            window.addEventListener('pointermove', onPointerMove, { passive: false });
+            window.addEventListener('pointerup', onPointerUp);
+            window.addEventListener('pointercancel', onPointerUp);
+        }
+
+        function onPointerMove(e) {
+            if (!isDragging) return;
+            const curX = e.clientX ?? (e.touches && e.touches[0].clientX) ?? 0;
+            const curY = e.clientY ?? (e.touches && e.touches[0].clientY) ?? 0;
+
+            const deltaX = curX - startX;
+            const deltaY = curY - startY;
+
+            if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+                hasMoved = true;
+            }
+
+            const rect = pipBar.getBoundingClientRect();
+            let newLeft = initialLeft + deltaX;
+            let newTop = initialTop + deltaY;
+
+            const maxLeft = Math.max(10, window.innerWidth - rect.width - 12);
+            const maxTop = Math.max(10, window.innerHeight - rect.height - 12);
+
+            newLeft = Math.max(12, Math.min(maxLeft, newLeft));
+            newTop = Math.max(12, Math.min(maxTop, newTop));
+
+            pipBar.style.left = newLeft + 'px';
+            pipBar.style.top = newTop + 'px';
+
+            e.preventDefault();
+        }
+
+        function onPointerUp() {
+            if (!isDragging) return;
+            isDragging = false;
+            pipBar.classList.remove('is-dragging');
+
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
+            window.removeEventListener('pointercancel', onPointerUp);
+
+            if (hasMoved) {
+                const rect = pipBar.getBoundingClientRect();
+                try {
+                    sessionStorage.setItem('pbx_pip_pos', JSON.stringify({ left: rect.left, top: rect.top }));
+                } catch (e) {}
+            }
+        }
+
+        pipBar.addEventListener('pointerdown', onPointerDown);
+
+        // Prevent click-to-expand if user was dragging
+        const infoEl = pipBar.querySelector('.pbx-pip-info');
+        if (infoEl) {
+            infoEl.addEventListener('click', function (e) {
+                if (hasMoved) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    hasMoved = false;
+                }
+            }, true);
+        }
+
+        window.addEventListener('resize', function () {
+            if (pipBar.style.display !== 'none') {
+                restorePipBarPosition();
+            }
+        });
+    }
+
+    function initDialerCardDraggable() {
+        const card = $('pbx-dialer-card');
+        if (!card || card._dragInit) return;
+        card._dragInit = true;
+
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let initialLeft = 0, initialTop = 0;
+        let hasMoved = false;
+
+        function onPointerDown(e) {
+            if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
+            if (card.classList.contains('in-pip-mode')) return;
+
+            isDragging = true;
+            hasMoved = false;
+            startX = e.clientX ?? (e.touches && e.touches[0].clientX) ?? 0;
+            startY = e.clientY ?? (e.touches && e.touches[0].clientY) ?? 0;
+
+            const rect = card.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+
+            card.style.position = 'fixed';
+            card.style.left = initialLeft + 'px';
+            card.style.top = initialTop + 'px';
+            card.style.right = 'auto';
+            card.style.bottom = 'auto';
+
+            card.classList.add('is-dragging');
+
+            window.addEventListener('pointermove', onPointerMove, { passive: false });
+            window.addEventListener('pointerup', onPointerUp);
+            window.addEventListener('pointercancel', onPointerUp);
+        }
+
+        function onPointerMove(e) {
+            if (!isDragging) return;
+            const curX = e.clientX ?? (e.touches && e.touches[0].clientX) ?? 0;
+            const curY = e.clientY ?? (e.touches && e.touches[0].clientY) ?? 0;
+
+            const deltaX = curX - startX;
+            const deltaY = curY - startY;
+
+            if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+                hasMoved = true;
+            }
+
+            const rect = card.getBoundingClientRect();
+            let newLeft = initialLeft + deltaX;
+            let newTop = initialTop + deltaY;
+
+            const maxLeft = Math.max(10, window.innerWidth - rect.width - 12);
+            const maxTop = Math.max(10, window.innerHeight - rect.height - 12);
+
+            newLeft = Math.max(12, Math.min(maxLeft, newLeft));
+            newTop = Math.max(12, Math.min(maxTop, newTop));
+
+            card.style.left = newLeft + 'px';
+            card.style.top = newTop + 'px';
+
+            e.preventDefault();
+        }
+
+        function onPointerUp() {
+            if (!isDragging) return;
+            isDragging = false;
+            card.classList.remove('is-dragging');
+
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
+            window.removeEventListener('pointercancel', onPointerUp);
+        }
+
+        const header = card.querySelector('.pbx-header');
+        const inCallTopbar = card.querySelector('.pbx-incall-topbar');
+        if (header) {
+            header.style.cursor = 'grab';
+            header.addEventListener('pointerdown', onPointerDown);
+        }
+        if (inCallTopbar) {
+            inCallTopbar.style.cursor = 'grab';
+            inCallTopbar.addEventListener('pointerdown', onPointerDown);
+        }
+    }
+
     function syncInCallPipBar() {
         const pipBar = $('pbx-incall-pip-bar');
         const card = $('pbx-dialer-card');
@@ -241,6 +450,10 @@
         const isCallActive = !!(currentSession && !currentSession.isEnded());
 
         if (!pipBar) return;
+
+        // Ensure drag listeners are active
+        initPipBarDraggable();
+        initDialerCardDraggable();
 
         if (isCallActive) {
             // When call is active:
@@ -253,6 +466,8 @@
                 pipBar.style.display = 'flex';
                 if (fab) fab.style.display = 'none';
 
+                restorePipBarPosition();
+
                 const nameEl = $('pbx-pip-name');
                 const subEl = $('pbx-pip-sub');
                 const overlayName = $('pbx-overlay-name')?.textContent;
@@ -261,7 +476,9 @@
                 const targetNum = currentSession._targetNum || (currentSession.remote_identity ? currentSession.remote_identity.uri.user : 'Caller');
 
                 if (nameEl) nameEl.textContent = overlayName || targetName || targetNum;
-                if (subEl) subEl.textContent = `Ext ${overlayExt || targetNum} • Connected`;
+                const cleanExt = (overlayExt || targetNum || '').replace(/^Ext:?\s*/i, '').trim();
+                const callStatus = currentSession._callStatusText || 'Connected';
+                if (subEl) subEl.textContent = `Ext ${cleanExt} • ${callStatus}`;
 
                 const muteBtn = $('pbx-pip-mute-btn');
                 if (muteBtn) {
@@ -890,11 +1107,17 @@
     }
 
     function updateCallOverlayState(statusText, isConnected) {
+        if (currentSession) {
+            currentSession._callStatusText = statusText;
+        }
         const statusEl = $('pbx-overlay-status');
         const badgeState = $('pbx-overlay-badge-state');
         const waves = $('pbx-audio-waves');
+        const topStateEl = $('pbx-incall-top-state');
+        const pipSubEl = $('pbx-pip-sub');
 
         if (statusEl) statusEl.textContent = statusText;
+        if (topStateEl) topStateEl.textContent = statusText;
         if (badgeState) {
             if (isConnected) {
                 badgeState.classList.add('connected');
@@ -903,6 +1126,12 @@
                 badgeState.classList.remove('connected');
                 if (waves) waves.style.display = 'none';
             }
+        }
+        if (pipSubEl && currentSession) {
+            const overlayExt = $('pbx-overlay-ext')?.textContent;
+            const targetNum = currentSession._targetNum || (currentSession.remote_identity ? currentSession.remote_identity.uri.user : 'Caller');
+            const cleanExt = (overlayExt || targetNum || '').replace(/^Ext:?\s*/i, '').trim();
+            pipSubEl.textContent = `Ext ${cleanExt} • ${statusText}`;
         }
     }
 
@@ -1347,20 +1576,38 @@
     window.pbxPopoutWindow = async function () {
         // 1. If already open in PiP, close it to dock back into main window
         if (pbxPipWindow && !pbxPipWindow.closed) {
-            pbxPipWindow.close();
+            try {
+                pbxPipWindow.close();
+            } catch (e) {}
             return;
         }
 
         // 2. Google Meet Style: Document Picture-in-Picture API (Chrome 116+, Edge)
         // This opens a floating, OS-level ALWAYS ON TOP mini window without losing the call or opening a tab!
+        // It floats over ALL software (Word, Excel, desktop, other browser tabs, etc.)
         if ('documentPictureInPicture' in window) {
             try {
                 const pipWindow = await window.documentPictureInPicture.requestWindow({
                     width: 360,
-                    height: 600,
+                    height: 560,
                 });
 
                 pbxPipWindow = pipWindow;
+
+                // Bridge all PBX functions to the PiP window's global scope so inline onclick="..." works 100%
+                const pbxMethods = [
+                    'pbxHangup', 'pbxToggleMute', 'pbxToggleHold', 'pbxToggleSpeaker',
+                    'pbxToggleInCallKeypad', 'pbxToggleTransferPanel', 'pbxExecuteTransfer',
+                    'pbxShowConsultColleagues', 'pbxSendDtmf', 'pbxBackspace', 'switchPbxTab',
+                    'togglePbxDialer', 'closePbxDialer', 'pbxPopoutWindow', 'pbxAnswerIncoming',
+                    'pbxRejectIncoming', 'pbxDial', 'pbxQuickCall', 'pbxCallColleague'
+                ];
+                pbxMethods.forEach((name) => {
+                    if (typeof window[name] === 'function') {
+                        pipWindow[name] = window[name];
+                    }
+                });
+                pipWindow.parentWindow = window;
 
                 // Copy all page stylesheets and font links to PiP window
                 document.querySelectorAll('link[rel="stylesheet"], style').forEach((styleEl) => {
@@ -1385,16 +1632,26 @@
                 const originalParent = card.parentElement;
                 const originalNext = card.nextSibling;
 
+                // Hide the in-page floating bar while in PiP
+                const pipBar = document.getElementById('pbx-incall-pip-bar');
+                if (pipBar) pipBar.style.display = 'none';
+
                 // Move dialer card into the floating PiP window
                 card.classList.add('in-pip-mode', 'open');
                 pipWindow.document.body.appendChild(card);
 
-                // Change icon to "Dock / Return to Page"
-                const popoutBtns = card.querySelectorAll('.pbx-popout-btn');
-                popoutBtns.forEach(btn => {
-                    btn.setAttribute('title', 'Dock back to page (Close Picture-in-Picture)');
-                    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 14h6m0 0v6m0-6L3 21"/><path d="M20 10h-6m0 0V4m0 6l7-7"/></svg>`;
-                });
+                // Change all popout buttons to "Dock / Return to Page"
+                function setDockIcon() {
+                    const allPopoutBtns = [
+                        ...document.querySelectorAll('.pbx-popout-btn'),
+                        ...pipWindow.document.querySelectorAll('.pbx-popout-btn')
+                    ];
+                    allPopoutBtns.forEach(btn => {
+                        btn.setAttribute('title', 'Dock back to page (Close Floating Window)');
+                        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 14h6m0 0v6m0-6L3 21"/><path d="M20 10h-6m0 0V4m0 6l7-7"/></svg>`;
+                    });
+                }
+                setDockIcon();
 
                 // When PiP window closes, safely return dialer card back to the page
                 pipWindow.addEventListener('pagehide', () => {
@@ -1405,10 +1662,11 @@
                     }
                     card.classList.remove('in-pip-mode');
                     pbxPipWindow = null;
-                    popoutBtns.forEach(btn => {
-                        btn.setAttribute('title', 'Picture-in-Picture Floating Window (Like Google Meet - Always on top)');
+                    document.querySelectorAll('.pbx-popout-btn').forEach(btn => {
+                        btn.setAttribute('title', 'Float over all software & tabs (Google Meet Picture-in-Picture)');
                         btn.innerHTML = `<svg class="pbx-pip-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="10" width="8" height="6" rx="1"/></svg>`;
                     });
+                    syncInCallPipBar();
                 });
 
                 return;
@@ -1423,6 +1681,31 @@
         const winWidth = 360;
         const winHeight = 620;
         const left = window.screen.width ? (window.screen.width - winWidth - 30) : 100;
+        const top = 60;
+        const win = window.open(
+            popoutUrl,
+            'VoxPulsePbxSoftphone',
+            `popup=1,popup=yes,width=${winWidth},height=${winHeight},top=${top},left=${left},scrollbars=no,resizable=yes,status=no,toolbar=no,menubar=no,location=no`
+        );
+        if (win) {
+            win.focus();
+            const card = document.getElementById('pbx-dialer-card');
+            if (card && card.classList.contains('active')) {
+                card.classList.remove('active');
+            }
+        } else {
+            alert('Pop-up window was blocked by your browser. Please allow popups for this site.');
+        }
+    };
+
+    // Auto-Register MediaSession Picture-in-Picture (Chrome 120+)
+    if ('mediaSession' in navigator && 'documentPictureInPicture' in window) {
+        try {
+            navigator.mediaSession.setActionHandler('enterpictureinpicture', async () => {
+                window.pbxPopoutWindow();
+            });
+        } catch (e) {}
+    }
         const top = 60;
         const win = window.open(
             popoutUrl,

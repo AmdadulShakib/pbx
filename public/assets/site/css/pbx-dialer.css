@@ -258,28 +258,57 @@ html[data-theme="dark"],
     z-index: 999999 !important;
 }
 
-.pbx-dialer-card.in-pip-mode .pbx-minimize-btn {
+.pbx-dialer-card.in-pip-mode .pbx-minimize-btn,
+.pbx-dialer-card.in-pip-mode .pbx-incall-minimize-btn {
     display: none !important;
 }
 
-/* Floating In-Call PiP Mini Bar (Google Meet Style) */
+/* Floating In-Call PiP Mini Bar (Google Meet Style - Draggable Anywhere) */
 .pbx-incall-pip-bar {
-    position: relative;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
     height: 52px;
     background: #0f172a;
     border: 1px solid #334155;
     border-radius: 9999px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 0 16px;
-    z-index: 99999;
+    gap: 8px;
+    padding: 0 14px 0 8px;
+    z-index: 9999999;
     color: #ffffff;
-    cursor: default;
+    cursor: grab;
     user-select: none;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    touch-action: none;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
     animation: pbx-pip-slide-up 0.25s ease-out;
+}
+
+.pbx-incall-pip-bar.is-dragging {
+    cursor: grabbing !important;
+    box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.7), 0 0 0 2px #3b82f6 !important;
+    transition: none !important;
+}
+
+.pbx-pip-drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 2px;
+    color: #64748b;
+    cursor: grab;
+    transition: color 0.15s ease;
+}
+
+.pbx-incall-pip-bar:hover .pbx-pip-drag-handle {
+    color: #94a3b8;
+}
+
+.pbx-incall-pip-bar.is-dragging .pbx-pip-drag-handle {
+    cursor: grabbing;
+    color: #38bdf8;
 }
 
 @keyframes pbx-pip-slide-up {
@@ -883,7 +912,7 @@ html[data-theme="dark"],
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 24px 18px;
+    padding: 12px 18px 18px 18px;
     opacity: 0;
     pointer-events: none;
     transform: translateY(100%);
@@ -896,10 +925,71 @@ html[data-theme="dark"],
     transform: translateY(0);
 }
 
+/* In-Call Top Header Bar (Minimize & Meet-Style Floating PiP) */
+.pbx-incall-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 2px 0 8px 0;
+    border-bottom: 1px solid var(--pbx-border-subtle);
+    margin-bottom: 4px;
+}
+
+.pbx-incall-top-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pbx-text-secondary);
+}
+
+.pbx-live-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #22c55e;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    animation: pbx-pulse-live 1.8s infinite;
+}
+
+@keyframes pbx-pulse-live {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.pbx-incall-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pbx-incall-top-actions .pbx-icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--pbx-border-subtle);
+    background-color: var(--pbx-surface-elevated);
+    color: var(--pbx-text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.pbx-incall-top-actions .pbx-icon-btn:hover {
+    background-color: var(--pbx-surface-hover);
+    color: var(--pbx-text-primary);
+    border-color: var(--pbx-border-strong);
+}
+
 /* Hero Callee Profile */
 .pbx-call-hero {
     text-align: center;
-    padding-top: 10px;
+    padding-top: 4px;
 }
 
 .pbx-avatar-halo {
