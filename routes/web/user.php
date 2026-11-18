@@ -16,6 +16,7 @@ Route::prefix('user')->name('user.')->group(function() {
             Route::get('phone/credentials', [PbxPhoneController::class, 'credentials'])->name('phone.credentials');
             Route::get('conference/{room}/live-status', [PbxPhoneController::class, 'conferenceStatus'])->name('conference.status');
             Route::post('conference/{room}/invite', [PbxPhoneController::class, 'conferenceInvite'])->name('conference.invite');
+            Route::post('conference/{room}/cancel-invite', [PbxPhoneController::class, 'conferenceCancelInvite'])->name('conference.cancel-invite');
             Route::post('conference/{room}/action', [PbxPhoneController::class, 'conferenceAction'])->name('conference.action');
             Route::post('call-log', [\App\Http\Controllers\Web\Admin\PbxCallLogController::class, 'store'])->name('call-log.store');
         });

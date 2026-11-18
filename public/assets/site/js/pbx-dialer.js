@@ -1364,12 +1364,22 @@
             const bannerEl = $('pbx-conf-ringing-banner-container');
             if (bannerEl) {
                 if (data.pending_invites && data.pending_invites.length > 0) {
-                    bannerEl.innerHTML = data.pending_invites.map(inv => `
+                    bannerEl.innerHTML = data.pending_invites.map(inv => {
+                        const inviter = inv.inviter_short_name || ('Ext ' + inv.inviter_ext);
+                        const target = inv.target_short_name || ('Ext ' + inv.target_ext);
+                        return `
                         <div class="pbx-conf-invite-banner">
-                            <span class="spinner-grow spinner-grow-sm" role="status" style="width: 10px; height: 10px;"></span>
-                            <span><b>${escapeHtml(inv.inviter_name || 'Someone')}</b> is inviting <b>${escapeHtml(inv.target_name || ('Ext ' + inv.target_ext))}</b> (Ringing...)...</span>
-                        </div>
-                    `).join('');
+                            <div style="display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; overflow: hidden;">
+                                <span class="spinner-grow spinner-grow-sm text-warning" role="status" style="width: 8px; height: 8px; flex-shrink: 0;"></span>
+                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px;">
+                                    <b>${escapeHtml(inviter)}</b> ringing <b>${escapeHtml(target)}</b>...
+                                </span>
+                            </div>
+                            <button type="button" class="pbx-conf-cancel-ring-btn" onclick="pbxCancelConferenceInvite('${escapeHtml(inv.target_ext)}', '${escapeHtml(room)}')" title="Cancel ringing this member">
+                                <span>Cancel</span>
+                            </button>
+                        </div>`;
+                    }).join('');
                 } else {
                     bannerEl.innerHTML = '';
                 }
@@ -1422,7 +1432,8 @@
                             `;
                         }
 
-                        const invitedByHtml = p.invited_by ? ` <span class="pbx-conf-invited-tag">&bull; Invited by ${escapeHtml(p.invited_by)}</span>` : '';
+                        const invitedByClean = (p.invited_by || '').replace(/\s*\(.*?\)/g, '').trim();
+                        const invitedByHtml = invitedByClean ? ` <span class="pbx-conf-invited-tag">&bull; Invited by ${escapeHtml(invitedByClean)}</span>` : '';
 
                         return `
                             <div class="pbx-conf-participant-row ${p.is_me ? 'is-me' : ''}">
@@ -1460,15 +1471,28 @@
                             : `<span class="pbx-conf-avatar-init">${initial}</span>`;
 
                         const pendingInv = (data.pending_invites || []).find(inv => String(inv.target_ext) === String(m.extension));
-                        const ringBtnHtml = pendingInv
-                            ? `<button type="button" class="pbx-conf-ring-btn" disabled style="opacity: 0.75; background: #d97706; border-color: #d97706;">
-                                   <span class="spinner-grow spinner-grow-sm" role="status" style="width: 10px; height: 10px;"></span>
-                                   <span>Calling (by ${escapeHtml(pendingInv.inviter_name || 'user')})...</span>
-                               </button>`
-                            : `<button type="button" class="pbx-conf-ring-btn" id="pbx-inv-btn-${escapeHtml(m.extension)}" onclick="pbxInviteToConference('${escapeHtml(m.extension)}', '${escapeHtml(room)}')" title="Ring extension now">
-                                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                                   <span>Ring</span>
-                               </button>`;
+                        const cleanMemberName = (m.name || '').replace(/\s*\(.*?\)/g, '').trim() || ('Ext ' + m.extension);
+
+                        let subText = `Ext ${escapeHtml(m.extension)}`;
+                        let actionBtnHtml = '';
+
+                        if (pendingInv) {
+                            const byWho = pendingInv.inviter_short_name || ('Ext ' + pendingInv.inviter_ext);
+                            subText = `<span style="color: #d97706; font-weight: 600;">Ringing (by ${escapeHtml(byWho)})</span>`;
+                            actionBtnHtml = `
+                                <button type="button" class="pbx-conf-cancel-ring-btn" onclick="pbxCancelConferenceInvite('${escapeHtml(m.extension)}', '${escapeHtml(room)}')" title="Cancel ringing this colleague">
+                                    <span class="spinner-grow spinner-grow-sm" role="status" style="width: 7px; height: 7px;"></span>
+                                    <span>Cancel</span>
+                                </button>
+                            `;
+                        } else {
+                            actionBtnHtml = `
+                                <button type="button" class="pbx-conf-ring-btn" id="pbx-inv-btn-${escapeHtml(m.extension)}" onclick="pbxInviteToConference('${escapeHtml(m.extension)}', '${escapeHtml(room)}')" title="Ring extension now">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                    <span>Ring</span>
+                                </button>
+                            `;
+                        }
 
                         return `
                             <div class="pbx-conf-invite-row">
@@ -1476,10 +1500,10 @@
                                     ${avatarHtml}
                                 </div>
                                 <div class="pbx-conf-info">
-                                    <div class="pbx-conf-pname">${escapeHtml(m.name)}</div>
-                                    <div class="pbx-conf-pext">Ext ${escapeHtml(m.extension)}</div>
+                                    <div class="pbx-conf-pname" title="${escapeHtml(m.name)}">${escapeHtml(cleanMemberName)}</div>
+                                    <div class="pbx-conf-pext">${subText}</div>
                                 </div>
-                                ${ringBtnHtml}
+                                ${actionBtnHtml}
                             </div>
                         `;
                     }).join('');
@@ -1538,6 +1562,32 @@
                 btn.disabled = false;
                 btn.innerHTML = `Ring`;
             }
+        }
+    };
+
+    window.pbxCancelConferenceInvite = async function (ext, room) {
+        getAudioContext();
+        if (!ext) return;
+        if (!room) {
+            room = currentSession ? (currentSession._targetNum || '700') : '700';
+        }
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        try {
+            const res = await fetch(`/user/pbx/conference/${encodeURIComponent(room)}/cancel-invite`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
+                body: JSON.stringify({ extension: ext })
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                pollConferenceParticipants(room);
+            }
+        } catch (e) {
+            console.warn('[PBX] Cancel invite error:', e);
         }
     };
 
@@ -2149,7 +2199,7 @@
                     'pbxRejectIncoming', 'pbxDial', 'pbxQuickCall', 'pbxCallColleague',
                     'pbxJoinTeamBridge', 'pbxCallContact', 'pbxMakeCall', 'pbxDialDigit',
                     'pbxResetDialerPosition', 'pbxToggleInviteDrawer', 'pbxInviteToConference',
-                    'pbxConferenceAction'
+                    'pbxCancelConferenceInvite', 'pbxConferenceAction'
                 ];
                 pbxMethods.forEach((name) => {
                     if (typeof window[name] === 'function') {

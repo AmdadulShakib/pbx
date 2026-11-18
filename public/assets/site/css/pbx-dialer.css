@@ -1384,6 +1384,12 @@ html[data-theme="dark"],
     display: flex;
     justify-content: center;
     padding-top: 4px;
+    padding-bottom: 2px;
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    background: inherit;
+    z-index: 10;
 }
 
 .pbx-hangup-btn {
@@ -2405,11 +2411,11 @@ html[data-theme="dark"] .pbx-conf-invite-banner {
 
 .pbx-conf-invite-scroll {
     overflow-y: auto;
-    max-height: 220px;
+    max-height: 160px;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    padding: 4px 0;
+    padding: 4px 2px;
 }
 
 .pbx-conf-invite-row {
@@ -2420,6 +2426,7 @@ html[data-theme="dark"] .pbx-conf-invite-banner {
     background: var(--pbx-surface-elevated);
     border: 1px solid var(--pbx-border-subtle);
     border-radius: 6px;
+    gap: 8px;
 }
 
 .pbx-conf-ring-btn {
@@ -2434,8 +2441,32 @@ html[data-theme="dark"] .pbx-conf-invite-banner {
     display: inline-flex;
     align-items: center;
     gap: 3px;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
 }
 
 .pbx-conf-ring-btn:hover {
     background: #059669;
+    transform: scale(1.04);
+}
+
+.pbx-conf-cancel-ring-btn {
+    background: #ef4444;
+    color: #ffffff;
+    border: 1px solid #dc2626;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+
+.pbx-conf-cancel-ring-btn:hover {
+    background: #dc2626;
+    transform: scale(1.04);
 }

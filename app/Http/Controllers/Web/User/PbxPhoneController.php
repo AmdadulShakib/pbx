@@ -263,13 +263,54 @@ class PbxPhoneController extends Controller
             Cache::put($invitesKey, $invites, now()->addMinutes(30));
         }
 
-        // Pending invites (ringing in last 45 seconds and not yet joined)
+        // Query Asterisk active channels to check if ringing invitations are still alive
+        $asteriskChannels = [];
+        try {
+            $chanLines = $ami->command("core show channels concise");
+            if (!empty($chanLines)) {
+                foreach ($chanLines as $cline) {
+                    if (preg_match('/^([^\s!]+)/', trim($cline), $cm)) {
+                        $asteriskChannels[] = $cm[1];
+                    }
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        // Pending invites (ringing in last 45 seconds and still actively ringing in Asterisk)
         $pendingInvites = [];
         $now = now()->timestamp;
         foreach ($invites as $ext => $inv) {
-            if (($inv['status'] ?? '') === 'ringing' && !isset($activeExtMap[$ext]) && ($now - ($inv['timestamp'] ?? 0) < 45)) {
+            if (($inv['status'] ?? '') === 'ringing' && !isset($activeExtMap[$ext])) {
+                $elapsed = $now - ($inv['timestamp'] ?? 0);
+                if ($elapsed > 45) {
+                    unset($invites[$ext]);
+                    $updatedInvites = true;
+                    continue;
+                }
+
+                // If at least 3 seconds have passed since originate, check if channel is still active in Asterisk
+                if ($elapsed >= 3 && !empty($asteriskChannels)) {
+                    $hasActiveChan = false;
+                    foreach ($asteriskChannels as $achan) {
+                        if (str_contains($achan, "PJSIP/{$ext}-") || str_contains($achan, "Local/{$ext}@")) {
+                            $hasActiveChan = true;
+                            break;
+                        }
+                    }
+                    if (!$hasActiveChan) {
+                        // Call was rejected by recipient or timed out in Asterisk!
+                        unset($invites[$ext]);
+                        $updatedInvites = true;
+                        continue;
+                    }
+                }
+
                 $pendingInvites[] = $inv;
             }
+        }
+
+        if ($updatedInvites) {
+            Cache::put($invitesKey, $invites, now()->addMinutes(30));
         }
 
         // Calculate colleagues who have not joined yet
@@ -311,20 +352,24 @@ class PbxPhoneController extends Controller
         $inviterName = $myExtObj?->name ?: ($inviterUser?->name ?: 'Colleague');
         $inviterExt  = $myExtObj?->extension ?: 'Admin';
 
-        // Target name
+        // Target name & clean short names (strip extra titles in parentheses for clean UI)
         $targetObj = PbxExtension::with('user:id,name')->where('extension', $targetExt)->first();
         $targetName = $targetObj ? ($targetObj->name ?: $targetObj->user?->name) : "Ext {$targetExt}";
+        $targetShort = trim(preg_replace('/\s*\(.*?\)/', '', $targetName));
+        $inviterShort = trim(preg_replace('/\s*\(.*?\)/', '', $inviterName));
 
         // Save invite in cache for 30 minutes
         $cacheKey = "pbx_conf_invites_{$room}";
         $invites = Cache::get($cacheKey, []);
         $invites[$targetExt] = [
-            'target_ext'   => (string) $targetExt,
-            'target_name'  => $targetName,
-            'inviter_name' => $inviterName,
-            'inviter_ext'  => (string) $inviterExt,
-            'status'       => 'ringing', // 'ringing', 'joined'
-            'timestamp'    => now()->timestamp,
+            'target_ext'         => (string) $targetExt,
+            'target_name'        => $targetName,
+            'target_short_name'  => $targetShort ?: "Ext {$targetExt}",
+            'inviter_name'       => $inviterName,
+            'inviter_short_name' => $inviterShort ?: "Ext {$inviterExt}",
+            'inviter_ext'        => (string) $inviterExt,
+            'status'             => 'ringing', // 'ringing', 'joined'
+            'timestamp'          => now()->timestamp,
         ];
         Cache::put($cacheKey, $invites, now()->addMinutes(30));
 
@@ -349,6 +394,47 @@ class PbxPhoneController extends Controller
                 'message' => 'Failed to initiate invite call: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Cancel an active ringing invite and terminate the Asterisk ringing channel immediately.
+     */
+    public function conferenceCancelInvite(Request $request, string $room, AsteriskAmi $ami): JsonResponse
+    {
+        $targetExt = trim($request->input('extension', ''));
+        if (empty($targetExt)) {
+            return response()->json(['success' => false, 'message' => 'Extension is required'], 422);
+        }
+
+        // 1. Remove from cache immediately
+        $cacheKey = "pbx_conf_invites_{$room}";
+        $invites = Cache::get($cacheKey, []);
+        if (isset($invites[$targetExt])) {
+            unset($invites[$targetExt]);
+            Cache::put($cacheKey, $invites, now()->addMinutes(30));
+        }
+
+        // 2. Hang up all ringing channels for this extension in Asterisk
+        try {
+            $chanLines = $ami->command("core show channels concise");
+            if (!empty($chanLines)) {
+                foreach ($chanLines as $cline) {
+                    if (preg_match('/^([^\s!]+)/', trim($cline), $cm)) {
+                        $chanName = $cm[1];
+                        if (str_contains($chanName, "PJSIP/{$targetExt}-") || str_contains($chanName, "Local/{$targetExt}@")) {
+                            try {
+                                $ami->command("channel request hangup {$chanName}");
+                            } catch (\Throwable $e) {}
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success' => true,
+            'message' => "Invitation to Ext {$targetExt} cancelled successfully.",
+        ]);
     }
 
     /**
