@@ -20,6 +20,29 @@
         </div>
     </button>
 
+    <!-- Floating In-Call PiP Mini Bar (Active Call Floating Widget) -->
+    <div class="pbx-incall-pip-bar" id="pbx-incall-pip-bar" style="display: none;">
+        <div class="pbx-pip-badge">
+            <span class="pbx-pip-live-dot"></span>
+            <span class="pbx-pip-timer" id="pbx-pip-timer">00:00</span>
+        </div>
+        <div class="pbx-pip-info" onclick="togglePbxDialer()" title="{{ __('Click to expand softphone') }}">
+            <div class="pbx-pip-name" id="pbx-pip-name">{{ __('Connected Call') }}</div>
+            <div class="pbx-pip-sub" id="pbx-pip-sub">{{ __('Voice Call Active') }}</div>
+        </div>
+        <div class="pbx-pip-actions">
+            <button type="button" class="pbx-pip-action-btn" id="pbx-pip-mute-btn" onclick="if (typeof pbxToggleMute === 'function') pbxToggleMute(event);" title="{{ __('Mute Microphone') }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <button type="button" class="pbx-pip-action-btn pbx-pip-hangup" onclick="if (typeof pbxHangup === 'function') pbxHangup(event);" title="{{ __('End Call') }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.39.39.39 1.02 0 1.41l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+            </button>
+            <button type="button" class="pbx-pip-action-btn pbx-pip-expand" onclick="togglePbxDialer()" title="{{ __('Expand Softphone') }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            </button>
+        </div>
+    </div>
+
     <!-- Dialer Pop-up Card -->
     <div class="pbx-dialer-card shadow-2xl" id="pbx-dialer-card">
         <!-- Header -->

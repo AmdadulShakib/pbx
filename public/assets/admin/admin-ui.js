@@ -702,4 +702,175 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
+
+    // =========================================================================
+    // Seamless Admin SPA / PJAX Page Navigator (Zero Call Disconnection)
+    // =========================================================================
+    (function () {
+        let loader = document.getElementById('admin-pjax-bar');
+        if (!loader) {
+            loader = document.createElement('div');
+            loader.id = 'admin-pjax-bar';
+            document.body.appendChild(loader);
+        }
+
+        function setProgress(pct) {
+            if (!loader) return;
+            loader.style.width = pct + '%';
+            if (pct > 0 && pct < 100) {
+                loader.classList.add('loading');
+            } else if (pct >= 100) {
+                setTimeout(function () {
+                    loader.classList.remove('loading');
+                    loader.style.width = '0%';
+                }, 200);
+            }
+        }
+
+        async function navigateAdmin(url, push) {
+            if (push === undefined) push = true;
+            const mainContent = document.querySelector('.admin-content');
+            if (!mainContent) {
+                window.location.href = url;
+                return;
+            }
+
+            setProgress(25);
+            window.pbxIsSpaNavigating = true;
+
+            // If a softphone call is in progress and dialer card is open:
+            // Auto-minimize to the Floating In-Call PiP Bar so it doesn't block the new page!
+            if (window.pbxIsCallActive && window.pbxIsCallActive()) {
+                const dialerCard = document.getElementById('pbx-dialer-card');
+                if (dialerCard && dialerCard.classList.contains('open')) {
+                    dialerCard.classList.remove('open');
+                    if (window.syncPbxPipBar) window.syncPbxPipBar();
+                }
+            }
+
+            try {
+                setProgress(60);
+                const resp = await fetch(url, {
+                    headers: {
+                        'X-PJAX': 'true',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!resp.ok) {
+                    window.location.href = url;
+                    return;
+                }
+
+                const html = await resp.text();
+                setProgress(85);
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.querySelector('.admin-content');
+
+                if (!newContent) {
+                    window.location.href = url;
+                    return;
+                }
+
+                // Update document title
+                const newTitle = doc.querySelector('title');
+                if (newTitle) {
+                    document.title = newTitle.innerText;
+                }
+
+                // Swap main content without touching softphone / WebRTC session
+                mainContent.innerHTML = newContent.innerHTML;
+
+                if (push) {
+                    history.pushState({ pjax: true, url: url }, '', url);
+                }
+
+                // Update sidebar active menu link
+                const cleanUrl = url.split('#')[0].split('?')[0];
+                document.querySelectorAll('.sidebar-nav-link').forEach(function (link) {
+                    const linkUrl = link.href.split('#')[0].split('?')[0];
+                    if (linkUrl === cleanUrl || cleanUrl.startsWith(linkUrl + '/')) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+
+                // Scroll main area to top
+                const scrollEl = document.querySelector('.admin-main');
+                if (scrollEl) scrollEl.scrollTop = 0;
+
+                // Execute scripts in new content
+                doc.querySelectorAll('.admin-content script').forEach(function (script) {
+                    const newScript = document.createElement('script');
+                    Array.from(script.attributes).forEach(function (attr) {
+                        newScript.setAttribute(attr.name, attr.value);
+                    });
+                    newScript.appendChild(document.createTextNode(script.innerHTML));
+                    document.body.appendChild(newScript);
+                    newScript.parentNode.removeChild(newScript);
+                });
+
+                // Re-initialize Lucide icons
+                if (window.initLucideIcons) {
+                    window.initLucideIcons(mainContent);
+                }
+
+                // Re-initialize tooltips
+                const tooltips = [].slice.call(mainContent.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltips.forEach(function (el) {
+                    new bootstrap.Tooltip(el);
+                });
+
+                // Re-initialize charts if on dashboard
+                if (window.initDashboardCharts) {
+                    window.initDashboardCharts(mainContent);
+                }
+
+                setProgress(100);
+            } catch (err) {
+                console.warn('[PBX SPA] Navigation fetch failed, falling back:', err);
+                window.location.href = url;
+            } finally {
+                window.pbxIsSpaNavigating = false;
+            }
+        }
+
+        window.navigateAdmin = navigateAdmin;
+
+        // Global link click handler
+        document.addEventListener('click', function (e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const href = link.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+            if (link.target === '_blank' || link.hasAttribute('download')) return;
+            if (link.hasAttribute('data-bs-toggle') || link.hasAttribute('data-no-pjax')) return;
+
+            // Check same origin and admin prefix
+            try {
+                const targetUrl = new URL(link.href, window.location.origin);
+                if (targetUrl.origin !== window.location.origin) return;
+                if (!targetUrl.pathname.startsWith('/admin')) return;
+                if (targetUrl.pathname.includes('/logout') || targetUrl.pathname.includes('/recording') || targetUrl.pathname.includes('/audio')) return;
+
+                // If same URL, just prevent default
+                if (targetUrl.href === window.location.href) {
+                    e.preventDefault();
+                    return;
+                }
+
+                e.preventDefault();
+                navigateAdmin(targetUrl.href, true);
+            } catch (ex) {}
+        });
+
+        // Browser Back / Forward buttons
+        window.addEventListener('popstate', function () {
+            navigateAdmin(window.location.href, false);
+        });
+    })();
 });

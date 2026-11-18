@@ -234,15 +234,70 @@
         }
     }
 
+    function syncInCallPipBar() {
+        const pipBar = $('pbx-incall-pip-bar');
+        const card = $('pbx-dialer-card');
+        const fab = $('pbx-fab-btn');
+        const isCallActive = !!(currentSession && !currentSession.isEnded());
+
+        if (!pipBar) return;
+
+        if (isCallActive) {
+            // When call is active:
+            if (card && card.classList.contains('open')) {
+                // Dialer card is open -> hide PiP mini bar, hide fab
+                pipBar.style.display = 'none';
+                if (fab) fab.style.display = 'none';
+            } else {
+                // Dialer card is minimized/closed -> SHOW FLOATING IN-CALL PIP BAR!
+                pipBar.style.display = 'flex';
+                if (fab) fab.style.display = 'none';
+
+                const nameEl = $('pbx-pip-name');
+                const subEl = $('pbx-pip-sub');
+                const overlayName = $('pbx-overlay-name')?.textContent;
+                const overlayExt = $('pbx-overlay-ext')?.textContent;
+                const targetName = currentSession._targetName || (currentSession.remote_identity ? currentSession.remote_identity.display_name : null);
+                const targetNum = currentSession._targetNum || (currentSession.remote_identity ? currentSession.remote_identity.uri.user : 'Caller');
+
+                if (nameEl) nameEl.textContent = overlayName || targetName || targetNum;
+                if (subEl) subEl.textContent = `Ext ${overlayExt || targetNum} • Connected`;
+
+                const muteBtn = $('pbx-pip-mute-btn');
+                if (muteBtn) {
+                    if (isCallMuted) {
+                        muteBtn.style.background = '#dc2626';
+                        muteBtn.style.borderColor = '#ef4444';
+                    } else {
+                        muteBtn.style.background = '#1e293b';
+                        muteBtn.style.borderColor = '#334155';
+                    }
+                }
+            }
+        } else {
+            // Call not active -> Hide PiP bar, restore FAB
+            pipBar.style.display = 'none';
+            if (fab) fab.style.display = 'flex';
+        }
+    }
+
+    window.syncPbxPipBar = syncInCallPipBar;
+
     window.togglePbxDialer = function () {
         const card = $('pbx-dialer-card');
         if (!card) return;
         getAudioContext();
         card.classList.toggle('open');
+        syncInCallPipBar();
     };
 
     window.closePbxDialer = function () {
         $('pbx-dialer-card')?.classList.remove('open');
+        syncInCallPipBar();
+    };
+
+    window.pbxIsCallActive = function () {
+        return !!(currentSession && !currentSession.isEnded());
     };
 
     window.switchPbxTab = function (tabName) {
@@ -726,6 +781,7 @@
         }
         updateCallOverlayState('Connected', true);
         setStatus('incall', 'In Call');
+        syncInCallPipBar();
 
         // Check if remote stream is already present on PeerConnection
         if (currentSession && currentSession.connection) {
@@ -861,7 +917,14 @@
             const diff = Math.floor((Date.now() - callStartTime) / 1000);
             const mins = String(Math.floor(diff / 60)).padStart(2, '0');
             const secs = String(diff % 60).padStart(2, '0');
-            if (timerEl) timerEl.textContent = `${mins}:${secs}`;
+            const timeStr = `${mins}:${secs}`;
+            if (timerEl) timerEl.textContent = timeStr;
+
+            const pipTimer = $('pbx-pip-timer');
+            if (pipTimer) pipTimer.textContent = timeStr;
+
+            const fabSub = $('pbx-fab-sub');
+            if (fabSub) fabSub.textContent = `In Call (${timeStr})`;
         }, 1000);
     }
 
@@ -908,6 +971,8 @@
         } else {
             setStatus('offline', 'Offline');
         }
+
+        syncInCallPipBar();
     }
 
     // =========================================================================
@@ -1375,8 +1440,10 @@
         }
     };
 
-    // Accidental Navigation Guard: Prevent dropping calls when navigating or reloading pages
+    // Accidental Navigation Guard: Prevent dropping calls when closing tab or reloading page
     window.addEventListener('beforeunload', function (e) {
+        if (window.pbxIsSpaNavigating) return;
+
         if (currentSession && !currentSession.isEnded()) {
             const warningMsg = 'You have an active PBX call in progress! Leaving or refreshing this page will disconnect the call.';
             e.preventDefault();

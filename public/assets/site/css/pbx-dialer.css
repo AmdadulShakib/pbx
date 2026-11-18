@@ -262,6 +262,138 @@ html[data-theme="dark"],
     display: none !important;
 }
 
+/* Floating In-Call PiP Mini Bar (Google Meet Style) */
+.pbx-incall-pip-bar {
+    position: relative;
+    height: 52px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 9999px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    z-index: 99999;
+    color: #ffffff;
+    cursor: default;
+    user-select: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: pbx-pip-slide-up 0.25s ease-out;
+}
+
+@keyframes pbx-pip-slide-up {
+    from {
+        transform: translateY(16px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.pbx-incall-pip-bar:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 12px 30px -5px rgba(37, 99, 235, 0.3), 0 0 0 1px #3b82f6;
+}
+
+.pbx-pip-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(22, 163, 74, 0.2);
+    border: 1px solid rgba(22, 163, 74, 0.4);
+    padding: 4px 10px;
+    border-radius: 9999px;
+}
+
+.pbx-pip-live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+    animation: pbx-pip-pulse 1.5s infinite;
+}
+
+@keyframes pbx-pip-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.pbx-pip-timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: #4ade80;
+    letter-spacing: 0.05em;
+}
+
+.pbx-pip-info {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    min-width: 100px;
+    max-width: 170px;
+}
+
+.pbx-pip-name {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.pbx-pip-sub {
+    font-size: 10.5px;
+    color: #94a3b8;
+    line-height: 1.2;
+}
+
+.pbx-pip-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-left: 1px solid #334155;
+    padding-left: 10px;
+}
+
+.pbx-pip-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #334155;
+    background: #1e293b;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.pbx-pip-action-btn:hover {
+    background: #334155;
+    color: #ffffff;
+    transform: scale(1.08);
+}
+
+.pbx-pip-action-btn.pbx-pip-hangup {
+    background: #dc2626;
+    border-color: #ef4444;
+    color: #ffffff;
+}
+
+.pbx-pip-action-btn.pbx-pip-hangup:hover {
+    background: #b91c1c;
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+}
+
 /* Header bar */
 .pbx-card-header,
 .pbx-header {
