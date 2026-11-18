@@ -1,17 +1,17 @@
-<aside class="admin-sidebar sidebar sidebar-fixed" id="sidebar">
-    <!-- Brand Header -->
+<aside class="admin-sidebar" id="sidebar">
+    <!-- Brand Header (Permanently Pinned at Top) -->
     <div class="sidebar-brand border-bottom px-3 py-3 d-flex align-items-center justify-content-between">
         <a href="{{ route('admin.dashboard') }}" class="brand d-flex align-items-center gap-2 text-decoration-none">
             <img src="{{ asset('branding/logo-white.svg') }}" alt="VoxPulse PBX" height="30" class="d-inline-block brand-logo">
             <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-1.5 py-0.5 ms-1" style="font-size: 10px;">v2.4</span>
         </a>
-        <button class="btn btn-icon btn-light d-lg-none" type="button" onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()">
+        <button class="btn btn-icon btn-light d-lg-none" type="button" onclick="document.querySelector('#sidebar').classList.toggle('show')">
             <i data-lucide="x" style="width: 18px; height: 18px;"></i>
         </button>
     </div>
 
-    <!-- Navigation Menu Body -->
-    <div class="sidebar-menu px-3 py-2" data-simplebar>
+    <!-- Navigation Menu Body (Independent Scrollable Container) -->
+    <div class="sidebar-menu px-3 py-2">
         <!-- Real-Time Menu Search Filter -->
         <div class="sidebar-search my-2">
             <i data-lucide="search" style="width: 14px; height: 14px;"></i>

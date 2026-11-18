@@ -106,22 +106,82 @@ body.admin-body {
     color: #0f172a;
 }
 
+html, body.admin-body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden !important;
+}
+
 .admin-layout {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden !important;
 }
 
 .admin-sidebar {
     width: 260px;
     flex: 0 0 260px;
     min-width: 0;
-    background: var(--ui-sidebar-bg);
-    color: var(--ui-sidebar-text);
+    height: 100vh;
+    max-height: 100vh;
+    background: #0f172a;
+    color: #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1030;
+    overflow: hidden !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    transition: width 0.25s ease, flex-basis 0.25s ease;
+}
+
+.admin-sidebar .sidebar-brand {
+    flex: 0 0 64px;
+    height: 64px;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #0f172a;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0 1.25rem;
     position: sticky;
     top: 0;
-    height: 100vh;
-    overflow-y: auto;
-    transition: width 0.25s ease, flex-basis 0.25s ease;
+    z-index: 20;
+}
+
+.admin-sidebar .sidebar-menu {
+    flex: 1 1 auto;
+    height: calc(100vh - 64px - 65px);
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    padding: 0.75rem 1rem 2.5rem 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.admin-sidebar .sidebar-menu::-webkit-scrollbar {
+    width: 5px;
+}
+.admin-sidebar .sidebar-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+.admin-sidebar .sidebar-menu::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+.admin-sidebar .sidebar-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.admin-sidebar .sidebar-footer {
+    flex-shrink: 0;
+    background: #0b1220;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.85rem 1.25rem;
+    z-index: 20;
 }
 
 .sidebar-collapsed .admin-sidebar {
@@ -308,27 +368,52 @@ body.admin-body {
 }
 
 .admin-main {
-    flex: 1;
+    flex: 1 1 auto;
+    height: 100vh;
+    max-height: 100vh;
     display: flex;
     flex-direction: column;
     min-width: 0;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    background: #f8fafc;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.admin-main::-webkit-scrollbar {
+    width: 7px;
+}
+.admin-main::-webkit-scrollbar-track {
+    background: transparent;
+}
+.admin-main::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.admin-main::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .admin-topbar {
-    background: var(--ui-surface);
-    border-bottom: 1px solid var(--ui-border);
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid #e2e8f0;
     position: sticky;
     top: 0;
     z-index: 1020;
     padding: 0.75rem 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .admin-topbar.is-scrolled {
-    box-shadow: var(--ui-shadow);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
 .admin-content {
-    flex: 1;
+    flex: 1 0 auto;
 }
 
 .page-header {
@@ -342,15 +427,193 @@ body.admin-body {
 
 .page-title {
     font-size: 1.35rem;
-    font-weight: 600;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
     margin-bottom: 0;
 }
 
+/* Premium Modern Cards (Elevated SaaS Standard) */
 .card {
-    box-shadow: var(--ui-shadow);
-    border-color: var(--ui-border);
-    border-radius: var(--ui-radius);
-    background: var(--ui-surface);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card.shadow-sm {
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02) !important;
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.15rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-footer {
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    padding: 1rem 1.5rem;
+    border-bottom-left-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+}
+
+/* Premium Modern Tables (Stripe & Linear Standard) */
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-hover-bg: #f8fafc;
+    margin-bottom: 0;
+    color: #1e293b;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table thead th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    padding: 13px 18px !important;
+    border-top: none !important;
+    border-bottom: 1.5px solid #e2e8f0 !important;
+    white-space: nowrap;
+}
+
+.table tbody td {
+    padding: 14px 18px !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    font-size: 13.5px !important;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(241, 245, 249, 0.75) !important;
+}
+
+.table-responsive {
+    border-radius: 14px;
+}
+
+/* Modern Inputs & Form Controls */
+.form-control, .form-select {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.55rem 0.875rem;
+    font-size: 0.875rem;
+    color: #1e293b;
+    background-color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    outline: none;
+}
+
+.form-control-sm, .form-select-sm {
+    border-radius: 8px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.form-control-lg, .form-select-lg {
+    border-radius: 12px;
+    padding: 0.75rem 1.15rem;
+    font-size: 0.95rem;
+}
+
+.form-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.35rem;
+}
+
+/* Modern Soft Badges */
+.badge {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 0.35em 0.75em;
+    border-radius: 20px;
+}
+
+.bg-primary-subtle {
+    background-color: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #dbeafe !important;
+}
+
+.bg-success-subtle {
+    background-color: #ecfdf5 !important;
+    color: #047857 !important;
+    border: 1px solid #d1fae5 !important;
+}
+
+.bg-danger-subtle {
+    background-color: #fef2f2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fee2e2 !important;
+}
+
+.bg-warning-subtle {
+    background-color: #fffbeb !important;
+    color: #b45309 !important;
+    border: 1px solid #fef3c7 !important;
+}
+
+.bg-info-subtle {
+    background-color: #f0f9ff !important;
+    color: #0369a1 !important;
+    border: 1px solid #e0f2fe !important;
+}
+
+.bg-secondary-subtle {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* Modern Buttons */
+.btn {
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.15s ease;
+}
+
+.btn-sm {
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.75rem;
+}
+
+.btn-primary {
+    background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+    border: 1px solid #1d4ed8;
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%);
+    border-color: #1e40af;
+    box-shadow: 0 3px 6px rgba(37, 99, 235, 0.3);
+    color: #ffffff;
 }
 
 .table-card {

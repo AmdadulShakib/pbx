@@ -67,9 +67,12 @@
                                         @if($ext->user)
                                             <div class="d-flex align-items-center gap-2">
                                                 @if($ext->user->avatar_url)
-                                                    <img src="{{ $ext->user->avatar_url }}" alt="{{ $ext->user->name }}" class="rounded-circle border" style="width: 34px; height: 34px; object-fit: cover;">
+                                                    <img src="{{ $ext->user->avatar_url }}" alt="{{ $ext->user->name }}" class="rounded-circle border" style="width: 34px; height: 34px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                                    <div class="avatar-sm bg-primary-subtle text-primary rounded-circle fw-bold d-none d-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px; font-size: 13px;">
+                                                        {{ strtoupper(substr($ext->user->name, 0, 1)) }}
+                                                    </div>
                                                 @else
-                                                    <div class="avatar-sm bg-primary-subtle text-primary rounded-circle fw-bold d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; font-size: 13px;">
+                                                    <div class="avatar-sm bg-primary-subtle text-primary rounded-circle fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px; font-size: 13px;">
                                                         {{ strtoupper(substr($ext->user->name, 0, 1)) }}
                                                     </div>
                                                 @endif

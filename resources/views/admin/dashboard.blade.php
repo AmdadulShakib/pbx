@@ -46,8 +46,8 @@
             <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <span class="text-muted small text-uppercase fw-bold letter-spacing-1">{{ __('Total Extensions') }}</span>
-                    <div class="rounded-2 bg-light text-primary p-1.5 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i data-lucide="phone" style="width: 16px; height: 16px;"></i>
+                    <div class="rounded-3 bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i data-lucide="phone" style="width: 18px; height: 18px;"></i>
                     </div>
                 </div>
                 <div class="h3 fw-bold mb-1 text-dark">{{ $totalExtensions ?? 0 }}</div>
@@ -64,8 +64,8 @@
             <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <span class="text-muted small text-uppercase fw-bold letter-spacing-1">{{ __('Carrier SIP Trunks') }}</span>
-                    <div class="rounded-2 bg-light text-info p-1.5 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i data-lucide="network" style="width: 16px; height: 16px;"></i>
+                    <div class="rounded-3 bg-info-subtle text-info p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i data-lucide="network" style="width: 18px; height: 18px;"></i>
                     </div>
                 </div>
                 <div class="h3 fw-bold mb-1 text-dark">{{ $totalTrunks ?? 0 }}</div>
@@ -82,8 +82,8 @@
             <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <span class="text-muted small text-uppercase fw-bold letter-spacing-1">{{ __('Routing Groups & IVR') }}</span>
-                    <div class="rounded-2 bg-light text-success p-1.5 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i data-lucide="layers" style="width: 16px; height: 16px;"></i>
+                    <div class="rounded-3 bg-success-subtle text-success p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i data-lucide="layers" style="width: 18px; height: 18px;"></i>
                     </div>
                 </div>
                 <div class="h3 fw-bold mb-1 text-dark">{{ $totalRingGroups ?? 0 }} <span class="fs-6 text-muted fw-normal">/ {{ $totalIvrs ?? 0 }} IVRs</span></div>
@@ -100,8 +100,8 @@
             <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <span class="text-muted small text-uppercase fw-bold letter-spacing-1">{{ __('Total CDR Call Logs') }}</span>
-                    <div class="rounded-2 bg-light text-secondary p-1.5 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i data-lucide="history" style="width: 16px; height: 16px;"></i>
+                    <div class="rounded-3 bg-secondary-subtle text-secondary p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i data-lucide="history" style="width: 18px; height: 18px;"></i>
                     </div>
                 </div>
                 <div class="h3 fw-bold mb-1 text-dark">{{ $totalCalls ?? 0 }}</div>
@@ -113,8 +113,8 @@
         </div>
     </div>
 
-    <!-- Main Content: Extensions Structured Data Table (Stripe/Linear Clean Standard) -->
-    <div class="col-12 col-xl-8">
+    <!-- Middle Row: Company Extensions (7 cols) + System Telemetry & Test Bridge (5 cols) -->
+    <div class="col-12 col-xl-7">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-transparent py-3 border-bottom d-flex align-items-center justify-content-between">
                 <div>
@@ -134,11 +134,11 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th style="width: 110px;">{{ __('Extension') }}</th>
+                                <th style="width: 100px;">{{ __('Extension') }}</th>
                                 <th>{{ __('Display Name') }}</th>
-                                <th>{{ __('Assigned Employee') }}</th>
-                                <th style="width: 120px;">{{ __('Presence') }}</th>
-                                <th class="text-end" style="width: 140px;">{{ __('Quick Action') }}</th>
+                                <th>{{ __('Assigned User') }}</th>
+                                <th style="width: 110px;">{{ __('Presence') }}</th>
+                                <th class="text-end" style="width: 120px;">{{ __('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -157,9 +157,12 @@
                                         @if($ext->user)
                                             <div class="d-flex align-items-center gap-2">
                                                 @if($ext->user->avatar_url)
-                                                    <img src="{{ $ext->user->avatar_url }}" alt="{{ $ext->user->name }}" class="rounded-circle border" style="width: 28px; height: 28px; object-fit: cover;">
+                                                    <img src="{{ $ext->user->avatar_url }}" alt="{{ $ext->user->name }}" class="rounded-circle border" style="width: 30px; height: 30px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                                    <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-none d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 30px; height: 30px; font-size: 11px;">
+                                                        {{ strtoupper(substr($ext->user->name, 0, 2)) }}
+                                                    </div>
                                                 @else
-                                                    <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle fw-bold d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 11px;">
+                                                    <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 30px; height: 30px; font-size: 11px;">
                                                         {{ strtoupper(substr($ext->user->name, 0, 2)) }}
                                                     </div>
                                                 @endif
@@ -205,10 +208,77 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Recent Call Activity Card (CDR Real-Time Snapshot) -->
-        <div class="card border-0 shadow-sm mt-3">
+    <!-- Side Deck: System Telemetry & Quick Test Call (5 cols) -->
+    <div class="col-12 col-xl-5">
+        <!-- Telemetry Card -->
+        <div class="card border-0 shadow-sm mb-3">
             <div class="card-header bg-transparent py-3 border-bottom d-flex align-items-center justify-content-between">
+                <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                    <i data-lucide="activity" class="text-primary" style="width: 18px; height: 18px;"></i>
+                    <span>{{ __('Telephony Gateway Health') }}</span>
+                </h6>
+                <span class="badge bg-success-subtle text-success border border-success-subtle py-0.5 px-2 font-monospace">{{ __('Asterisk PJSIP') }}</span>
+            </div>
+            <div class="card-body p-3 small">
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">{{ __('Signaling URL') }}</span>
+                    <code class="fw-semibold text-break">{{ config('pbx.ws_url') }}</code>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">{{ __('SIP Realm Domain') }}</span>
+                    <span class="fw-semibold font-monospace">{{ config('pbx.domain') }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">{{ __('STUN NAT Gateway') }}</span>
+                    <span class="fw-semibold">stun.l.google.com:19302</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">{{ __('Parallel Contacts') }}</span>
+                    <span class="fw-semibold text-success">{{ __('Enabled (Max 10 Contacts)') }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span class="text-muted">{{ __('Media Encryption') }}</span>
+                    <span class="fw-semibold text-dark">SRTP / DTLS 1.2</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Call Originate Card -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent py-3 border-bottom">
+                <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                    <i data-lucide="phone-forwarded" class="text-primary" style="width: 18px; height: 18px;"></i>
+                    <span>{{ __('Server Test Call Bridge') }}</span>
+                </h6>
+            </div>
+            <div class="card-body p-3">
+                <form action="{{ route('admin.pbx.originate') }}" method="POST">
+                    @csrf
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="from" class="form-label small fw-semibold text-muted mb-1">{{ __('From Extension') }}</label>
+                            <input type="text" class="form-control form-control-sm font-monospace" id="from" name="from" placeholder="e.g. 101" required>
+                        </div>
+                        <div class="col-6">
+                            <label for="to" class="form-label small fw-semibold text-muted mb-1">{{ __('To Extension / Target') }}</label>
+                            <input type="text" class="form-control form-control-sm font-monospace" id="to" name="to" placeholder="e.g. 102" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm w-100 d-inline-flex align-items-center justify-content-center gap-1.5 py-2">
+                        <i data-lucide="phone-forwarded" style="width: 14px; height: 14px;"></i>
+                        <span>{{ __('Bridge Test Call') }}</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Full-Width: Recent Call Activity Card (CDR Real-Time Snapshot) -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent py-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div>
                     <h6 class="card-title mb-0 fw-bold text-dark d-flex align-items-center gap-2">
                         <i data-lucide="history" class="text-primary" style="width: 18px; height: 18px;"></i>
@@ -216,9 +286,15 @@
                     </h6>
                     <small class="text-muted">{{ __('Latest incoming, outgoing, and internal call records') }}</small>
                 </div>
-                <a href="{{ route('admin.pbx.calls.index') }}" class="btn btn-outline-secondary btn-sm">
-                    {{ __('View All Calls') }}
-                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-secondary border d-none d-sm-inline-flex align-items-center gap-1 font-monospace">
+                        <i data-lucide="activity" style="width: 12px; height: 12px;"></i>
+                        Live CDR
+                    </span>
+                    <a href="{{ route('admin.pbx.calls.index') }}" class="btn btn-outline-secondary btn-sm">
+                        {{ __('View All Calls') }}
+                    </a>
+                </div>
             </div>
 
             <div class="card-body p-0">
@@ -238,48 +314,54 @@
                             @forelse($recentCalls as $call)
                                 @php
                                     $callerUser = $call->callerExtension?->user ?? $call->user;
-                                    $callerAvatar = $callerUser?->avatar_url ?? ($callerUser?->image ? asset($callerUser->image) : null);
+                                    $callerAvatar = $callerUser?->avatar_url;
                                     $callerInitial = strtoupper(substr($call->caller_name ?: ($callerUser?->name ?: $call->caller), 0, 1));
                                     $callerDisplayName = $call->caller_name ?: ($callerUser?->name ?: ('Ext ' . $call->caller));
 
                                     $calleeUser = $call->calleeExtension?->user;
-                                    $calleeAvatar = $calleeUser?->avatar_url ?? ($calleeUser?->image ? asset($calleeUser->image) : null);
+                                    $calleeAvatar = $calleeUser?->avatar_url;
                                     $calleeInitial = strtoupper(substr($call->callee_name ?: ($calleeUser?->name ?: $call->callee), 0, 1));
                                     $calleeDisplayName = $call->callee_name ?: ($calleeUser?->name ?: ('Ext ' . $call->callee));
                                 @endphp
                                 <tr>
                                     <td>
-                                        <div class="d-flex align-items-center gap-2">
+                                        <div class="d-flex align-items-center gap-2.5">
                                             @if($callerAvatar)
-                                                <img src="{{ $callerAvatar }}" alt="{{ $callerDisplayName }}" class="rounded-circle border" style="width: 28px; height: 28px; object-fit: cover;">
+                                                <img src="{{ $callerAvatar }}" alt="{{ $callerDisplayName }}" class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                                <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-none d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 32px; height: 32px; font-size: 11px;">
+                                                    {{ $callerInitial }}
+                                                </div>
                                             @else
-                                                <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 11px;">
+                                                <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 32px; height: 32px; font-size: 11px;">
                                                     {{ $callerInitial }}
                                                 </div>
                                             @endif
                                             <div>
                                                 <div class="fw-semibold text-dark small" style="line-height: 1.2;">{{ $callerDisplayName }}</div>
-                                                <span class="badge bg-secondary-subtle text-secondary py-0 px-1 font-monospace" style="font-size: 9px;">Ext {{ $call->caller }}</span>
+                                                <span class="badge bg-secondary-subtle text-secondary py-0 px-1.5 font-monospace" style="font-size: 9.5px;">Ext {{ $call->caller }}</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="d-flex align-items-center gap-2">
+                                        <div class="d-flex align-items-center gap-2.5">
                                             @if($calleeAvatar)
-                                                <img src="{{ $calleeAvatar }}" alt="{{ $calleeDisplayName }}" class="rounded-circle border" style="width: 28px; height: 28px; object-fit: cover;">
+                                                <img src="{{ $calleeAvatar }}" alt="{{ $calleeDisplayName }}" class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                                <div class="rounded-circle bg-info-subtle text-info border border-info-subtle d-none d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 32px; height: 32px; font-size: 11px;">
+                                                    {{ $calleeInitial }}
+                                                </div>
                                             @else
-                                                <div class="rounded-circle bg-info-subtle text-info border border-info-subtle d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 11px;">
+                                                <div class="rounded-circle bg-info-subtle text-info border border-info-subtle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 32px; height: 32px; font-size: 11px;">
                                                     {{ $calleeInitial }}
                                                 </div>
                                             @endif
                                             <div>
                                                 <div class="fw-semibold text-dark small" style="line-height: 1.2;">{{ $calleeDisplayName }}</div>
-                                                <span class="badge bg-secondary-subtle text-secondary py-0 px-1 font-monospace" style="font-size: 9px;">Ext {{ $call->callee }}</span>
+                                                <span class="badge bg-secondary-subtle text-secondary py-0 px-1.5 font-monospace" style="font-size: 9.5px;">Ext {{ $call->callee }}</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="badge bg-light text-secondary border text-uppercase" style="font-size: 11px;">
+                                        <span class="badge bg-light text-secondary border text-uppercase font-monospace" style="font-size: 10px;">
                                             {{ $call->direction }}
                                         </span>
                                     </td>
@@ -288,95 +370,39 @@
                                     </td>
                                     <td>
                                         @if($call->status === 'answered')
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0.5" style="font-size: 11px;">
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1" style="font-size: 11px;">
+                                                <i data-lucide="check" class="me-1 d-none d-sm-inline" style="width: 12px; height: 12px;"></i>
                                                 {{ __('Answered') }}
                                             </span>
                                         @elseif($call->status === 'busy')
-                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0.5" style="font-size: 11px;">
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2.5 py-1" style="font-size: 11px;">
+                                                <i data-lucide="clock" class="me-1 d-none d-sm-inline" style="width: 12px; height: 12px;"></i>
                                                 {{ __('Busy') }}
                                             </span>
                                         @else
-                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0.5" style="font-size: 11px;">
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1" style="font-size: 11px;">
+                                                <i data-lucide="x" class="me-1 d-none d-sm-inline" style="width: 12px; height: 12px;"></i>
                                                 {{ __('No Answer') }}
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="text-end pe-3 text-muted small">
-                                        {{ $call->created_at?->diffForHumans() ?? 'Just now' }}
+                                    <td class="text-end pe-3">
+                                        <span class="text-muted small">
+                                            {{ \Carbon\Carbon::parse($call->created_at)->diffForHumans() }}
+                                        </span>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted small">
-                                        {{ __('No calls recorded yet.') }}
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i data-lucide="inbox" class="mb-2 text-secondary" style="width: 32px; height: 32px;"></i>
+                                        <p class="mb-0">{{ __('No call activity logged yet.') }}</p>
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Side Deck: System Telemetry & Quick Test Call -->
-    <div class="col-12 col-xl-4">
-        <!-- Telemetry Card -->
-        <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-transparent py-3 border-bottom">
-                <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
-                    <i data-lucide="activity" class="text-primary" style="width: 18px; height: 18px;"></i>
-                    <span>{{ __('Telephony Gateway Health') }}</span>
-                </h6>
-            </div>
-            <div class="card-body p-3 small">
-                <div class="d-flex justify-content-between py-2 border-bottom">
-                    <span class="text-muted">{{ __('Signaling URL') }}</span>
-                    <code class="fw-semibold text-break">{{ config('pbx.ws_url') }}</code>
-                </div>
-                <div class="d-flex justify-content-between py-2 border-bottom">
-                    <span class="text-muted">{{ __('SIP Realm Domain') }}</span>
-                    <span class="fw-semibold">{{ config('pbx.domain') }}</span>
-                </div>
-                <div class="d-flex justify-content-between py-2 border-bottom">
-                    <span class="text-muted">{{ __('STUN NAT Gateway') }}</span>
-                    <span class="fw-semibold">stun.l.google.com:19302</span>
-                </div>
-                <div class="d-flex justify-content-between py-2 border-bottom">
-                    <span class="text-muted">{{ __('Parallel Contacts') }}</span>
-                    <span class="fw-semibold text-success">{{ __('Enabled (Max 10 Contacts)') }}</span>
-                </div>
-                <div class="d-flex justify-content-between py-2">
-                    <span class="text-muted">{{ __('Media Encryption') }}</span>
-                    <span class="fw-semibold">SRTP / DTLS 1.2</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Call Originate Card -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent py-3 border-bottom">
-                <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
-                    <i data-lucide="phone-forwarded" class="text-secondary" style="width: 18px; height: 18px;"></i>
-                    <span>{{ __('Server Test Call Bridge') }}</span>
-                </h6>
-            </div>
-            <div class="card-body p-3">
-                <form action="{{ route('admin.pbx.originate') }}" method="POST">
-                    @csrf
-                    <div class="mb-2.5">
-                        <label for="from" class="form-label small fw-semibold text-muted mb-1">{{ __('From Extension') }}</label>
-                        <input type="text" class="form-control form-control-sm" id="from" name="from" placeholder="e.g. 101" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="to" class="form-label small fw-semibold text-muted mb-1">{{ __('To Extension / Destination') }}</label>
-                        <input type="text" class="form-control form-control-sm" id="to" name="to" placeholder="e.g. 102" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm w-100 d-inline-flex align-items-center justify-content-center gap-1.5">
-                        <i data-lucide="phone-forwarded" style="width: 14px; height: 14px;"></i>
-                        <span>{{ __('Bridge Test Call') }}</span>
-                    </button>
-                </form>
             </div>
         </div>
     </div>

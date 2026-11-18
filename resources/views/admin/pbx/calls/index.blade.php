@@ -162,9 +162,12 @@
                                 <td class="ps-3 ps-md-4 py-3">
                                     <div class="d-flex align-items-center gap-2.5">
                                         @if($callerAvatar)
-                                            <img src="{{ $callerAvatar }}" alt="{{ $log->caller_name }}" class="rounded-circle border" style="width: 36px; height: 36px; object-fit: cover;">
+                                            <img src="{{ $callerAvatar }}" alt="{{ $log->caller_name }}" class="rounded-circle border" style="width: 36px; height: 36px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                            <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-none d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                                {{ $callerInitial }}
+                                            </div>
                                         @else
-                                            <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; font-size: 13px;">
+                                            <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
                                                 {{ $callerInitial }}
                                             </div>
                                         @endif
@@ -180,9 +183,12 @@
                                 <td class="py-3">
                                     <div class="d-flex align-items-center gap-2">
                                         @if($calleeAvatar)
-                                            <img src="{{ $calleeAvatar }}" alt="{{ $log->callee_name }}" class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;">
+                                            <img src="{{ $calleeAvatar }}" alt="{{ $log->callee_name }}" class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                            <div class="rounded-circle bg-info-subtle text-info border border-info-subtle d-none d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 32px; height: 32px; font-size: 11px;">
+                                                {{ $calleeInitial }}
+                                            </div>
                                         @else
-                                            <div class="rounded-circle bg-info-subtle text-info border border-info-subtle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 11px;">
+                                            <div class="rounded-circle bg-info-subtle text-info border border-info-subtle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 32px; height: 32px; font-size: 11px;">
                                                 {{ $calleeInitial }}
                                             </div>
                                         @endif

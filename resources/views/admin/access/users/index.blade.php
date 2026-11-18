@@ -48,9 +48,12 @@
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     @if($user->avatar_url)
-                                        <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;">
+                                        <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                        <div class="avatar-sm bg-primary-subtle text-primary rounded-circle fw-bold d-none d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; font-size: 13px;">
+                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                        </div>
                                     @else
-                                        <div class="avatar-sm bg-primary-subtle text-primary rounded-circle fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 13px;">
+                                        <div class="avatar-sm bg-primary-subtle text-primary rounded-circle fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; font-size: 13px;">
                                             {{ strtoupper(substr($user->name, 0, 1)) }}
                                         </div>
                                     @endif

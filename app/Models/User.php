@@ -55,7 +55,10 @@ use HasFactory;
             if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
                 return $this->avatar;
             }
-            return asset($this->avatar);
+            if (file_exists(public_path($this->avatar))) {
+                return asset($this->avatar);
+            }
+            return null;
         }
         return null;
     }
