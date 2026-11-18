@@ -1706,22 +1706,6 @@
             });
         } catch (e) {}
     }
-        const top = 60;
-        const win = window.open(
-            popoutUrl,
-            'VoxPulsePbxSoftphone',
-            `popup=1,popup=yes,width=${winWidth},height=${winHeight},top=${top},left=${left},scrollbars=no,resizable=yes,status=no,toolbar=no,menubar=no,location=no`
-        );
-        if (win) {
-            win.focus();
-            const card = document.getElementById('pbx-dialer-card');
-            if (card && card.classList.contains('active')) {
-                card.classList.remove('active');
-            }
-        } else {
-            alert('Pop-up window was blocked by your browser. Please allow popups for this site.');
-        }
-    };
 
     // Accidental Navigation Guard: Prevent dropping calls when closing tab or reloading page
     window.addEventListener('beforeunload', function (e) {

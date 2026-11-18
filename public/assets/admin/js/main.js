@@ -204,7 +204,7 @@ cardChartNew1 = document.getElementById('card-chart-new1') ? new Chart(document.
       }
     }
   }
-});
+}) : null;
 cardChart1 = document.getElementById('card-chart1') ? new Chart(document.getElementById('card-chart1'), {
   type: 'line',
   data: {
@@ -260,7 +260,7 @@ cardChart1 = document.getElementById('card-chart1') ? new Chart(document.getElem
       }
     }
   }
-});
+}) : null;
 cardChart3 = document.getElementById('card-chart3') ? new Chart(document.getElementById('card-chart3'), {
   type: 'line',
   data: {
@@ -300,7 +300,7 @@ cardChart3 = document.getElementById('card-chart3') ? new Chart(document.getElem
       }
     }
   }
-});
+}) : null;
 cardChart4 = document.getElementById('card-chart4') ? new Chart(document.getElementById('card-chart4'), {
   type: 'bar',
   data: {
@@ -344,7 +344,7 @@ cardChart4 = document.getElementById('card-chart4') ? new Chart(document.getElem
       }
     }
   }
-});
+}) : null;
 mainBarChart = document.getElementById('main-bar-chart') ? new Chart(document.getElementById('main-bar-chart'), {
   type: 'bar',
   data: {
@@ -413,6 +413,6 @@ mainBarChart = document.getElementById('main-bar-chart') ? new Chart(document.ge
       }
     }
   }
-});
+}) : null;
 }
 //# sourceMappingURL=main.js.map
