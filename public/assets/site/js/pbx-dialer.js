@@ -504,12 +504,30 @@
         const card = $('pbx-dialer-card');
         if (!card) return;
         getAudioContext();
-        card.classList.toggle('open');
-        syncInCallPipBar();
+        if (card.classList.contains('open')) {
+            window.closePbxDialer();
+        } else {
+            // When opening, reset card position to dock nicely at bottom-right
+            card.style.position = '';
+            card.style.left = '';
+            card.style.top = '';
+            card.style.right = '';
+            card.style.bottom = '';
+            card.classList.add('open');
+            syncInCallPipBar();
+        }
     };
 
     window.closePbxDialer = function () {
-        $('pbx-dialer-card')?.classList.remove('open');
+        const card = $('pbx-dialer-card');
+        if (card) {
+            card.classList.remove('open');
+            card.style.position = '';
+            card.style.left = '';
+            card.style.top = '';
+            card.style.right = '';
+            card.style.bottom = '';
+        }
         syncInCallPipBar();
     };
 
@@ -1166,7 +1184,9 @@
 
     function endCallUI() {
         stopCallTimer();
-        stopAllAudioTones();
+        try {
+            stopAllAudioTones();
+        } catch (e) {}
 
         let remoteAudio = $('pbx-remote-audio');
         if (remoteAudio) {
@@ -1180,6 +1200,7 @@
         isCallMuted = false;
         isCallHeld = false;
 
+        // Immediately close the active call overlay
         const overlay = $('pbx-call-overlay');
         if (overlay) overlay.classList.remove('active');
 
@@ -1187,7 +1208,34 @@
         if (incomingModal) incomingModal.classList.remove('active');
 
         const fab = $('pbx-fab-btn');
-        if (fab) fab.classList.remove('is-incoming');
+        if (fab) {
+            fab.classList.remove('is-incoming');
+            fab.style.display = 'flex';
+        }
+
+        // Hide floating In-Call PiP bar and reset its position back to bottom-right
+        const pipBar = $('pbx-incall-pip-bar');
+        if (pipBar) {
+            pipBar.style.display = 'none';
+            pipBar.style.position = 'fixed';
+            pipBar.style.bottom = '24px';
+            pipBar.style.right = '24px';
+            pipBar.style.left = 'auto';
+            pipBar.style.top = 'auto';
+            try {
+                sessionStorage.removeItem('pbx_pip_pos');
+            } catch (e) {}
+        }
+
+        // Snap the dialer card back to its natural bottom-right home
+        const card = $('pbx-dialer-card');
+        if (card) {
+            card.style.position = '';
+            card.style.left = '';
+            card.style.top = '';
+            card.style.right = '';
+            card.style.bottom = '';
+        }
 
         // Reset control buttons
         $('pbx-mute-btn')?.classList.remove('active');
@@ -1207,17 +1255,56 @@
     // =========================================================================
     // In-Call PBX Action Controls
     // =========================================================================
-    window.pbxHangup = function () {
-        getAudioContext();
-        stopAllAudioTones();
+    window.pbxHangup = function (e) {
+        if (e && e.stopPropagation) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+        console.log('[PBX] Hangup button triggered');
+
+        try {
+            getAudioContext();
+        } catch (err) {}
+
+        try {
+            stopAllAudioTones();
+        } catch (err) {}
+
         if (currentSession && !currentSession.isEnded()) {
             try {
-                currentSession.terminate();
-            } catch (e) {
-                console.warn('[PBX] Hangup error:', e);
+                currentSession.terminate({
+                    status_code: 487,
+                    reason_phrase: 'Terminated by User'
+                });
+            } catch (err) {
+                console.warn('[PBX] Hangup terminate caught:', err);
             }
         }
+
+        // ALWAYS immediately tear down UI so the call screen never freezes
         endCallUI();
+    };
+
+    window.pbxResetDialerPosition = function () {
+        const card = $('pbx-dialer-card');
+        if (card) {
+            card.style.position = '';
+            card.style.left = '';
+            card.style.top = '';
+            card.style.right = '';
+            card.style.bottom = '';
+        }
+        const pipBar = $('pbx-incall-pip-bar');
+        if (pipBar) {
+            pipBar.style.position = 'fixed';
+            pipBar.style.bottom = '24px';
+            pipBar.style.right = '24px';
+            pipBar.style.left = 'auto';
+            pipBar.style.top = 'auto';
+            try {
+                sessionStorage.removeItem('pbx_pip_pos');
+            } catch (e) {}
+        }
     };
 
     window.pbxToggleMute = function () {
