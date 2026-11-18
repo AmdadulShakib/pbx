@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'home'])->middleware('admin.home.redirect')->name('home');
+    Route::get('/no-access', [AdminController::class, 'noAccess'])->name('no-access');
 
     Route::controller(LoginController::class)->group(function () {
         Route::get('/login', 'showLoginForm')->name('login');

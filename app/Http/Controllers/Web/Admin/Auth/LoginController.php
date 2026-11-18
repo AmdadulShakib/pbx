@@ -86,7 +86,15 @@ class LoginController extends Controller
             return route($menuRoute);
         }
 
-        return route('admin.no-access');
+        if (Route::has('admin.dashboard')) {
+            return route('admin.dashboard');
+        }
+
+        if (Route::has('admin.no-access')) {
+            return route('admin.no-access');
+        }
+
+        return url('/admin');
     }
 
     protected function firstAllowedRoute(array $menu, $user): ?string
