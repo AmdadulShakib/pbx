@@ -23,7 +23,7 @@ class PbxHotDeskController extends Controller
             ->get();
 
         $extensions = PbxExtension::with('user')
-            ->where('is_active', true)
+            ->where('enabled', true)
             ->orderBy('extension', 'asc')
             ->get();
 
