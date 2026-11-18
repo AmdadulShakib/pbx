@@ -55,35 +55,75 @@ class PbxStatusController extends Controller
     public function settings()
     {
         return view('admin.pbx.settings', [
-            'driver'   => config('pbx.driver', 'asterisk'),
-            'domain'   => config('pbx.domain', '10.211.10.238'),
-            'ws_url'   => config('pbx.ws_url', 'ws://10.211.10.238:8088/ws'),
-            'esl_host' => config('pbx.host', '127.0.0.1'),
-            'esl_port' => config('pbx.port', 8021),
-            'esl_pass' => config('pbx.password', 'ClueCon'),
+            'driver'       => config('pbx.driver', 'asterisk'),
+            'domain'       => config('pbx.domain', ''),
+            'ws_url'       => config('pbx.ws_url', ''),
+            'esl_host'     => config('pbx.host', '127.0.0.1'),
+            'esl_port'     => config('pbx.port', 8021),
+            'esl_pass'     => config('pbx.password', 'ClueCon'),
+            'admin_emails' => config('pbx.admin_emails', ''),
+            'ami_host'     => config('pbx.ami_host', '127.0.0.1'),
+            'ami_port'     => config('pbx.ami_port', 5038),
+            'ami_user'     => config('pbx.ami_user', 'admin'),
+            'ami_secret'   => config('pbx.ami_secret', ''),
+            'rawman_url'   => config('pbx.rawman_url', ''),
         ]);
     }
 
     public function saveSettings(Request $request, \App\Services\EnvEditor $envEditor)
     {
+        $section = $request->input('_section', 'core');
+
+        if ($section === 'ami') {
+            $data = $request->validate([
+                'ami_host'   => 'nullable|string|max:100',
+                'ami_port'   => 'nullable|integer|min:1|max:65535',
+                'ami_user'   => 'nullable|string|max:100',
+                'ami_secret' => 'nullable|string|max:200',
+                'rawman_url' => 'nullable|url|max:300',
+            ]);
+
+            $envEditor->setMany([
+                'ASTERISK_AMI_HOST'   => $data['ami_host'] ?? '127.0.0.1',
+                'ASTERISK_AMI_PORT'   => $data['ami_port'] ?? 5038,
+                'ASTERISK_AMI_USER'   => $data['ami_user'] ?? 'admin',
+                'ASTERISK_AMI_SECRET' => $data['ami_secret'] ?? '',
+                'ASTERISK_RAWMAN_URL' => $data['rawman_url'] ?? '',
+            ]);
+
+            config([
+                'pbx.ami_host'   => $data['ami_host'] ?? '127.0.0.1',
+                'pbx.ami_port'   => (int) ($data['ami_port'] ?? 5038),
+                'pbx.ami_user'   => $data['ami_user'] ?? 'admin',
+                'pbx.ami_secret' => $data['ami_secret'] ?? '',
+                'pbx.rawman_url' => $data['rawman_url'] ?? '',
+            ]);
+
+            return back()->with('ok', 'Asterisk AMI সেটিংস সফলভাবে আপডেট করা হয়েছে।');
+        }
+
+        // Core PBX settings
         $data = $request->validate([
-            'driver' => 'required|in:asterisk,freeswitch',
-            'domain' => 'required|string|max:100',
-            'ws_url' => 'required|string|max:200',
+            'driver'       => 'required|in:asterisk,freeswitch',
+            'domain'       => 'required|string|max:100',
+            'ws_url'       => 'required|string|max:200',
+            'admin_emails' => 'nullable|string|max:500',
         ]);
 
         $envEditor->setMany([
-            'PBX_DRIVER' => $data['driver'],
-            'PBX_DOMAIN' => $data['domain'],
-            'PBX_WS_URL' => $data['ws_url'],
+            'PBX_DRIVER'       => $data['driver'],
+            'PBX_DOMAIN'       => $data['domain'],
+            'PBX_WS_URL'       => $data['ws_url'],
+            'PBX_ADMIN_EMAILS' => $data['admin_emails'] ?? '',
         ]);
 
         config([
-            'pbx.driver' => $data['driver'],
-            'pbx.domain' => $data['domain'],
-            'pbx.ws_url' => $data['ws_url'],
+            'pbx.driver'       => $data['driver'],
+            'pbx.domain'       => $data['domain'],
+            'pbx.ws_url'       => $data['ws_url'],
+            'pbx.admin_emails' => $data['admin_emails'] ?? '',
         ]);
 
-        return back()->with('ok', 'PBX সার্ভার সেটিংস সফলভাবে আপডেট করা হয়েছে');
+        return back()->with('ok', 'PBX কোর সেটিংস সফলভাবে আপডেট করা হয়েছে।');
     }
 }

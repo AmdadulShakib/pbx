@@ -104,9 +104,25 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        <!-- Admin Emails -->
+                        <div class="col-12">
+                            <label for="admin_emails" class="form-label fw-semibold">
+                                {{ __('PBX Admin Emails') }}
+                            </label>
+                            <input type="text"
+                                   class="form-control @error('admin_emails') is-invalid @enderror"
+                                   id="admin_emails"
+                                   name="admin_emails"
+                                   value="{{ old('admin_emails', $admin_emails) }}"
+                                   placeholder="admin@yourdomain.com, manager@yourdomain.com">
+                            <small class="text-muted">{{ __('Comma-separated list of admin email addresses who have PBX access.') }}</small>
+                            @error('admin_emails')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                 </div>
-
                 <div class="card-footer bg-light py-3 px-4 d-flex justify-content-between align-items-center border-top">
                     <span class="text-muted small">
                         <i data-lucide="info" class="me-1" style="width: 14px; height: 14px;"></i>
@@ -115,6 +131,91 @@
                     <button type="submit" class="btn btn-primary px-4">
                         <i data-lucide="save" class="me-1" style="width: 16px; height: 16px;"></i>
                         {{ __('Save PBX Settings') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {{-- Asterisk AMI Settings Card --}}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-transparent py-3 border-bottom">
+                <h5 class="card-title mb-0 fw-bold">
+                    <i data-lucide="terminal" class="me-2 text-warning" style="width: 20px; height: 20px;"></i>
+                    {{ __('Asterisk AMI / Rawman Connection') }}
+                </h5>
+                <small class="text-muted">{{ __('These credentials allow the app to control Asterisk via AMI (live calls, originate, hangup). Required for Live Calls panel.') }}</small>
+            </div>
+            <form action="{{ route('admin.pbx.settings.save') }}" method="POST">
+                @csrf
+                <input type="hidden" name="_section" value="ami">
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="ami_host" class="form-label fw-semibold">{{ __('AMI Host') }}</label>
+                            <input type="text"
+                                   class="form-control @error('ami_host') is-invalid @enderror"
+                                   id="ami_host" name="ami_host"
+                                   value="{{ old('ami_host', $ami_host) }}"
+                                   placeholder="127.0.0.1">
+                            <small class="text-muted">{{ __('Usually 127.0.0.1 (localhost) if Asterisk is on the same server.') }}</small>
+                            @error('ami_host')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="ami_port" class="form-label fw-semibold">{{ __('AMI Port') }}</label>
+                            <input type="number"
+                                   class="form-control @error('ami_port') is-invalid @enderror"
+                                   id="ami_port" name="ami_port"
+                                   value="{{ old('ami_port', $ami_port) }}"
+                                   placeholder="5038">
+                            <small class="text-muted">{{ __('Default Asterisk AMI port is 5038.') }}</small>
+                            @error('ami_port')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="ami_user" class="form-label fw-semibold">{{ __('AMI Username') }}</label>
+                            <input type="text"
+                                   class="form-control @error('ami_user') is-invalid @enderror"
+                                   id="ami_user" name="ami_user"
+                                   value="{{ old('ami_user', $ami_user) }}"
+                                   placeholder="admin">
+                            <small class="text-muted">{{ __('Defined in /etc/asterisk/manager.conf') }}</small>
+                            @error('ami_user')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="ami_secret" class="form-label fw-semibold">{{ __('AMI Secret / Password') }}</label>
+                            <div class="input-group">
+                                <input type="password"
+                                       class="form-control @error('ami_secret') is-invalid @enderror"
+                                       id="ami_secret" name="ami_secret"
+                                       value="{{ old('ami_secret', $ami_secret) }}"
+                                       placeholder="••••••••">
+                                <button class="btn btn-outline-secondary" type="button"
+                                        onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password'">
+                                    <i data-lucide="eye" style="width:14px;height:14px;"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">{{ __('Secret key set in manager.conf for this AMI user.') }}</small>
+                            @error('ami_secret')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-12">
+                            <label for="rawman_url" class="form-label fw-semibold">{{ __('Rawman / HTTP AMI URL') }}</label>
+                            <input type="text"
+                                   class="form-control @error('rawman_url') is-invalid @enderror"
+                                   id="rawman_url" name="rawman_url"
+                                   value="{{ old('rawman_url', $rawman_url) }}"
+                                   placeholder="https://pbx.yourdomain.com/rawman">
+                            <small class="text-muted">{{ __('Full URL to Asterisk HTTP Manager (rawman). Used for live call monitoring. Must be accessible from this app server.') }}</small>
+                            @error('rawman_url')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light py-3 px-4 d-flex justify-content-between align-items-center border-top">
+                    <span class="text-muted small">
+                        <i data-lucide="info" class="me-1" style="width: 14px; height: 14px;"></i>
+                        {{ __('Saving automatically updates the application environment configuration.') }}
+                    </span>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i data-lucide="save" class="me-1" style="width: 16px; height: 16px;"></i>
+                        {{ __('Save AMI Settings') }}
                     </button>
                 </div>
             </form>
