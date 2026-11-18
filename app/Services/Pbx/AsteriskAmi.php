@@ -459,6 +459,38 @@ class AsteriskAmi
     }
 
     /**
+     * Forcibly terminate any active call associated with an extension.
+     */
+    public function hangupExtension(string $ext): bool
+    {
+        $ext = trim($ext);
+        if ($ext === '') {
+            return false;
+        }
+
+        $channels = $this->getActiveChannels();
+        $hungUp = false;
+        foreach ($channels as $chan) {
+            $chanName = $chan['channel'] ?? '';
+            $caller   = $chan['caller'] ?? '';
+            $callee   = $chan['callee'] ?? '';
+
+            if ($caller === $ext || $callee === $ext || str_contains($chanName, "/{$ext}-")) {
+                $this->hangupChannel($chanName);
+                $hungUp = true;
+            }
+        }
+
+        // Also issue Asterisk CLI hangup command
+        $this->query([
+            'action'  => 'command',
+            'command' => "channel request hangup PJSIP/{$ext}",
+        ]);
+
+        return $hungUp;
+    }
+
+    /**
      * Originate a call between two extensions.
      */
     public function originateCall(string $from, string $to): bool

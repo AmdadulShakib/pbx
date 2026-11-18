@@ -78,15 +78,19 @@
                         @forelse($channels as $chan)
                             <tr data-channel="{{ $chan['channel'] }}">
                                 <td class="ps-3 ps-md-4 py-3">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 12px;">
-                                            {{ substr($chan['caller'], 0, 3) }}
-                                        </div>
+                                    <div class="d-flex align-items-center gap-2.5">
+                                        @if(!empty($chan['caller_avatar']))
+                                            <img src="{{ $chan['caller_avatar'] }}" class="rounded-circle object-fit-cover shadow-sm flex-shrink-0" style="width: 36px; height: 36px; border: 2px solid #e2e8f0;" alt="{{ $chan['caller_name'] ?? 'Caller' }}">
+                                        @else
+                                            <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                                {{ substr($chan['caller'], 0, 3) }}
+                                            </div>
+                                        @endif
                                         <div>
                                             <div class="fw-bold text-dark font-monospace">
                                                 Ext {{ $chan['caller'] }}
                                                 @if(!empty($chan['caller_name']))
-                                                    <span class="fw-normal text-muted small ms-1">({{ $chan['caller_name'] }})</span>
+                                                    <span class="fw-semibold text-secondary small ms-1">({{ $chan['caller_name'] }})</span>
                                                 @endif
                                             </div>
                                             <small class="text-muted d-block" style="font-size: 11px;">{{ $chan['app'] ?: 'Voice' }}</small>
@@ -95,12 +99,17 @@
                                 </td>
 
                                 <td class="py-3">
-                                    <span class="badge bg-light text-dark border font-monospace px-2 py-1">
-                                        {{ str_starts_with($chan['callee'], 'Ext') ? $chan['callee'] : 'Ext ' . $chan['callee'] }}
-                                        @if(!empty($chan['callee_name']))
-                                            <span class="fw-normal text-muted">({{ $chan['callee_name'] }})</span>
+                                    <div class="d-inline-flex align-items-center gap-2 bg-light border rounded-pill px-2.5 py-1">
+                                        @if(!empty($chan['callee_avatar']))
+                                            <img src="{{ $chan['callee_avatar'] }}" class="rounded-circle object-fit-cover shadow-sm flex-shrink-0" style="width: 22px; height: 22px; border: 1.5px solid #cbd5e1;" alt="{{ $chan['callee_name'] ?? 'Callee' }}">
                                         @endif
-                                    </span>
+                                        <span class="font-monospace small fw-bold text-dark">
+                                            {{ str_starts_with($chan['callee'], 'Ext') ? $chan['callee'] : 'Ext ' . $chan['callee'] }}
+                                        </span>
+                                        @if(!empty($chan['callee_name']))
+                                            <span class="fw-normal text-muted small">({{ $chan['callee_name'] }})</span>
+                                        @endif
+                                    </div>
                                 </td>
 
                                 <td class="py-3">
@@ -311,17 +320,23 @@
 
         let html = '';
         channels.forEach(chan => {
-            const callerNameHtml = chan.caller_name ? `<span class="fw-normal text-muted small ms-1">(${chan.caller_name})</span>` : '';
+            const callerAvatarHtml = chan.caller_avatar
+                ? `<img src="${chan.caller_avatar}" class="rounded-circle object-fit-cover shadow-sm flex-shrink-0" style="width: 36px; height: 36px; border: 2px solid #e2e8f0;" alt="${chan.caller_name || ''}">`
+                : `<div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">${chan.caller.substring(0, 3)}</div>`;
+
+            const calleeAvatarHtml = chan.callee_avatar
+                ? `<img src="${chan.callee_avatar}" class="rounded-circle object-fit-cover shadow-sm flex-shrink-0" style="width: 22px; height: 22px; border: 1.5px solid #cbd5e1;" alt="${chan.callee_name || ''}">`
+                : '';
+
+            const callerNameHtml = chan.caller_name ? `<span class="fw-semibold text-secondary small ms-1">(${chan.caller_name})</span>` : '';
             const calleeDisplay = chan.callee.toString().startsWith('Ext') ? chan.callee : 'Ext ' + chan.callee;
-            const calleeNameHtml = chan.callee_name ? ` <span class="fw-normal text-muted">(${chan.callee_name})</span>` : '';
+            const calleeNameHtml = chan.callee_name ? ` <span class="fw-normal text-muted small">(${chan.callee_name})</span>` : '';
 
             html += `
                 <tr data-channel="${chan.channel}">
                     <td class="ps-3 ps-md-4 py-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 12px;">
-                                ${chan.caller.substring(0, 3)}
-                            </div>
+                        <div class="d-flex align-items-center gap-2.5">
+                            ${callerAvatarHtml}
                             <div>
                                 <div class="fw-bold text-dark font-monospace">Ext ${chan.caller}${callerNameHtml}</div>
                                 <small class="text-muted d-block" style="font-size: 11px;">${chan.app || 'Voice'}</small>
@@ -329,9 +344,11 @@
                         </div>
                     </td>
                     <td class="py-3">
-                        <span class="badge bg-light text-dark border font-monospace px-2 py-1">
-                            ${calleeDisplay}${calleeNameHtml}
-                        </span>
+                        <div class="d-inline-flex align-items-center gap-2 bg-light border rounded-pill px-2.5 py-1">
+                            ${calleeAvatarHtml}
+                            <span class="font-monospace small fw-bold text-dark">${calleeDisplay}</span>
+                            ${calleeNameHtml}
+                        </div>
                     </td>
                     <td class="py-3">
                         <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1.5 px-2.5 py-1">

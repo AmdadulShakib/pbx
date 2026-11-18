@@ -43,9 +43,13 @@
             <!-- User Profile Dropdown -->
             <div class="dropdown">
                 <button class="btn btn-light d-flex align-items-center gap-2 py-1 px-2 rounded-2 border dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center" style="width: 26px; height: 26px; font-size: 11px;">
-                        {{ strtoupper(substr(auth('admin')->user()->name ?? 'AD', 0, 2)) }}
-                    </div>
+                    @if(auth('admin')->user()?->avatar_url)
+                        <img src="{{ auth('admin')->user()->avatar_url }}" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 26px; height: 26px;" alt="Avatar">
+                    @else
+                        <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center" style="width: 26px; height: 26px; font-size: 11px;">
+                            {{ strtoupper(substr(auth('admin')->user()->name ?? 'AD', 0, 2)) }}
+                        </div>
+                    @endif
                     <span class="small fw-semibold d-none d-lg-inline text-dark">{{ auth('admin')->user()->name ?? 'Admin' }}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" style="min-width: 220px;">

@@ -11,17 +11,17 @@ class PbxLiveCallsController extends Controller
 {
     public function index(AsteriskAmi $ami)
     {
-        $channels = $ami->getActiveChannels();
+        $channels = $this->enrichChannels($ami->getActiveChannels());
         $extensions = PbxExtension::with('user')->orderBy('extension')->get();
 
         // Detect default admin extension
         $currentAdminExt = null;
         if (auth('admin')->check()) {
             $adminUser = auth('admin')->user();
-            $matched = $extensions->first(fn($e) => $e->user_id === $adminUser->id || $e->extension === '101');
-            $currentAdminExt = $matched ? $matched->extension : ($extensions->first()?->extension ?? '101');
+            $matched = $extensions->first(fn($e) => $e->user_id === $adminUser->id || $e->extension === '100' || $e->extension === '101');
+            $currentAdminExt = $matched ? $matched->extension : ($extensions->first()?->extension ?? '100');
         } else {
-            $currentAdminExt = $extensions->first()?->extension ?? '101';
+            $currentAdminExt = $extensions->first()?->extension ?? '100';
         }
 
         return view('admin.pbx.live_calls', compact('channels', 'extensions', 'currentAdminExt'));
@@ -29,7 +29,7 @@ class PbxLiveCallsController extends Controller
 
     public function api(AsteriskAmi $ami)
     {
-        $channels = $ami->getActiveChannels();
+        $channels = $this->enrichChannels($ami->getActiveChannels());
 
         return response()->json([
             'success'   => true,
@@ -41,20 +41,71 @@ class PbxLiveCallsController extends Controller
 
     public function hangup(Request $request, AsteriskAmi $ami)
     {
-        $request->validate([
-            'channel' => ['required', 'string'],
-        ]);
+        $channel = $request->input('channel');
+        $ext = $request->input('extension');
 
-        $success = $ami->hangupChannel($request->input('channel'));
+        $success = false;
+        if ($ext) {
+            $success = $ami->hangupExtension($ext);
+        } elseif ($channel) {
+            if (!str_contains($channel, '-')) {
+                // Extension format passed e.g. PJSIP/100 or 100
+                $cleanExt = preg_replace('/[^0-9]/', '', $channel);
+                $success = $ami->hangupExtension($cleanExt);
+            } else {
+                $success = $ami->hangupChannel($channel);
+            }
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => $success,
-                'message' => $success ? __('Channel terminated successfully.') : __('Failed to terminate channel.'),
+                'message' => $success ? __('Call terminated successfully.') : __('Failed to terminate call.'),
             ]);
         }
 
-        return back()->with($success ? 'ok' : 'err', $success ? __('Channel terminated successfully.') : __('Failed to terminate channel.'));
+        return back()->with($success ? 'ok' : 'err', $success ? __('Call terminated successfully.') : __('Failed to terminate call.'));
+    }
+
+    /**
+     * Enrich active channel entries with user profile avatars and accurate names.
+     */
+    protected function enrichChannels(array $channels): array
+    {
+        if (empty($channels)) {
+            return [];
+        }
+
+        $extensions = PbxExtension::with('user')->get()->keyBy('extension');
+        $adminUser = auth('admin')->user();
+
+        foreach ($channels as &$chan) {
+            $callerExt = preg_replace('/[^0-9]/', '', $chan['caller'] ?? '');
+            $calleeExt = preg_replace('/[^0-9]/', '', $chan['callee'] ?? '');
+
+            // 1. Caller enrichment
+            $chan['caller_avatar'] = null;
+            if (!empty($callerExt) && ($extModel = $extensions->get($callerExt))) {
+                $chan['caller_name'] = $extModel->name ?: ($extModel->user?->name ?? $chan['caller_name']);
+                $chan['caller_avatar'] = $extModel->user?->avatar_url;
+            } elseif ($callerExt === '100' && $adminUser) {
+                $chan['caller_avatar'] = $adminUser->avatar_url;
+                $chan['caller_name'] = $chan['caller_name'] ?: $adminUser->name;
+            }
+
+            // 2. Callee enrichment
+            $chan['callee_avatar'] = null;
+            if (!empty($calleeExt) && ($extModel = $extensions->get($calleeExt))) {
+                $chan['callee_name'] = $extModel->name ?: ($extModel->user?->name ?? $chan['callee_name']);
+                $chan['callee_avatar'] = $extModel->user?->avatar_url;
+            } elseif ($calleeExt === '100' && $adminUser) {
+                $chan['callee_avatar'] = $adminUser->avatar_url;
+                $chan['callee_name'] = $chan['callee_name'] ?: $adminUser->name;
+            }
+        }
+        unset($chan);
+
+        return $channels;
     }
 
     public function originate(Request $request, AsteriskAmi $ami)

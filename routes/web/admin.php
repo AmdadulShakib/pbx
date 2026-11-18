@@ -17,6 +17,7 @@ use App\Http\Controllers\Web\Admin\PbxOutboundRouteController;
 use App\Http\Controllers\Web\Admin\PbxRingGroupController;
 use App\Http\Controllers\Web\Admin\PbxStatusController;
 use App\Http\Controllers\Web\Admin\PbxTrunkController;
+use App\Http\Controllers\Web\User\PbxPhoneController;
 use App\Http\Middleware\PbxAdmin;
 use Illuminate\Support\Facades\Route;
 
@@ -84,6 +85,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
 
         Route::middleware(PbxAdmin::class)->prefix('pbx')->name('pbx.')->group(function () {
+            Route::get('phone-window', [PbxPhoneController::class, 'window'])->name('phone.window');
             Route::resource('extensions', PbxExtensionController::class)->except('show');
             Route::get('live-calls', [PbxLiveCallsController::class, 'index'])->name('live-calls');
             Route::get('live-calls/api', [PbxLiveCallsController::class, 'api'])->name('live-calls.api');

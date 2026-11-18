@@ -170,9 +170,13 @@
     <!-- Bottom Operator Deck -->
     <div class="sidebar-footer border-top p-3 mt-auto d-flex align-items-center justify-content-between" style="background: #0b1220; border-color: rgba(255, 255, 255, 0.1) !important;">
         <div class="d-flex align-items-center gap-2.5 overflow-hidden">
-            <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 12px; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);">
-                {{ strtoupper(substr(auth('admin')->user()->name ?? 'AD', 0, 2)) }}
-            </div>
+            @if(auth('admin')->user()?->avatar_url)
+                <img src="{{ auth('admin')->user()->avatar_url }}" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 36px; height: 36px; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);" alt="Avatar">
+            @else
+                <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 12px; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);">
+                    {{ strtoupper(substr(auth('admin')->user()->name ?? 'AD', 0, 2)) }}
+                </div>
+            @endif
             <div class="overflow-hidden">
                 <div class="fw-bold text-truncate text-white" style="max-width: 140px; font-size: 13.5px; line-height: 1.2;">{{ auth('admin')->user()->name ?? 'Administrator' }}</div>
                 <div class="text-truncate" style="font-size: 11px; color: #94a3b8; font-weight: 500; margin-top: 2px;">{{ __('Telecom Supervisor') }}</div>

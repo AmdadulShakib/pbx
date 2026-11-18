@@ -38,7 +38,10 @@
                 </div>
             </div>
             <div class="pbx-header-actions">
-                <button type="button" class="pbx-icon-btn" onclick="togglePbxDialer()" title="{{ __('Minimize') }}">
+                <button type="button" class="pbx-icon-btn popout-hide-in-window" onclick="if (typeof pbxPopoutWindow === 'function') pbxPopoutWindow();" title="{{ __('Pop-out in Dedicated Window (Keep calls active while browsing other pages)') }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </button>
+                <button type="button" class="pbx-icon-btn popout-hide-in-window" onclick="togglePbxDialer()" title="{{ __('Minimize') }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
             </div>

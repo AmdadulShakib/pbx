@@ -29,6 +29,18 @@ class PbxPhoneController extends Controller
         return view('user.pbx.phone', compact('ext', 'contacts'));
     }
 
+    public function window()
+    {
+        $ext = $this->myExtension();
+        $contacts = PbxExtension::where('enabled', true)
+            ->when($ext, fn($q) => $q->where('id', '!=', $ext->id))
+            ->with('user:id,name,email,avatar')
+            ->orderBy('extension')
+            ->get();
+
+        return view('pbx.phone_window', compact('ext', 'contacts'));
+    }
+
     public function credentials()
     {
         $ext = $this->myExtension();

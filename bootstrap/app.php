@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'pbx/call-log',
             'admin/pbx/calls/log',
+            'admin/pbx/live-calls/hangup',
         ]);
 
         $middleware->redirectTo(

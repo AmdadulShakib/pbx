@@ -1276,6 +1276,66 @@
         }
     }
 
+    // Pop-Out Window Feature (Enables persistent uninterrupted calling while browsing)
+    window.pbxPopoutWindow = function () {
+        const isAdmin = window.location.pathname.startsWith('/admin');
+        const popoutUrl = isAdmin ? '/admin/pbx/phone-window' : '/user/pbx/phone-window';
+        const winWidth = 380;
+        const winHeight = 650;
+        const left = window.screen.width ? (window.screen.width - winWidth - 40) : 100;
+        const top = 60;
+        const win = window.open(
+            popoutUrl,
+            'VoxPulsePbxSoftphone',
+            `width=${winWidth},height=${winHeight},top=${top},left=${left},scrollbars=no,resizable=yes,status=no,toolbar=no,menubar=no`
+        );
+        if (win) {
+            win.focus();
+            const card = document.getElementById('pbx-dialer-card');
+            if (card && card.classList.contains('active')) {
+                card.classList.remove('active');
+            }
+        } else {
+            alert('Pop-up window was blocked by your browser. Please allow popups for this site to keep your calls active in a separate window.');
+        }
+    };
+
+    // Accidental Navigation Guard: Prevent dropping calls when navigating or reloading pages
+    window.addEventListener('beforeunload', function (e) {
+        if (currentSession && !currentSession.isEnded()) {
+            const warningMsg = 'You have an active PBX call in progress! Leaving or refreshing this page will disconnect the call.';
+            e.preventDefault();
+            e.returnValue = warningMsg;
+            return warningMsg;
+        }
+    });
+
+    // Graceful Teardown on Unload: If user insists on closing/leaving, immediately terminate call
+    window.addEventListener('pagehide', function () {
+        if (currentSession && !currentSession.isEnded()) {
+            try {
+                currentSession.terminate({
+                    status_code: 487,
+                    reason_phrase: 'Request Terminated'
+                });
+            } catch (err) {}
+
+            if (navigator.sendBeacon && userCreds && userCreds.extension) {
+                const formData = new FormData();
+                formData.append('extension', userCreds.extension);
+                formData.append('channel', 'PJSIP/' + userCreds.extension);
+                
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                if (csrf) formData.append('_token', csrf);
+
+                const hangupUrl = window.location.pathname.startsWith('/admin')
+                    ? '/admin/pbx/live-calls/hangup'
+                    : '/admin/pbx/live-calls/hangup';
+                navigator.sendBeacon(hangupUrl, formData);
+            }
+        }
+    });
+
     // Auto initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initPbxClient);
