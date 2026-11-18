@@ -151,12 +151,12 @@
                         @forelse($logs as $log)
                             @php
                                 $callerUser = $log->callerExtension?->user ?? $log->user;
-                                $callerAvatar = $callerUser?->image ? asset($callerUser->image) : null;
-                                $callerInitial = strtoupper(substr($log->caller_name ?: $log->caller, 0, 1));
+                                $callerAvatar = $callerUser?->avatar_url ?? ($callerUser?->image ? asset($callerUser->image) : null);
+                                $callerInitial = strtoupper(substr($log->caller_name ?: ($callerUser?->name ?: $log->caller), 0, 1));
 
                                 $calleeUser = $log->calleeExtension?->user;
-                                $calleeAvatar = $calleeUser?->image ? asset($calleeUser->image) : null;
-                                $calleeInitial = strtoupper(substr($log->callee_name ?: $log->callee, 0, 1));
+                                $calleeAvatar = $calleeUser?->avatar_url ?? ($calleeUser?->image ? asset($calleeUser->image) : null);
+                                $calleeInitial = strtoupper(substr($log->callee_name ?: ($calleeUser?->name ?: $log->callee), 0, 1));
                             @endphp
                             <tr>
                                 <td class="ps-3 ps-md-4 py-3">
@@ -197,7 +197,7 @@
                                     @if($log->status === 'answered')
                                         @php
                                             $ansUser = $log->calleeExtension?->user;
-                                            $ansAvatar = $ansUser?->image ? asset($ansUser->image) : null;
+                                            $ansAvatar = $ansUser?->avatar_url ?? ($ansUser?->image ? asset($ansUser->image) : null);
                                         @endphp
                                         <div class="d-flex align-items-center gap-2">
                                             @if($ansAvatar)

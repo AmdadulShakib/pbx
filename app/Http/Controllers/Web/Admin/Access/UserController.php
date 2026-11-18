@@ -45,6 +45,7 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
             'password' => ['required', 'min:8', 'confirmed'],
         ]);
 
@@ -52,6 +53,17 @@ class UserController extends Controller
         $user->name = $data['name'];
         $user->email = $data['email'];
         $user->password = Hash::make($data['password']);
+
+        if ($request->hasFile('avatar')) {
+            $avatar = $request->file('avatar');
+            $filename = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
+            $path = public_path('uploads/avatars');
+            if (!file_exists($path)) {
+                mkdir($path, 0755, true);
+            }
+            $avatar->move($path, $filename);
+            $user->avatar = 'uploads/avatars/' . $filename;
+        }
 
         $typeColumn = $this->resolveTypeColumn();
         if ($typeColumn) {
@@ -77,11 +89,27 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
             'password' => ['nullable', 'min:8', 'confirmed'],
         ]);
 
         $user->name = $data['name'];
         $user->email = $data['email'];
+
+        if ($request->hasFile('avatar')) {
+            $avatar = $request->file('avatar');
+            $filename = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
+            $path = public_path('uploads/avatars');
+            if (!file_exists($path)) {
+                mkdir($path, 0755, true);
+            }
+            $avatar->move($path, $filename);
+            if ($user->avatar && file_exists(public_path($user->avatar))) {
+                @unlink(public_path($user->avatar));
+            }
+            $user->avatar = 'uploads/avatars/' . $filename;
+        }
+
         if (!empty($data['password'])) {
             $user->password = Hash::make($data['password']);
         }

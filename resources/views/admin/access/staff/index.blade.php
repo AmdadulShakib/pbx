@@ -46,7 +46,18 @@
                 <tbody>
                     @forelse($staff as $member)
                         <tr>
-                            <td class="fw-semibold">{{ $member->name }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if($member->avatar_url)
+                                        <img src="{{ $member->avatar_url }}" alt="{{ $member->name }}" class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;">
+                                    @else
+                                        <div class="avatar-sm bg-primary-subtle text-primary rounded-circle fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 13px;">
+                                            {{ strtoupper(substr($member->name, 0, 1)) }}
+                                        </div>
+                                    @endif
+                                    <span class="fw-semibold">{{ $member->name }}</span>
+                                </div>
+                            </td>
                             <td>{{ $member->email }}</td>
                             <td>
                                 @if(!empty($rolesEnabled))

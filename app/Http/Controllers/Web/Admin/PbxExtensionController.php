@@ -37,7 +37,7 @@ class PbxExtensionController extends Controller
             \Log::warning('FreeSWITCH sync warning: ' . $e->getMessage());
         }
 
-        return redirect()->route('admin.pbx.extensions.index')->with('ok', 'এক্সটেনশন সফলভাবে তৈরি হয়েছে');
+        return redirect()->route('admin.pbx.extensions.index')->with('ok', __('Extension created successfully.'));
     }
 
     public function edit(PbxExtension $extension)
@@ -57,7 +57,7 @@ class PbxExtensionController extends Controller
             \Log::warning('FreeSWITCH sync warning: ' . $e->getMessage());
         }
 
-        return redirect()->route('admin.pbx.extensions.index')->with('ok', 'এক্সটেনশন আপডেট হয়েছে');
+        return redirect()->route('admin.pbx.extensions.index')->with('ok', __('Extension updated successfully.'));
     }
 
     public function destroy(PbxExtension $extension)
@@ -69,7 +69,7 @@ class PbxExtensionController extends Controller
             \Log::warning('FreeSWITCH sync warning: ' . $e->getMessage());
         }
 
-        return redirect()->route('admin.pbx.extensions.index')->with('ok', 'এক্সটেনশন মুছে ফেলা হয়েছে');
+        return redirect()->route('admin.pbx.extensions.index')->with('ok', __('Extension deleted successfully.'));
     }
 
     private function validated(Request $request, ?PbxExtension $ext = null): array

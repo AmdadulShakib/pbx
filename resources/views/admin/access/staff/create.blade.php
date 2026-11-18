@@ -4,7 +4,7 @@
 @section('page-title', __('Add Staff'))
 
 @section('content')
-    <form method="post" action="{{ route('admin.staff.store') }}" class="card">
+    <form method="post" action="{{ route('admin.staff.store') }}" enctype="multipart/form-data" class="card">
         @csrf
         <div class="card-header">
             <div class="fw-semibold">@lang('Create staff account')</div>
@@ -23,6 +23,17 @@
                     <label class="form-label">@lang('Email')</label>
                     <input class="form-control" name="email" type="email" value="{{ old('email') }}" required>
                     @error('email')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">@lang('Profile Photo / Avatar')</label>
+                    <input class="form-control" name="avatar" type="file" accept="image/*" onchange="previewAvatar(this)">
+                    <div class="form-text">@lang('Accepted formats: JPG, PNG, WEBP. Max size: 2MB.')</div>
+                    <div id="avatarPreviewBox" class="mt-2 d-none">
+                        <img id="avatarPreviewImg" src="" alt="Preview" class="rounded-circle border" style="width: 64px; height: 64px; object-fit: cover;">
+                    </div>
+                    @error('avatar')
                         <div class="text-danger small mt-1">{{ $message }}</div>
                     @enderror
                 </div>
@@ -63,3 +74,18 @@
         </div>
     </form>
 @endsection
+
+@push('js')
+<script>
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatarPreviewImg').src = e.target.result;
+                document.getElementById('avatarPreviewBox').classList.remove('d-none');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+@endpush

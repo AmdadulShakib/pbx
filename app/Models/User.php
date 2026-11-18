@@ -16,6 +16,7 @@ use HasFactory;
     protected $fillable = [
         'name',
         'email',
+        'avatar',
         'password',
         'type', // 'admin' or 'user'
     ];
@@ -46,6 +47,22 @@ use HasFactory;
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'role_user');
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if ($this->avatar) {
+            if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+                return $this->avatar;
+            }
+            return asset($this->avatar);
+        }
+        return null;
+    }
+
+    public function getImageAttribute(): ?string
+    {
+        return $this->avatar_url;
     }
 
     public function pbxExtension()

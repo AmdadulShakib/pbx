@@ -4,7 +4,7 @@
 @section('page-title', __('Edit Staff'))
 
 @section('content')
-    <form method="post" action="{{ route('admin.staff.update', $staff) }}" class="card">
+    <form method="post" action="{{ route('admin.staff.update', $staff) }}" enctype="multipart/form-data" class="card">
         @csrf
         @method('put')
         <div class="card-header">
@@ -24,6 +24,26 @@
                     <label class="form-label">@lang('Email')</label>
                     <input class="form-control" name="email" type="email" value="{{ old('email', $staff->email) }}" required>
                     @error('email')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">@lang('Profile Photo / Avatar')</label>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        @if($staff->avatar_url)
+                            <img id="avatarPreviewImg" src="{{ $staff->avatar_url }}" alt="{{ $staff->name }}" class="rounded-circle border" style="width: 56px; height: 56px; object-fit: cover;">
+                        @else
+                            <div id="avatarPlaceholder" class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center border" style="width: 56px; height: 56px; font-size: 20px;">
+                                {{ strtoupper(substr($staff->name, 0, 1)) }}
+                            </div>
+                            <img id="avatarPreviewImg" src="" alt="Preview" class="rounded-circle border d-none" style="width: 56px; height: 56px; object-fit: cover;">
+                        @endif
+                        <div class="flex-grow-1">
+                            <input class="form-control" name="avatar" type="file" accept="image/*" onchange="previewAvatar(this)">
+                            <div class="form-text">@lang('Upload a new photo (JPG, PNG, WEBP, max 2MB). Leave empty to keep current.')</div>
+                        </div>
+                    </div>
+                    @error('avatar')
                         <div class="text-danger small mt-1">{{ $message }}</div>
                     @enderror
                 </div>
@@ -65,3 +85,21 @@
         </div>
     </form>
 @endsection
+
+@push('js')
+<script>
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('avatarPreviewImg');
+                img.src = e.target.result;
+                img.classList.remove('d-none');
+                const placeholder = document.getElementById('avatarPlaceholder');
+                if (placeholder) placeholder.classList.add('d-none');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+@endpush

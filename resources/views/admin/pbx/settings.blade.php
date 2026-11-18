@@ -48,22 +48,32 @@
                             <label class="form-label fw-bold">{{ __('PBX Engine / Backend Server') }} <span class="text-danger">*</span></label>
                             <div class="row g-3">
                                 <div class="col-12 col-md-6">
-                                    <div class="form-check card p-3 border {{ $driver === 'asterisk' ? 'border-primary bg-primary-subtle' : 'border-secondary-subtle' }}">
-                                        <input class="form-check-input" type="radio" name="driver" id="driver_asterisk" value="asterisk" {{ $driver === 'asterisk' ? 'checked' : '' }} onchange="updateDefaultWsUrl()">
-                                        <label class="form-check-label fw-bold ms-2" for="driver_asterisk">
-                                            Asterisk (PJSIP + WebRTC)
-                                            <div class="text-muted small fw-normal mt-1">{{ __('Default WebRTC WS on port 8088 (/ws), robust SIP engine.') }}</div>
-                                        </label>
-                                    </div>
+                                    <label class="engine-card d-block p-3 rounded-3 border cursor-pointer transition {{ $driver === 'asterisk' ? 'border-primary bg-primary-subtle shadow-sm' : 'border-light-subtle bg-body' }}" for="driver_asterisk" style="cursor: pointer;">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <input class="form-check-input mt-1" type="radio" name="driver" id="driver_asterisk" value="asterisk" {{ $driver === 'asterisk' ? 'checked' : '' }} onchange="updateEngineCardSelection(); updateDefaultWsUrl();">
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <span class="fw-bold text-dark fs-6">Asterisk (PJSIP + WebRTC)</span>
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle py-0.5 px-2 font-monospace" style="font-size: 11px;">{{ __('Recommended') }}</span>
+                                                </div>
+                                                <p class="text-muted small mb-0">{{ __('High-performance PJSIP stack, WebRTC WebSocket proxy on port 8088 (/ws), and full SIP trunking support.') }}</p>
+                                            </div>
+                                        </div>
+                                    </label>
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <div class="form-check card p-3 border {{ $driver === 'freeswitch' ? 'border-primary bg-primary-subtle' : 'border-secondary-subtle' }}">
-                                        <input class="form-check-input" type="radio" name="driver" id="driver_freeswitch" value="freeswitch" {{ $driver === 'freeswitch' ? 'checked' : '' }} onchange="updateDefaultWsUrl()">
-                                        <label class="form-check-label fw-bold ms-2" for="driver_freeswitch">
-                                            FreeSWITCH (mod_sofia)
-                                            <div class="text-muted small fw-normal mt-1">{{ __('Event Socket (ESL 8021) with WebRTC WS on port 5066 / 7443.') }}</div>
-                                        </label>
-                                    </div>
+                                    <label class="engine-card d-block p-3 rounded-3 border cursor-pointer transition {{ $driver === 'freeswitch' ? 'border-primary bg-primary-subtle shadow-sm' : 'border-light-subtle bg-body' }}" for="driver_freeswitch" style="cursor: pointer;">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <input class="form-check-input mt-1" type="radio" name="driver" id="driver_freeswitch" value="freeswitch" {{ $driver === 'freeswitch' ? 'checked' : '' }} onchange="updateEngineCardSelection(); updateDefaultWsUrl();">
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <span class="fw-bold text-dark fs-6">FreeSWITCH (mod_sofia)</span>
+                                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle py-0.5 px-2 font-monospace" style="font-size: 11px;">ESL 8021</span>
+                                                </div>
+                                                <p class="text-muted small mb-0">{{ __('Event Socket Library (ESL) interface with WebRTC WebSocket on port 5066 / 7443.') }}</p>
+                                            </div>
+                                        </div>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -222,23 +232,60 @@
         </div>
 
         <!-- Quick Help & Documentation Card -->
-        <div class="card border-0 shadow-sm bg-light">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent py-3 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="card-title mb-0 fw-bold d-flex align-items-center gap-2">
+                        <i data-lucide="check-square" class="text-success" style="width: 18px; height: 18px;"></i>
+                        <span>{{ __('Asterisk WebRTC & SIP Configuration Checklist') }}</span>
+                    </h6>
+                    <small class="text-muted">{{ __('Verify essential server files and network firewall ports for audio calls') }}</small>
+                </div>
+            </div>
             <div class="card-body p-4">
-                <h6 class="fw-bold mb-3">
-                    <i data-lucide="help-circle" class="me-2 text-primary" style="width: 18px; height: 18px;"></i>
-                    {{ __('Asterisk WebRTC Checklist') }}
-                </h6>
-                <div class="row g-3 small text-muted">
+                <div class="row g-3">
                     <div class="col-12 col-md-6">
-                        <div class="p-3 bg-light rounded border">
-                            <strong class="d-block mb-1">1. HTTP WebSocket (8088)</strong>
-                            Asterisk এর <code>/etc/asterisk/http.conf</code> ফাইলে <code>bindport=8088</code> এবং <code>enabled=yes</code> থাকতে হবে।
+                        <div class="p-3 rounded border bg-light-subtle h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-2 fw-semibold">Port 8088</span>
+                                <strong class="text-dark small">{{ __('WebRTC WebSocket (/ws)') }}</strong>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                {{ __('Ensure') }} <code>enabled=yes</code> {{ __('and') }} <code>bindport=8088</code> {{ __('are configured in') }} <code>/etc/asterisk/http.conf</code>.
+                            </p>
                         </div>
                     </div>
                     <div class="col-12 col-md-6">
-                        <div class="p-3 bg-light rounded border">
-                            <strong class="d-block mb-1">2. DTLS Encryption</strong>
-                            WebRTC কলিংয়ের অডিও এনক্রিপশনের জন্য <code>pjsip.conf</code> এ <code>dtls_cert_file</code> এবং <code>dtls_private_key</code> সেট থাকতে হবে।
+                        <div class="p-3 rounded border bg-light-subtle h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle py-1 px-2 fw-semibold">DTLS-SRTP</span>
+                                <strong class="text-dark small">{{ __('Audio Media Encryption') }}</strong>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                {{ __('WebRTC browser calls require DTLS keys. Verify') }} <code>dtls_cert_file</code> {{ __('in') }} <code>/etc/asterisk/pjsip.conf</code>.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 rounded border bg-light-subtle h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-info-subtle text-info border border-info-subtle py-1 px-2 fw-semibold">Port 5060</span>
+                                <strong class="text-dark small">{{ __('Hardware SIP IP Phones') }}</strong>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                {{ __('Deskphones (Grandstream, Yealink) register via standard SIP UDP/TCP on port 5060.') }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 rounded border bg-light-subtle h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle py-1 px-2 fw-semibold">10000–20000</span>
+                                <strong class="text-dark small">{{ __('RTP Voice Media Ports') }}</strong>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                {{ __('Firewall must permit inbound UDP 10000–20000 for bidirectional voice audio packets.') }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -250,6 +297,23 @@
 
 @push('js')
 <script>
+    function updateEngineCardSelection() {
+        const isAsterisk = document.getElementById('driver_asterisk').checked;
+        const asteriskCard = document.querySelector('label[for="driver_asterisk"]');
+        const freeswitchCard = document.querySelector('label[for="driver_freeswitch"]');
+        
+        if (isAsterisk) {
+            asteriskCard.classList.add('border-primary', 'bg-primary-subtle', 'shadow-sm');
+            asteriskCard.classList.remove('border-light-subtle', 'bg-body');
+            freeswitchCard.classList.remove('border-primary', 'bg-primary-subtle', 'shadow-sm');
+            freeswitchCard.classList.add('border-light-subtle', 'bg-body');
+        } else {
+            freeswitchCard.classList.add('border-primary', 'bg-primary-subtle', 'shadow-sm');
+            freeswitchCard.classList.remove('border-light-subtle', 'bg-body');
+            asteriskCard.classList.remove('border-primary', 'bg-primary-subtle', 'shadow-sm');
+            asteriskCard.classList.add('border-light-subtle', 'bg-body');
+        }
+    }
     function updateDefaultWsUrl() {
         const isAsterisk = document.getElementById('driver_asterisk').checked;
         const domain = document.getElementById('domain').value.trim() || '127.0.0.1';

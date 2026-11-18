@@ -55,6 +55,7 @@ class StaffController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
             'password' => ['required', 'min:8', 'confirmed'],
             'roles' => ['array'],
             'roles.*' => ['integer'],
@@ -64,6 +65,17 @@ class StaffController extends Controller
         $user->name = $data['name'];
         $user->email = $data['email'];
         $user->password = Hash::make($data['password']);
+
+        if ($request->hasFile('avatar')) {
+            $avatar = $request->file('avatar');
+            $filename = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
+            $path = public_path('uploads/avatars');
+            if (!file_exists($path)) {
+                mkdir($path, 0755, true);
+            }
+            $avatar->move($path, $filename);
+            $user->avatar = 'uploads/avatars/' . $filename;
+        }
 
         $typeColumn = $this->resolveTypeColumn();
         if ($typeColumn) {
@@ -100,6 +112,7 @@ class StaffController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($staff->id)],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
             'password' => ['nullable', 'min:8', 'confirmed'],
             'roles' => ['array'],
             'roles.*' => ['integer'],
@@ -107,6 +120,21 @@ class StaffController extends Controller
 
         $staff->name = $data['name'];
         $staff->email = $data['email'];
+
+        if ($request->hasFile('avatar')) {
+            $avatar = $request->file('avatar');
+            $filename = time() . '_' . uniqid() . '.' . $avatar->getClientOriginalExtension();
+            $path = public_path('uploads/avatars');
+            if (!file_exists($path)) {
+                mkdir($path, 0755, true);
+            }
+            $avatar->move($path, $filename);
+            if ($staff->avatar && file_exists(public_path($staff->avatar))) {
+                @unlink(public_path($staff->avatar));
+            }
+            $staff->avatar = 'uploads/avatars/' . $filename;
+        }
+
         if (!empty($data['password'])) {
             $staff->password = Hash::make($data['password']);
         }

@@ -66,9 +66,13 @@
                                     <td>
                                         @if($ext->user)
                                             <div class="d-flex align-items-center gap-2">
-                                                <div class="avatar-sm bg-light rounded-circle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                                    {{ strtoupper(substr($ext->user->name, 0, 1)) }}
-                                                </div>
+                                                @if($ext->user->avatar_url)
+                                                    <img src="{{ $ext->user->avatar_url }}" alt="{{ $ext->user->name }}" class="rounded-circle border" style="width: 34px; height: 34px; object-fit: cover;">
+                                                @else
+                                                    <div class="avatar-sm bg-primary-subtle text-primary rounded-circle fw-bold d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; font-size: 13px;">
+                                                        {{ strtoupper(substr($ext->user->name, 0, 1)) }}
+                                                    </div>
+                                                @endif
                                                 <div>
                                                     <div class="fw-semibold">{{ $ext->user->name }}</div>
                                                     <small class="text-muted">{{ $ext->user->email }}</small>
@@ -94,6 +98,10 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="d-inline-flex align-items-center gap-1">
+                                            <button type="button" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 px-2.5 py-1" onclick="openDeviceSetupModal('{{ $ext->extension }}', '{{ addslashes($ext->name) }}', '{{ addslashes($ext->password) }}', '{{ addslashes($ext->user?->name ?? '') }}')" title="{{ __('Add to Telephone Device / IP Phone') }}">
+                                                <i data-lucide="smartphone" style="width: 13px; height: 13px;"></i>
+                                                <span>{{ __('Device Setup') }}</span>
+                                            </button>
                                             <button type="button" class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1 px-2.5 py-1" onclick="if (typeof togglePbxDialer === 'function') { togglePbxDialer(); pbxCallContact('{{ $ext->extension }}', '{{ $ext->name }}'); }" title="{{ __('Call with Softphone') }}">
                                                 <i data-lucide="phone-call" style="width: 13px; height: 13px;"></i>
                                                 <span>{{ __('Call') }}</span>
@@ -132,4 +140,222 @@
         </div>
     </div>
 </div>
+
+<!-- IP Phone & Telephone Device Configuration Modal -->
+<div class="modal fade" id="deviceSetupModal" tabindex="-1" aria-labelledby="deviceSetupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="p-2 bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i data-lucide="smartphone" style="width: 20px; height: 20px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0" id="deviceSetupModalLabel">
+                            {{ __('IP Phone & Telephone Device Configuration') }}
+                        </h5>
+                        <small class="text-white-50">{{ __('Extension') }} <span id="mExtHeaderBadge" class="badge bg-light text-primary font-monospace fw-bold"></span></small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Quick Notice -->
+                <div class="alert alert-info d-flex align-items-start gap-2.5 p-3 mb-4 rounded-3 border-0 bg-info-subtle">
+                    <i data-lucide="info" class="text-info mt-0.5 flex-shrink-0" style="width: 18px; height: 18px;"></i>
+                    <div class="small text-info-emphasis">
+                        {{ __('Use these credentials to register any hardware VoIP deskphone (Yealink, Grandstream, Fanvil, Cisco) or mobile/desktop softphone (Zoiper, MicroSIP, GS Wave, Linphone) to this extension.') }}
+                    </div>
+                </div>
+
+                <!-- SIP Credentials Card -->
+                <div class="card border mb-4 rounded-3">
+                    <div class="card-header bg-light py-2.5 px-3 border-bottom d-flex align-items-center justify-content-between">
+                        <span class="fw-bold small text-uppercase text-secondary letter-spacing-1">
+                            <i data-lucide="key" class="me-1 text-primary" style="width: 14px; height: 14px;"></i>{{ __('SIP Account Credentials') }}
+                        </span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle py-0.5 px-2 font-monospace">{{ __('Status: Ready') }}</span>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="row g-3">
+                            <!-- SIP Server / Domain -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label small fw-semibold text-muted mb-1">{{ __('SIP Server / Host / Domain') }}</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control font-monospace" id="mSipServer" value="{{ config('pbx.domain', request()->getHost()) }}" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="copyInputVal('mSipServer')">
+                                        <i data-lucide="copy" style="width: 13px; height: 13px;"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Extension / Username -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label small fw-semibold text-muted mb-1">{{ __('SIP Extension / Username / User ID') }}</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control font-monospace fw-bold text-primary" id="mExtension" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="copyInputVal('mExtension')">
+                                        <i data-lucide="copy" style="width: 13px; height: 13px;"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- SIP Password -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label small fw-semibold text-muted mb-1">{{ __('SIP Secret / Password') }}</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="password" class="form-control font-monospace" id="mPassword" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="toggleModalPass()">
+                                        <i data-lucide="eye" id="mEyeIcon" style="width: 13px; height: 13px;"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="copyInputVal('mPassword')">
+                                        <i data-lucide="copy" style="width: 13px; height: 13px;"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Display Name -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label small fw-semibold text-muted mb-1">{{ __('Caller Display Name') }}</label>
+                                <input type="text" class="form-control form-control-sm" id="mDisplayName" readonly>
+                            </div>
+
+                            <!-- SIP Port -->
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small fw-semibold text-muted mb-1">{{ __('SIP Port') }}</label>
+                                <input type="text" class="form-control form-control-sm font-monospace" value="5060" readonly>
+                            </div>
+
+                            <!-- Transport Protocol -->
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small fw-semibold text-muted mb-1">{{ __('Transport') }}</label>
+                                <input type="text" class="form-control form-control-sm font-monospace" value="UDP / TCP" readonly>
+                            </div>
+
+                            <!-- Outbound Proxy -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label small fw-semibold text-muted mb-1">{{ __('Outbound Proxy (Optional)') }}</label>
+                                <input type="text" class="form-control form-control-sm font-monospace" value="{{ config('pbx.domain', request()->getHost()) }}:5060" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Setup Instructions Accordion -->
+                <div class="accordion" id="phoneGuidesAccordion">
+                    <!-- Grandstream & Yealink Hardware Phones -->
+                    <div class="accordion-item border rounded-3 mb-2">
+                        <h2 class="accordion-header" id="headingHardware">
+                            <button class="accordion-button collapsed py-2.5 px-3 fw-bold small" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHardware" aria-expanded="false" aria-controls="collapseHardware">
+                                <i data-lucide="phone" class="me-2 text-primary" style="width: 16px; height: 16px;"></i>
+                                {{ __('Hardware IP Deskphone Setup (Yealink, Grandstream, Fanvil, Cisco)') }}
+                            </button>
+                        </h2>
+                        <div id="collapseHardware" class="accordion-collapse collapse" aria-labelledby="headingHardware" data-bs-parent="#phoneGuidesAccordion">
+                            <div class="accordion-body small text-muted p-3">
+                                <ol class="mb-0 ps-3">
+                                    <li class="mb-1"><strong>{{ __('Open Web UI:') }}</strong> {{ __('Find the phone IP address from its screen menu and open it in your browser (e.g. http://192.168.1.150).') }}</li>
+                                    <li class="mb-1"><strong>{{ __('Go to Account Settings:') }}</strong> {{ __('Navigate to Account ➔ Account 1 ➔ General Settings.') }}</li>
+                                    <li class="mb-1"><strong>{{ __('Enter SIP Details:') }}</strong>
+                                        <ul class="ps-3 mt-1">
+                                            <li>{{ __('Account Name / Display Name:') }} <span class="fw-semibold text-dark">{{ __('Your Name') }}</span></li>
+                                            <li>{{ __('SIP Server:') }} <code class="text-primary">{{ config('pbx.domain', request()->getHost()) }}</code></li>
+                                            <li>{{ __('SIP User ID / Authenticate ID:') }} <span class="fw-bold text-dark modalExtFill"></span></li>
+                                            <li>{{ __('Authenticate Password:') }} <span class="fw-bold text-dark">{{ __('(Your SIP Secret above)') }}</span></li>
+                                            <li>{{ __('SIP Transport:') }} <span class="badge bg-light text-dark border">UDP</span></li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>{{ __('Save & Apply:') }}</strong> {{ __('Click Save/Apply. The status on your phone screen will change to "Registered" or "SIP OK".') }}</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Software Softphones (Zoiper, MicroSIP) -->
+                    <div class="accordion-item border rounded-3">
+                        <h2 class="accordion-header" id="headingSoftphone">
+                            <button class="accordion-button collapsed py-2.5 px-3 fw-bold small" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSoftphone" aria-expanded="false" aria-controls="collapseSoftphone">
+                                <i data-lucide="laptop" class="me-2 text-info" style="width: 16px; height: 16px;"></i>
+                                {{ __('Mobile & Desktop Softphone Setup (Zoiper, MicroSIP, GS Wave)') }}
+                            </button>
+                        </h2>
+                        <div id="collapseSoftphone" class="accordion-collapse collapse" aria-labelledby="headingSoftphone" data-bs-parent="#phoneGuidesAccordion">
+                            <div class="accordion-body small text-muted p-3">
+                                <ol class="mb-0 ps-3">
+                                    <li class="mb-1"><strong>{{ __('Install App:') }}</strong> {{ __('Download Zoiper or GS Wave on Android/iOS, or MicroSIP on Windows.') }}</li>
+                                    <li class="mb-1"><strong>{{ __('Add Account:') }}</strong> {{ __('Choose "SIP Account" and enter:') }}
+                                        <ul class="ps-3 mt-1">
+                                            <li>{{ __('Domain / Host / PBX:') }} <code class="text-primary">{{ config('pbx.domain', request()->getHost()) }}</code></li>
+                                            <li>{{ __('Username / Login / User:') }} <span class="fw-bold text-dark modalExtFill"></span></li>
+                                            <li>{{ __('Password / Secret:') }} <span class="fw-bold text-dark">{{ __('(Your SIP Secret above)') }}</span></li>
+                                            <li>{{ __('Caller ID / Name:') }} <span class="fw-bold text-dark modalNameFill"></span></li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>{{ __('Register:') }}</strong> {{ __('Click Register. When the status icon turns green, your phone is live and ready for HD calls!') }}</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2.5 px-4 border-top">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{{ __('Close') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('js')
+<script>
+    function openDeviceSetupModal(ext, name, pass, userName) {
+        document.getElementById('mExtHeaderBadge').innerText = ext;
+        document.getElementById('mExtension').value = ext;
+        document.getElementById('mPassword').value = pass;
+        document.getElementById('mDisplayName').value = name + (userName ? ' (' + userName + ')' : '');
+        
+        document.querySelectorAll('.modalExtFill').forEach(function(el) {
+            el.innerText = ext;
+        });
+        document.querySelectorAll('.modalNameFill').forEach(function(el) {
+            el.innerText = name;
+        });
+
+        // Reset password visibility
+        const passInput = document.getElementById('mPassword');
+        passInput.type = 'password';
+        const eyeIcon = document.getElementById('mEyeIcon');
+        if (eyeIcon) eyeIcon.setAttribute('data-lucide', 'eye');
+        if (window.lucide) lucide.createIcons();
+
+        const modalEl = document.getElementById('deviceSetupModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+    function toggleModalPass() {
+        const pass = document.getElementById('mPassword');
+        const icon = document.getElementById('mEyeIcon');
+        if (pass.type === 'password') {
+            pass.type = 'text';
+            icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            pass.type = 'password';
+            icon.setAttribute('data-lucide', 'eye');
+        }
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function copyInputVal(elementId) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        navigator.clipboard.writeText(el.value).then(function() {
+            if (typeof window.showToast === 'function') {
+                window.showToast('success', 'Copied to clipboard: ' + el.value);
+            } else {
+                alert('Copied: ' + el.value);
+            }
+        });
+    }
+</script>
+@endpush

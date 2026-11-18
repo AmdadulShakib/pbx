@@ -156,9 +156,13 @@
                                     <td>
                                         @if($ext->user)
                                             <div class="d-flex align-items-center gap-2">
-                                                <div class="rounded-circle bg-light text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 11px;">
-                                                    {{ strtoupper(substr($ext->user->name, 0, 2)) }}
-                                                </div>
+                                                @if($ext->user->avatar_url)
+                                                    <img src="{{ $ext->user->avatar_url }}" alt="{{ $ext->user->name }}" class="rounded-circle border" style="width: 28px; height: 28px; object-fit: cover;">
+                                                @else
+                                                    <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle fw-bold d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 11px;">
+                                                        {{ strtoupper(substr($ext->user->name, 0, 2)) }}
+                                                    </div>
+                                                @endif
                                                 <div>
                                                     <div class="small fw-semibold text-dark">{{ $ext->user->name }}</div>
                                                     <div class="text-muted" style="font-size: 11px;">{{ $ext->user->email }}</div>
@@ -232,12 +236,47 @@
                         </thead>
                         <tbody>
                             @forelse($recentCalls as $call)
+                                @php
+                                    $callerUser = $call->callerExtension?->user ?? $call->user;
+                                    $callerAvatar = $callerUser?->avatar_url ?? ($callerUser?->image ? asset($callerUser->image) : null);
+                                    $callerInitial = strtoupper(substr($call->caller_name ?: ($callerUser?->name ?: $call->caller), 0, 1));
+                                    $callerDisplayName = $call->caller_name ?: ($callerUser?->name ?: ('Ext ' . $call->caller));
+
+                                    $calleeUser = $call->calleeExtension?->user;
+                                    $calleeAvatar = $calleeUser?->avatar_url ?? ($calleeUser?->image ? asset($calleeUser->image) : null);
+                                    $calleeInitial = strtoupper(substr($call->callee_name ?: ($calleeUser?->name ?: $call->callee), 0, 1));
+                                    $calleeDisplayName = $call->callee_name ?: ($calleeUser?->name ?: ('Ext ' . $call->callee));
+                                @endphp
                                 <tr>
                                     <td>
-                                        <span class="fw-semibold font-monospace text-dark">{{ $call->caller }}</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if($callerAvatar)
+                                                <img src="{{ $callerAvatar }}" alt="{{ $callerDisplayName }}" class="rounded-circle border" style="width: 28px; height: 28px; object-fit: cover;">
+                                            @else
+                                                <div class="rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 11px;">
+                                                    {{ $callerInitial }}
+                                                </div>
+                                            @endif
+                                            <div>
+                                                <div class="fw-semibold text-dark small" style="line-height: 1.2;">{{ $callerDisplayName }}</div>
+                                                <span class="badge bg-secondary-subtle text-secondary py-0 px-1 font-monospace" style="font-size: 9px;">Ext {{ $call->caller }}</span>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td>
-                                        <span class="font-monospace text-dark">{{ $call->callee }}</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            @if($calleeAvatar)
+                                                <img src="{{ $calleeAvatar }}" alt="{{ $calleeDisplayName }}" class="rounded-circle border" style="width: 28px; height: 28px; object-fit: cover;">
+                                            @else
+                                                <div class="rounded-circle bg-info-subtle text-info border border-info-subtle d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 11px;">
+                                                    {{ $calleeInitial }}
+                                                </div>
+                                            @endif
+                                            <div>
+                                                <div class="fw-semibold text-dark small" style="line-height: 1.2;">{{ $calleeDisplayName }}</div>
+                                                <span class="badge bg-secondary-subtle text-secondary py-0 px-1 font-monospace" style="font-size: 9px;">Ext {{ $call->callee }}</span>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td>
                                         <span class="badge bg-light text-secondary border text-uppercase" style="font-size: 11px;">

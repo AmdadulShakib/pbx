@@ -46,10 +46,10 @@ class PbxStatusController extends Controller
                 return back()->with('err', $e->getMessage());
             }
 
-            return back()->with('ok', 'ফলাফল: ' . $result);
+            return back()->with('ok', __('Originate call response: ') . $result);
         }
 
-        return back()->with('ok', "অরিজিনেট টেস্ট কল রিকোয়েস্ট প্রেরিত (Asterisk Ext: {$d['from']} -> {$d['to']})");
+        return back()->with('ok', __("Test call originated (Ext: :from -> :to)", ['from' => $d['from'], 'to' => $d['to']]));
     }
 
     public function settings()
@@ -99,7 +99,7 @@ class PbxStatusController extends Controller
                 'pbx.rawman_url' => $data['rawman_url'] ?? '',
             ]);
 
-            return back()->with('ok', 'Asterisk AMI সেটিংস সফলভাবে আপডেট করা হয়েছে।');
+            return back()->with('ok', __('Asterisk AMI settings updated successfully.'));
         }
 
         // Core PBX settings
@@ -124,6 +124,6 @@ class PbxStatusController extends Controller
             'pbx.admin_emails' => $data['admin_emails'] ?? '',
         ]);
 
-        return back()->with('ok', 'PBX কোর সেটিংস সফলভাবে আপডেট করা হয়েছে।');
+        return back()->with('ok', __('PBX core settings updated successfully.'));
     }
 }

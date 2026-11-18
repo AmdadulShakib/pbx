@@ -71,7 +71,7 @@ class AdminController extends Controller
         $totalRingGroups = \App\Models\PbxRingGroup::count();
         $totalIvrs = \App\Models\PbxIvr::count();
         $totalCalls = \App\Models\PbxCallLog::count();
-        $recentCalls = \App\Models\PbxCallLog::latest()->take(6)->get();
+        $recentCalls = \App\Models\PbxCallLog::with(['callerExtension.user', 'calleeExtension.user', 'user'])->latest()->take(6)->get();
         $driver = config('pbx.driver', 'asterisk');
 
         return view('admin.dashboard', compact(
