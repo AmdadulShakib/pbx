@@ -652,42 +652,12 @@
     // =========================================================================
     // Colleagues Directory & Quick Call
     // =========================================================================
-    function renderContactsList(contacts, conferences) {
+    function renderContactsList(contacts) {
         const container = $('pbx-contacts-container');
         if (!container) return;
 
         let html = '';
 
-        // 1. Render Team Bridge Conference Rooms at top of contacts
-        const confList = (conferences && conferences.length > 0) ? conferences : (userCreds && userCreds.conferences ? userCreds.conferences : []);
-        if (confList && confList.length > 0) {
-            html += `<div style="padding: 10px 14px 4px 14px; font-size: 10px; font-weight: 700; color: var(--pbx-text-dim); text-transform: uppercase; letter-spacing: 0.6px; display: flex; align-items: center; gap: 6px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                <span>Team Audio Bridges</span>
-            </div>`;
-
-            confList.forEach((conf) => {
-                html += `
-                <div class="pbx-contact-row is-conference" data-ext="${conf.extension}" data-name="${conf.name.toLowerCase()}">
-                    <div class="pbx-contact-info">
-                        <div class="pbx-contact-avatar" style="background:#2563eb; color:#ffffff;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                        </div>
-                        <div class="pbx-contact-meta">
-                            <div class="pbx-contact-name" style="color:#2563eb; font-weight:700;">${conf.name}</div>
-                            <div class="pbx-contact-sub">Room ${conf.extension} • Multi-Party Conference</div>
-                        </div>
-                    </div>
-                    <button type="button" class="pbx-contact-call-btn" style="background:#10b981; border-color:#10b981; color:#fff;" onclick="pbxCallContact('${conf.extension}', '${conf.name}')" title="Join ${conf.name}">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    </button>
-                </div>`;
-            });
-
-            html += `<div style="padding: 12px 14px 4px 14px; font-size: 10px; font-weight: 700; color: var(--pbx-text-dim); text-transform: uppercase; letter-spacing: 0.6px;">Colleagues Directory</div>`;
-        }
-
-        // 2. Render Colleagues
         if (!contacts || contacts.length === 0) {
             html += '<div class="pbx-empty-state">No other colleagues assigned to extensions.</div>';
             container.innerHTML = html;
@@ -704,14 +674,14 @@
 
             html += `
             <div class="pbx-contact-row" data-ext="${c.extension}" data-name="${name.toLowerCase()}">
-                <div class="pbx-contact-info">
+                <div class="pbx-contact-left">
                     <div class="pbx-contact-avatar">${avatarContent}</div>
-                    <div class="pbx-contact-meta">
-                        <div class="pbx-contact-name">${name}</div>
-                        <div class="pbx-contact-sub">Ext ${c.extension} • ${sub}</div>
+                    <div class="pbx-contact-info">
+                        <div class="pbx-contact-name">${escapeHtml(name)}</div>
+                        <div class="pbx-contact-ext">Ext ${escapeHtml(c.extension)} &bull; ${escapeHtml(sub)}</div>
                     </div>
                 </div>
-                <button type="button" class="pbx-contact-call-btn" onclick="pbxCallContact('${c.extension}', '${name}')" title="Call ${name}">
+                <button type="button" class="pbx-contact-call-btn" onclick="pbxCallContact('${escapeHtml(c.extension)}', '${escapeHtml(name)}')" title="Call ${escapeHtml(name)}">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                 </button>
             </div>`;
@@ -834,14 +804,14 @@
 
                 html += `
                 <div class="pbx-recent-row">
-                    <div class="pbx-recent-info">
+                    <div class="pbx-recent-left">
                         <div class="pbx-recent-icon ${r.direction}">${iconSvg}</div>
-                        <div>
-                            <div class="pbx-recent-meta">${r.name || 'Ext ' + r.ext}</div>
-                            <div class="pbx-recent-time">Ext ${r.ext} • ${r.time} (${r.duration})</div>
+                        <div class="pbx-recent-meta">
+                            <div class="pbx-recent-title">${escapeHtml(r.name || 'Ext ' + r.ext)}</div>
+                            <div class="pbx-recent-time">Ext ${escapeHtml(r.ext)} &bull; ${escapeHtml(r.time)} (${escapeHtml(r.duration)})</div>
                         </div>
                     </div>
-                    <button type="button" class="pbx-contact-call-btn" onclick="pbxCallContact('${r.ext}', '${r.name}')" title="Call back">
+                    <button type="button" class="pbx-contact-call-btn" onclick="pbxCallContact('${escapeHtml(r.ext)}', '${escapeHtml(r.name || '')}')" title="Call back">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     </button>
                 </div>`;
@@ -1390,6 +1360,21 @@
             const activeCount = data.active_count || (data.participants ? data.participants.length : 0);
             if (countEl) countEl.textContent = `In Room (${activeCount})`;
 
+            // Live Ringing Invitations Banner
+            const bannerEl = $('pbx-conf-ringing-banner-container');
+            if (bannerEl) {
+                if (data.pending_invites && data.pending_invites.length > 0) {
+                    bannerEl.innerHTML = data.pending_invites.map(inv => `
+                        <div class="pbx-conf-invite-banner">
+                            <span class="spinner-grow spinner-grow-sm" role="status" style="width: 10px; height: 10px;"></span>
+                            <span><b>${escapeHtml(inv.inviter_name || 'Someone')}</b> is inviting <b>${escapeHtml(inv.target_name || ('Ext ' + inv.target_ext))}</b> (Ringing...)...</span>
+                        </div>
+                    `).join('');
+                } else {
+                    bannerEl.innerHTML = '';
+                }
+            }
+
             // Active Participants List
             const listEl = $('pbx-conf-participants-list');
             if (listEl) {
@@ -1410,8 +1395,18 @@
                         const isMeBadge = p.is_me ? `<span class="pbx-conf-you-badge">(You)</span>` : '';
                         const adminBadge = p.is_admin ? `<span class="pbx-conf-admin-badge">Host</span>` : '';
 
+                        const isHold = (p.is_me && isCallHeld) || p.is_hold;
+                        const isMuted = (p.is_me && isCallMuted) || p.is_muted;
+
                         let statusBadge = '';
-                        if (p.is_muted) {
+                        if (isHold) {
+                            statusBadge = `
+                                <span class="pbx-conf-tag tag-hold" title="Call On Hold">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>
+                                    <span>On Hold</span>
+                                </span>
+                            `;
+                        } else if (isMuted) {
                             statusBadge = `
                                 <span class="pbx-conf-tag tag-muted" title="Microphone Muted">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/></svg>
@@ -1427,11 +1422,13 @@
                             `;
                         }
 
+                        const invitedByHtml = p.invited_by ? ` <span class="pbx-conf-invited-tag">&bull; Invited by ${escapeHtml(p.invited_by)}</span>` : '';
+
                         return `
                             <div class="pbx-conf-participant-row ${p.is_me ? 'is-me' : ''}">
                                 <div class="pbx-conf-avatar-wrapper">
                                     ${avatarHtml}
-                                    ${p.is_talking ? '<span class="pbx-talking-pulse"></span>' : ''}
+                                    ${p.is_talking && !isMuted && !isHold ? '<span class="pbx-talking-pulse"></span>' : ''}
                                 </div>
                                 <div class="pbx-conf-info">
                                     <div class="pbx-conf-pname">
@@ -1439,7 +1436,7 @@
                                         ${isMeBadge}
                                         ${adminBadge}
                                     </div>
-                                    <div class="pbx-conf-pext">Ext ${escapeHtml(p.extension)}</div>
+                                    <div class="pbx-conf-pext">Ext ${escapeHtml(p.extension)}${invitedByHtml}</div>
                                 </div>
                                 <div class="pbx-conf-actions">
                                     ${statusBadge}
@@ -1462,6 +1459,17 @@
                             ? `<img src="${m.avatar}" alt="${escapeHtml(m.name)}" class="pbx-conf-avatar-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'pbx-conf-avatar-init\\'>${initial}</span>'">`
                             : `<span class="pbx-conf-avatar-init">${initial}</span>`;
 
+                        const pendingInv = (data.pending_invites || []).find(inv => String(inv.target_ext) === String(m.extension));
+                        const ringBtnHtml = pendingInv
+                            ? `<button type="button" class="pbx-conf-ring-btn" disabled style="opacity: 0.75; background: #d97706; border-color: #d97706;">
+                                   <span class="spinner-grow spinner-grow-sm" role="status" style="width: 10px; height: 10px;"></span>
+                                   <span>Calling (by ${escapeHtml(pendingInv.inviter_name || 'user')})...</span>
+                               </button>`
+                            : `<button type="button" class="pbx-conf-ring-btn" id="pbx-inv-btn-${escapeHtml(m.extension)}" onclick="pbxInviteToConference('${escapeHtml(m.extension)}', '${escapeHtml(room)}')" title="Ring extension now">
+                                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                   <span>Ring</span>
+                               </button>`;
+
                         return `
                             <div class="pbx-conf-invite-row">
                                 <div class="pbx-conf-avatar-wrapper">
@@ -1471,10 +1479,7 @@
                                     <div class="pbx-conf-pname">${escapeHtml(m.name)}</div>
                                     <div class="pbx-conf-pext">Ext ${escapeHtml(m.extension)}</div>
                                 </div>
-                                <button type="button" class="pbx-conf-ring-btn" id="pbx-inv-btn-${escapeHtml(m.extension)}" onclick="pbxInviteToConference('${escapeHtml(m.extension)}', '${escapeHtml(room)}')" title="Ring extension now">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                                    <span>Ring</span>
-                                </button>
+                                ${ringBtnHtml}
                             </div>
                         `;
                     }).join('');
@@ -1710,7 +1715,25 @@
         }
     };
 
-    window.pbxToggleMute = function () {
+    async function notifyConfAction(action, room) {
+        if (!room) return;
+        const myExt = userCreds?.extension || '';
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        try {
+            fetch(`/user/pbx/conference/${encodeURIComponent(room)}/action`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
+                body: JSON.stringify({ action: action, extension: myExt })
+            });
+        } catch (e) {}
+    }
+
+    window.pbxToggleMute = function (e) {
+        if (e && e.stopPropagation) e.stopPropagation();
         getAudioContext();
         if (!currentSession) return;
         const btn = $('pbx-mute-btn');
@@ -1725,6 +1748,7 @@
             if (iconOn) iconOn.style.display = 'none';
             if (iconOff) iconOff.style.display = 'block';
             if (label) label.textContent = 'Muted';
+            if (currentConfRoom) notifyConfAction('mute', currentConfRoom);
         } else {
             currentSession.unmute({ audio: true });
             isCallMuted = false;
@@ -1732,6 +1756,19 @@
             if (iconOn) iconOn.style.display = 'block';
             if (iconOff) iconOff.style.display = 'none';
             if (label) label.textContent = 'Mute';
+            if (currentConfRoom) notifyConfAction('unmute', currentConfRoom);
+        }
+
+        // Sync PiP bar & in-call top bar mute state
+        const pipMuteBtn = $('pbx-pip-mute-btn');
+        if (pipMuteBtn) {
+            pipMuteBtn.classList.toggle('active', isCallMuted);
+            pipMuteBtn.style.color = isCallMuted ? '#ef4444' : '';
+        }
+        const topMuteBtn = $('pbx-top-quick-mute');
+        if (topMuteBtn) {
+            topMuteBtn.classList.toggle('active', isCallMuted);
+            topMuteBtn.style.color = isCallMuted ? '#ef4444' : '';
         }
     };
 
@@ -1747,12 +1784,14 @@
             btn?.classList.add('active');
             if (label) label.textContent = 'Resume';
             updateCallOverlayState('On Hold (Paused)', false);
+            if (currentConfRoom) notifyConfAction('hold', currentConfRoom);
         } else {
             currentSession.unhold();
             isCallHeld = false;
             btn?.classList.remove('active');
             if (label) label.textContent = 'Hold';
             updateCallOverlayState('Connected', true);
+            if (currentConfRoom) notifyConfAction('unhold', currentConfRoom);
         }
     };
 

@@ -169,12 +169,12 @@
 
         <!-- View: Team Bridge Voice Rooms -->
         <div id="pbx-view-rooms" class="pbx-tab-view" style="display: none;">
-            <div class="px-3 pt-3 pb-2 border-bottom border-secondary border-opacity-25">
-                <div class="d-flex align-items-center justify-content-between mb-1">
-                    <span class="fw-bold small text-white">{{ __('Team Bridge Voice Rooms') }}</span>
+            <div style="padding: 12px 14px 8px 14px; border-bottom: 1px solid var(--pbx-border-subtle);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="font-weight: 700; font-size: 12px; color: var(--pbx-text-primary);">{{ __('Team Bridge Voice Rooms') }}</span>
                     <span class="badge bg-primary" style="font-size: 10px;">{{ __('Asterisk ConfBridge') }}</span>
                 </div>
-                <div class="text-muted" style="font-size: 11px;">{{ __('Multi-party conference rooms where all team members talk together.') }}</div>
+                <div style="color: var(--pbx-text-muted); font-size: 11px;">{{ __('Multi-party conference rooms where all team members talk together.') }}</div>
             </div>
             <div class="pbx-contacts-scroll" id="pbx-team-rooms-container">
                 <div class="pbx-empty-state">
@@ -204,8 +204,16 @@
                     <span class="pbx-incall-state-text" id="pbx-incall-top-state">{{ __('Voice Call Active') }}</span>
                 </div>
                 <div class="pbx-incall-top-actions">
+                    <!-- Quick Mute Button (Always Visible in PiP Window) -->
+                    <button type="button" class="pbx-icon-btn pbx-pip-only-action" id="pbx-top-quick-mute" onclick="if (typeof pbxToggleMute === 'function') pbxToggleMute(event);" title="{{ __('Mute / Unmute') }}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    </button>
+                    <!-- Quick Red Hangup Button (Always Visible in PiP Window) -->
+                    <button type="button" class="pbx-icon-btn pbx-pip-only-action pbx-top-hangup" id="pbx-top-quick-hangup" onclick="pbxHangup(event);" title="{{ __('End Call') }}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.39.39.39 1.02 0 1.41l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+                    </button>
                     <!-- Reset position to corner -->
-                    <button type="button" class="pbx-icon-btn" onclick="if (typeof pbxResetDialerPosition === 'function') pbxResetDialerPosition();" title="{{ __('Dock / Reset to bottom-right corner') }}">
+                    <button type="button" class="pbx-icon-btn popout-hide-in-window" onclick="if (typeof pbxResetDialerPosition === 'function') pbxResetDialerPosition();" title="{{ __('Dock / Reset to bottom-right corner') }}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
                     </button>
                     <!-- Google Meet Style OS-Level Floating PiP Window (Always on Top over all software) -->
@@ -261,6 +269,9 @@
                         + {{ __('Invite Member') }}
                     </button>
                 </div>
+
+                <!-- Live Ringing/Inviting Banner -->
+                <div id="pbx-conf-ringing-banner-container"></div>
 
                 <!-- Active Participants List (Scrollable, Showing Who is in room, Talking wave, Muted icon) -->
                 <div class="pbx-conf-list-scroll" id="pbx-conf-participants-list">

@@ -753,11 +753,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 const resp = await fetch(url, {
                     headers: {
                         'X-PJAX': 'true',
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
                     }
                 });
 
                 if (!resp.ok) {
+                    window.pbxIsSpaNavigating = true;
                     window.location.href = url;
                     return;
                 }
@@ -770,6 +771,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const newContent = doc.querySelector('.admin-content');
 
                 if (!newContent) {
+                    window.pbxIsSpaNavigating = true;
                     window.location.href = url;
                     return;
                 }
@@ -789,7 +791,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Update sidebar active menu link
                 const cleanUrl = url.split('#')[0].split('?')[0];
-                document.querySelectorAll('.sidebar-nav-link').forEach(function (link) {
+                document.querySelectorAll('[data-sidebar-item] a.nav-link, .sidebar-nav-link').forEach(function (link) {
                     const linkUrl = link.href.split('#')[0].split('?')[0];
                     if (linkUrl === cleanUrl || cleanUrl.startsWith(linkUrl + '/')) {
                         link.classList.add('active');
@@ -802,15 +804,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 const scrollEl = document.querySelector('.admin-main');
                 if (scrollEl) scrollEl.scrollTop = 0;
 
-                // Execute scripts in new content
-                doc.querySelectorAll('.admin-content script').forEach(function (script) {
+                // Execute scripts in new content & document body (excluding already-loaded persistent bundles)
+                const scriptsToRun = [
+                    ...doc.querySelectorAll('.admin-content script'),
+                    ...doc.querySelectorAll('body script')
+                ];
+                const executedScripts = new Set();
+                scriptsToRun.forEach(function (script) {
+                    const src = script.getAttribute('src');
+                    if (src && (
+                        src.includes('jquery') ||
+                        src.includes('bootstrap') ||
+                        src.includes('admin-ui') ||
+                        src.includes('pbx-dialer') ||
+                        src.includes('main.js') ||
+                        src.includes('lucide') ||
+                        src.includes('select2') ||
+                        src.includes('toastr')
+                    )) {
+                        return;
+                    }
+                    const scriptKey = src || script.innerHTML.trim().slice(0, 50);
+                    if (!scriptKey || executedScripts.has(scriptKey)) return;
+                    executedScripts.add(scriptKey);
+
                     const newScript = document.createElement('script');
                     Array.from(script.attributes).forEach(function (attr) {
                         newScript.setAttribute(attr.name, attr.value);
                     });
                     newScript.appendChild(document.createTextNode(script.innerHTML));
                     document.body.appendChild(newScript);
-                    newScript.parentNode.removeChild(newScript);
+                    setTimeout(() => newScript.parentNode && newScript.parentNode.removeChild(newScript), 100);
                 });
 
                 // Re-initialize Lucide icons
@@ -832,9 +856,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 setProgress(100);
             } catch (err) {
                 console.warn('[PBX SPA] Navigation fetch failed, falling back:', err);
+                window.pbxIsSpaNavigating = true;
                 window.location.href = url;
             } finally {
-                window.pbxIsSpaNavigating = false;
+                setTimeout(() => {
+                    window.pbxIsSpaNavigating = false;
+                }, 300);
             }
         }
 

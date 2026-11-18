@@ -61,7 +61,7 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="{{ asset('assets/vendor/select2/select2.min.js') }}"></script>
     <script src="{{ asset('assets/vendor/toast/toastr.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/admin-ui.js') }}"></script>
+    <script src="{{ asset('assets/admin/admin-ui.js') }}?v={{ @filemtime(public_path('assets/admin/admin-ui.js')) ?: time() }}&t={{ time() }}"></script>
 
     @stack('js')
     @stack('scripts')

@@ -8,6 +8,7 @@ use App\Services\Pbx\AsteriskAmi;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PbxPhoneController extends Controller
 {
@@ -160,7 +161,7 @@ class PbxPhoneController extends Controller
 
     /**
      * Real-time participant status of a conference room.
-     * Shows who joined, who is talking, who is muted, and who is not in the room yet.
+     * Shows who joined, who is talking, who is muted, who is on hold, who invited whom, and who is not in the room yet.
      */
     public function conferenceStatus(string $room, AsteriskAmi $ami): JsonResponse
     {
@@ -174,6 +175,11 @@ class PbxPhoneController extends Controller
 
         $activeParticipants = [];
         $activeExtMap = [];
+
+        // Invites cache: who invited whom
+        $invitesKey = "pbx_conf_invites_{$room}";
+        $invites = Cache::get($invitesKey, []);
+        $updatedInvites = false;
 
         try {
             $cmdLines = $ami->command("confbridge list {$room}");
@@ -206,18 +212,42 @@ class PbxPhoneController extends Controller
                     $currentUserId = auth('admin')->id() ?: auth('web')->id();
                     $isMe = $extObj && $extObj->user_id && ($extObj->user_id == $currentUserId);
 
-                    $isMuted = str_contains($flags, 'm');
+                    // Check if invited by someone
+                    $invitedBy = null;
+                    if ($matchedExt && isset($invites[$matchedExt])) {
+                        $invitedBy = $invites[$matchedExt]['inviter_name'] ?? null;
+                        if (($invites[$matchedExt]['status'] ?? '') !== 'joined') {
+                            $invites[$matchedExt]['status'] = 'joined';
+                            $updatedInvites = true;
+                        }
+                    }
+
+                    // Check cached state for mute/hold
+                    $cachedState = $matchedExt ? Cache::get("pbx_conf_user_state_{$room}_{$matchedExt}") : null;
+                    $isHold = ($cachedState === 'hold');
+                    $isMuted = $isHold || ($cachedState === 'muted') || str_contains($flags, 'm');
+                    $isTalking = !$isMuted && !$isHold;
                     $isAdmin = str_contains($flags, 'A');
 
+                    $statusLabel = 'Talking';
+                    if ($isHold) {
+                        $statusLabel = 'On Hold';
+                    } elseif ($isMuted) {
+                        $statusLabel = 'Muted';
+                    }
+
                     $activeParticipants[] = [
-                        'channel'    => $channel,
-                        'extension'  => $matchedExt ?: 'Unknown',
-                        'name'       => $name,
-                        'avatar'     => $avatar,
-                        'is_muted'   => $isMuted,
-                        'is_talking' => !$isMuted,
-                        'is_admin'   => $isAdmin,
-                        'is_me'      => $isMe,
+                        'channel'      => $channel,
+                        'extension'    => $matchedExt ?: 'Unknown',
+                        'name'         => $name,
+                        'avatar'       => $avatar,
+                        'is_muted'     => $isMuted,
+                        'is_hold'      => $isHold,
+                        'is_talking'   => $isTalking,
+                        'status_label' => $statusLabel,
+                        'is_admin'     => $isAdmin,
+                        'is_me'        => $isMe,
+                        'invited_by'   => $invitedBy,
                     ];
 
                     if ($matchedExt) {
@@ -227,6 +257,19 @@ class PbxPhoneController extends Controller
             }
         } catch (\Throwable $e) {
             // Asterisk query failed or bridge empty
+        }
+
+        if ($updatedInvites) {
+            Cache::put($invitesKey, $invites, now()->addMinutes(30));
+        }
+
+        // Pending invites (ringing in last 45 seconds and not yet joined)
+        $pendingInvites = [];
+        $now = now()->timestamp;
+        foreach ($invites as $ext => $inv) {
+            if (($inv['status'] ?? '') === 'ringing' && !isset($activeExtMap[$ext]) && ($now - ($inv['timestamp'] ?? 0) < 45)) {
+                $pendingInvites[] = $inv;
+            }
         }
 
         // Calculate colleagues who have not joined yet
@@ -248,6 +291,7 @@ class PbxPhoneController extends Controller
             'active_count'    => count($activeParticipants),
             'participants'    => $activeParticipants,
             'offline_members' => $offlineMembers,
+            'pending_invites' => $pendingInvites,
         ]);
     }
 
@@ -260,6 +304,29 @@ class PbxPhoneController extends Controller
         if (empty($targetExt)) {
             return response()->json(['success' => false, 'message' => 'Extension is required'], 422);
         }
+
+        // Identify inviter
+        $myExtObj = $this->myExtension();
+        $inviterUser = auth('admin')->user() ?: auth('web')->user();
+        $inviterName = $myExtObj?->name ?: ($inviterUser?->name ?: 'Colleague');
+        $inviterExt  = $myExtObj?->extension ?: 'Admin';
+
+        // Target name
+        $targetObj = PbxExtension::with('user:id,name')->where('extension', $targetExt)->first();
+        $targetName = $targetObj ? ($targetObj->name ?: $targetObj->user?->name) : "Ext {$targetExt}";
+
+        // Save invite in cache for 30 minutes
+        $cacheKey = "pbx_conf_invites_{$room}";
+        $invites = Cache::get($cacheKey, []);
+        $invites[$targetExt] = [
+            'target_ext'   => (string) $targetExt,
+            'target_name'  => $targetName,
+            'inviter_name' => $inviterName,
+            'inviter_ext'  => (string) $inviterExt,
+            'status'       => 'ringing', // 'ringing', 'joined'
+            'timestamp'    => now()->timestamp,
+        ];
+        Cache::put($cacheKey, $invites, now()->addMinutes(30));
 
         try {
             $ami->query([
@@ -285,24 +352,42 @@ class PbxPhoneController extends Controller
     }
 
     /**
-     * Mute / Unmute / Kick a participant from the conference room.
+     * Mute / Unmute / Hold / Unhold / Kick a participant from the conference room.
      */
     public function conferenceAction(Request $request, string $room, AsteriskAmi $ami): JsonResponse
     {
-        $action  = $request->input('action'); // 'mute', 'unmute', 'kick'
-        $channel = trim($request->input('channel', ''));
+        $action    = $request->input('action'); // 'mute', 'unmute', 'hold', 'unhold', 'kick'
+        $channel   = trim($request->input('channel', ''));
+        $extension = trim($request->input('extension', ''));
 
-        if (empty($channel)) {
-            return response()->json(['success' => false, 'message' => 'Channel is required'], 422);
+        if (empty($channel) && empty($extension)) {
+            return response()->json(['success' => false, 'message' => 'Channel or extension is required'], 422);
+        }
+
+        if (!$extension && preg_match('/(?:PJSIP|Local)\/(\d+)/i', $channel, $m)) {
+            $extension = $m[1];
         }
 
         try {
             if ($action === 'mute') {
-                $ami->command("confbridge mute {$room} {$channel}");
+                if ($channel) {
+                    try { $ami->command("confbridge mute {$room} {$channel}"); } catch (\Throwable $e) {}
+                }
+                if ($extension) Cache::put("pbx_conf_user_state_{$room}_{$extension}", 'muted', now()->addHours(2));
             } elseif ($action === 'unmute') {
-                $ami->command("confbridge unmute {$room} {$channel}");
+                if ($channel) {
+                    try { $ami->command("confbridge unmute {$room} {$channel}"); } catch (\Throwable $e) {}
+                }
+                if ($extension) Cache::put("pbx_conf_user_state_{$room}_{$extension}", 'talking', now()->addHours(2));
+            } elseif ($action === 'hold') {
+                if ($extension) Cache::put("pbx_conf_user_state_{$room}_{$extension}", 'hold', now()->addHours(2));
+            } elseif ($action === 'unhold') {
+                if ($extension) Cache::put("pbx_conf_user_state_{$room}_{$extension}", 'talking', now()->addHours(2));
             } elseif ($action === 'kick') {
-                $ami->command("confbridge kick {$room} {$channel}");
+                if ($channel) {
+                    try { $ami->command("confbridge kick {$room} {$channel}"); } catch (\Throwable $e) {}
+                }
+                if ($extension) Cache::forget("pbx_conf_user_state_{$room}_{$extension}");
             }
 
             return response()->json(['success' => true]);
