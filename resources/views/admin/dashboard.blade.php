@@ -182,13 +182,21 @@
                                         </span>
                                     </td>
                                     <td class="text-end">
-                                        <button type="button" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1 px-2.5 py-1" onclick="if (typeof togglePbxDialer === 'function') { togglePbxDialer(); pbxCallContact('{{ $ext->extension }}', '{{ $ext->name }}'); }">
-                                            <i data-lucide="phone-call" style="width: 13px; height: 13px;"></i>
-                                            <span>{{ __('Call') }}</span>
-                                        </button>
-                                        <a href="{{ route('admin.pbx.extensions.edit', $ext->id) }}" class="btn btn-sm btn-light text-muted p-1 ms-1" title="Edit">
-                                            <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
-                                        </a>
+                                        <div class="d-inline-flex align-items-center gap-1.5 justify-content-end">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-success btn-action-icon" 
+                                                    onclick="if (typeof togglePbxDialer === 'function') { togglePbxDialer(); pbxCallContact('{{ $ext->extension }}', '{{ $ext->name }}'); }" 
+                                                    title="{{ __('Call Ext') }} {{ $ext->extension }}" 
+                                                    data-bs-toggle="tooltip">
+                                                <i data-lucide="phone-call"></i>
+                                            </button>
+                                            <a href="{{ route('admin.pbx.extensions.edit', $ext->id) }}" 
+                                               class="btn btn-sm btn-outline-secondary btn-action-icon" 
+                                               title="{{ __('Edit Extension') }}" 
+                                               data-bs-toggle="tooltip">
+                                                <i data-lucide="pencil"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -307,7 +315,8 @@
                                 <th>{{ __('Direction') }}</th>
                                 <th>{{ __('Duration') }}</th>
                                 <th>{{ __('Status') }}</th>
-                                <th class="text-end pe-3">{{ __('Timestamp') }}</th>
+                                <th>{{ __('Timestamp') }}</th>
+                                <th class="text-end pe-3 pe-md-4" style="width: 80px;">{{ __('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -386,15 +395,24 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="text-end pe-3">
+                                    <td>
                                         <span class="text-muted small">
                                             {{ \Carbon\Carbon::parse($call->created_at)->diffForHumans() }}
                                         </span>
                                     </td>
+                                    <td class="text-end pe-3 pe-md-4">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-success btn-action-icon" 
+                                                onclick="if (typeof triggerPbxCall === 'function') { triggerPbxCall('{{ $call->callee }}'); } else if (typeof togglePbxDialer === 'function') { togglePbxDialer(); pbxCallContact('{{ $call->callee }}', '{{ $calleeDisplayName }}'); }" 
+                                                title="{{ __('Call') }} {{ $call->callee }}" 
+                                                data-bs-toggle="tooltip">
+                                            <i data-lucide="phone-call"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
+                                    <td colspan="7" class="text-center py-5 text-muted">
                                         <i data-lucide="inbox" class="mb-2 text-secondary" style="width: 32px; height: 32px;"></i>
                                         <p class="mb-0">{{ __('No call activity logged yet.') }}</p>
                                     </td>

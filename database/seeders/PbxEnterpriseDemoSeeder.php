@@ -389,5 +389,8 @@ class PbxEnterpriseDemoSeeder extends Seeder
                 'ended_at'       => $endedAt,
             ]);
         }
+
+        // 8. Hot Desking Physical Stations
+        $this->call(PbxHotDeskSeeder::class);
     }
 }

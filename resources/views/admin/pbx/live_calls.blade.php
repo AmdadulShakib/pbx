@@ -128,21 +128,34 @@
                                 </td>
 
                                 <td class="text-end pe-3 pe-md-4 py-3">
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1" onclick="startSpy('{{ $chan['channel'] }}', '{{ $chan['caller'] }}', 'listen')" title="{{ __('Listen Silently (Neither party hears you)') }}">
-                                            <i data-lucide="headphones" style="width: 13px; height: 13px;"></i>
-                                            <span>{{ __('Listen') }}</span>
+                                    <div class="d-inline-flex align-items-center gap-1.5 justify-content-end">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-primary btn-action-icon" 
+                                                onclick="startSpy('{{ $chan['channel'] }}', '{{ $chan['caller'] }}', 'listen')" 
+                                                title="{{ __('Listen Silently (*55)') }}" 
+                                                data-bs-toggle="tooltip">
+                                            <i data-lucide="headphones"></i>
                                         </button>
-                                        <button type="button" class="btn btn-outline-warning btn-sm px-2 py-1" onclick="startSpy('{{ $chan['channel'] }}', '{{ $chan['caller'] }}', 'whisper')" title="{{ __('Whisper Coach (Only agent hears you)') }}">
-                                            <i data-lucide="mic" style="width: 13px; height: 13px;"></i>
-                                            <span>{{ __('Whisper') }}</span>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-warning btn-action-icon" 
+                                                onclick="startSpy('{{ $chan['channel'] }}', '{{ $chan['caller'] }}', 'whisper')" 
+                                                title="{{ __('Whisper Coach (*56)') }}" 
+                                                data-bs-toggle="tooltip">
+                                            <i data-lucide="mic"></i>
                                         </button>
-                                        <button type="button" class="btn btn-outline-success btn-sm px-2 py-1" onclick="startSpy('{{ $chan['channel'] }}', '{{ $chan['caller'] }}', 'barge')" title="{{ __('Barge In (3-Way Conference)') }}">
-                                            <i data-lucide="users" style="width: 13px; height: 13px;"></i>
-                                            <span>{{ __('Barge') }}</span>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-success btn-action-icon" 
+                                                onclick="startSpy('{{ $chan['channel'] }}', '{{ $chan['caller'] }}', 'barge')" 
+                                                title="{{ __('Barge In 3-Way (*57)') }}" 
+                                                data-bs-toggle="tooltip">
+                                            <i data-lucide="users"></i>
                                         </button>
-                                        <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1" onclick="hangupChannel('{{ $chan['channel'] }}');" title="{{ __('Force Terminate Call') }}">
-                                            <i data-lucide="phone-off" style="width: 13px; height: 13px;"></i>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-danger btn-action-icon" 
+                                                onclick="hangupChannel('{{ $chan['channel'] }}');" 
+                                                title="{{ __('Force Terminate Call') }}" 
+                                                data-bs-toggle="tooltip">
+                                            <i data-lucide="phone-off"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -372,21 +385,18 @@
                         ${chan.channel}
                     </td>
                     <td class="text-end pe-3 pe-md-4 py-3">
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1" onclick="startSpy('${chan.channel}', '${chan.caller}', 'listen')" title="{{ __('Listen Silently') }}">
-                                <i data-lucide="headphones" style="width: 13px; height: 13px;"></i>
-                                <span>{{ __('Listen') }}</span>
+                        <div class="d-inline-flex align-items-center gap-1.5 justify-content-end">
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-action-icon" onclick="startSpy('${chan.channel}', '${chan.caller}', 'listen')" title="{{ __('Listen Silently (*55)') }}" data-bs-toggle="tooltip">
+                                <i data-lucide="headphones"></i>
                             </button>
-                            <button type="button" class="btn btn-outline-warning btn-sm px-2 py-1" onclick="startSpy('${chan.channel}', '${chan.caller}', 'whisper')" title="{{ __('Whisper Coach') }}">
-                                <i data-lucide="mic" style="width: 13px; height: 13px;"></i>
-                                <span>{{ __('Whisper') }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-warning btn-action-icon" onclick="startSpy('${chan.channel}', '${chan.caller}', 'whisper')" title="{{ __('Whisper Coach (*56)') }}" data-bs-toggle="tooltip">
+                                <i data-lucide="mic"></i>
                             </button>
-                            <button type="button" class="btn btn-outline-success btn-sm px-2 py-1" onclick="startSpy('${chan.channel}', '${chan.caller}', 'barge')" title="{{ __('Barge In') }}">
-                                <i data-lucide="users" style="width: 13px; height: 13px;"></i>
-                                <span>{{ __('Barge') }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-success btn-action-icon" onclick="startSpy('${chan.channel}', '${chan.caller}', 'barge')" title="{{ __('Barge In 3-Way (*57)') }}" data-bs-toggle="tooltip">
+                                <i data-lucide="users"></i>
                             </button>
-                            <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1" onclick="hangupChannel('${chan.channel}');" title="{{ __('Force Terminate') }}">
-                                <i data-lucide="phone-off" style="width: 13px; height: 13px;"></i>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-action-icon" onclick="hangupChannel('${chan.channel}');" title="{{ __('Force Terminate') }}" data-bs-toggle="tooltip">
+                                <i data-lucide="phone-off"></i>
                             </button>
                         </div>
                     </td>

@@ -128,16 +128,34 @@
                                 </td>
 
                                 <td class="text-end pe-3 pe-md-4 py-3">
-                                    <div class="d-inline-flex align-items-center gap-1.5">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm px-2.5 py-1" onclick="openEditIvrModal({{ json_encode($ivr) }})" title="{{ __('Edit IVR') }}">
-                                            <i data-lucide="edit-3" style="width: 13px; height: 13px;"></i>
-                                            <span>{{ __('Edit') }}</span>
+                                    <div class="d-inline-flex align-items-center gap-1.5 justify-content-end">
+                                        <!-- Test Call IVR -->
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-success btn-action-icon" 
+                                                onclick="if (typeof togglePbxDialer === 'function') { togglePbxDialer(); pbxCallContact('{{ $ivr->extension }}', 'IVR {{ addslashes($ivr->name) }}'); }" 
+                                                title="{{ __('Test Call IVR') }} ({{ $ivr->extension }})" 
+                                                data-bs-toggle="tooltip">
+                                            <i data-lucide="phone-call"></i>
                                         </button>
-                                        <form method="POST" action="{{ route('admin.pbx.ivr.destroy', $ivr->id) }}" class="d-inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this IVR menu?') }}')">
+
+                                        <!-- Edit IVR -->
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-secondary btn-action-icon" 
+                                                onclick="openEditIvrModal({{ json_encode($ivr) }})" 
+                                                title="{{ __('Edit IVR Menu') }}" 
+                                                data-bs-toggle="tooltip">
+                                            <i data-lucide="pencil"></i>
+                                        </button>
+
+                                        <!-- Delete IVR -->
+                                        <form method="POST" action="{{ route('admin.pbx.ivr.destroy', $ivr->id) }}" class="d-inline m-0" onsubmit="return confirm('{{ __('Are you sure you want to delete this IVR menu?') }}')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1" title="{{ __('Delete') }}">
-                                                <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                                            <button type="submit" 
+                                                    class="btn btn-sm btn-outline-danger btn-action-icon" 
+                                                    title="{{ __('Delete IVR Menu') }}" 
+                                                    data-bs-toggle="tooltip">
+                                                <i data-lucide="trash-2"></i>
                                             </button>
                                         </form>
                                     </div>

@@ -137,16 +137,34 @@
                                 </td>
 
                                 <td class="text-end pe-3 pe-md-4 py-3">
-                                    <div class="d-inline-flex align-items-center gap-1.5">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm px-2.5 py-1" onclick="openEditRingGroupModal({{ json_encode($rg) }})" title="{{ __('Edit') }}">
-                                            <i data-lucide="edit-3" style="width: 13px; height: 13px;"></i>
-                                            <span>{{ __('Edit') }}</span>
+                                    <div class="d-inline-flex align-items-center gap-1.5 justify-content-end">
+                                        <!-- Test Call Group -->
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-success btn-action-icon" 
+                                                onclick="if (typeof togglePbxDialer === 'function') { togglePbxDialer(); pbxCallContact('{{ $rg->extension }}', 'Ring Group {{ addslashes($rg->name) }}'); }" 
+                                                title="{{ __('Test Call Group') }} ({{ $rg->extension }})" 
+                                                data-bs-toggle="tooltip">
+                                            <i data-lucide="phone-call"></i>
                                         </button>
-                                        <form method="POST" action="{{ route('admin.pbx.ring-groups.destroy', $rg->id) }}" class="d-inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this ring group?') }}')">
+
+                                        <!-- Edit Group -->
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-secondary btn-action-icon" 
+                                                onclick="openEditRingGroupModal({{ json_encode($rg) }})" 
+                                                title="{{ __('Edit Ring Group') }}" 
+                                                data-bs-toggle="tooltip">
+                                            <i data-lucide="pencil"></i>
+                                        </button>
+
+                                        <!-- Delete Group -->
+                                        <form method="POST" action="{{ route('admin.pbx.ring-groups.destroy', $rg->id) }}" class="d-inline m-0" onsubmit="return confirm('{{ __('Are you sure you want to delete this ring group?') }}')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1" title="{{ __('Delete') }}">
-                                                <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                                            <button type="submit" 
+                                                    class="btn btn-sm btn-outline-danger btn-action-icon" 
+                                                    title="{{ __('Delete Ring Group') }}" 
+                                                    data-bs-toggle="tooltip">
+                                                <i data-lucide="trash-2"></i>
                                             </button>
                                         </form>
                                     </div>

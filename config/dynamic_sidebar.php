@@ -32,6 +32,12 @@ return [
             ],
             [
                 'type' => 'route',
+                'label' => 'Hot Desking',
+                'icon' => 'shuffle',
+                'route' => 'admin.pbx.hot-desking.index',
+            ],
+            [
+                'type' => 'route',
                 'label' => 'Ring Groups',
                 'icon' => 'users-2',
                 'route' => 'admin.pbx.ring-groups.index',

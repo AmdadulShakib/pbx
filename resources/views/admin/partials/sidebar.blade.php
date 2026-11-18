@@ -61,6 +61,12 @@
                             'route'    => 'admin.pbx.ivr.index',
                             'patterns' => ['admin.pbx.ivr.*'],
                         ],
+                        [
+                            'label'    => __('Hot Desking'),
+                            'icon'     => 'shuffle',
+                            'route'    => 'admin.pbx.hot-desking.index',
+                            'patterns' => ['admin.pbx.hot-desking.*'],
+                        ],
                     ],
                 ],
                 [

@@ -291,19 +291,25 @@
                                 </td>
 
                                 <td class="text-end pe-3 pe-md-4 py-3">
-                                    <div class="d-inline-flex align-items-center gap-1.5">
+                                    <div class="d-inline-flex align-items-center gap-1.5 justify-content-end">
                                         <!-- Quick Click-to-Dial -->
-                                        <button type="button" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 px-2 py-1" onclick="if (typeof triggerPbxCall === 'function') triggerPbxCall('{{ $log->callee }}');" title="{{ __('Call') }} {{ $log->callee }}">
-                                            <i data-lucide="phone-call" style="width: 13px; height: 13px;"></i>
-                                            <span class="d-none d-lg-inline">{{ __('Call') }}</span>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-success btn-action-icon" 
+                                                onclick="if (typeof triggerPbxCall === 'function') triggerPbxCall('{{ $log->callee }}');" 
+                                                title="{{ __('Call') }} {{ $log->callee }}" 
+                                                data-bs-toggle="tooltip">
+                                            <i data-lucide="phone-call"></i>
                                         </button>
 
                                         <!-- Delete Record -->
-                                        <form method="POST" action="{{ route('admin.pbx.calls.destroy', $log->id) }}" onsubmit="return confirm('{{ __('Delete this log entry?') }}');" class="d-inline">
+                                        <form method="POST" action="{{ route('admin.pbx.calls.destroy', $log->id) }}" onsubmit="return confirm('{{ __('Delete this log entry?') }}');" class="d-inline m-0">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger p-1" title="{{ __('Delete') }}">
-                                                <i data-lucide="trash" style="width: 14px; height: 14px;"></i>
+                                            <button type="submit" 
+                                                    class="btn btn-sm btn-outline-danger btn-action-icon" 
+                                                    title="{{ __('Delete Record') }}" 
+                                                    data-bs-toggle="tooltip">
+                                                <i data-lucide="trash-2"></i>
                                             </button>
                                         </form>
                                     </div>

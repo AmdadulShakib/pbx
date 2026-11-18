@@ -139,16 +139,22 @@
                                 </td>
 
                                 <td class="text-end pe-3 pe-md-4 py-3">
-                                    <div class="d-inline-flex align-items-center gap-1.5">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm px-2.5 py-1" onclick="openEditInboundModal({{ json_encode($r) }})" title="{{ __('Edit') }}">
-                                            <i data-lucide="edit-3" style="width: 13px; height: 13px;"></i>
-                                            <span>{{ __('Edit') }}</span>
+                                    <div class="d-inline-flex align-items-center gap-1.5 justify-content-end">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-secondary btn-action-icon" 
+                                                onclick="openEditInboundModal({{ json_encode($r) }})" 
+                                                title="{{ __('Edit Inbound Route') }}" 
+                                                data-bs-toggle="tooltip">
+                                            <i data-lucide="pencil"></i>
                                         </button>
-                                        <form method="POST" action="{{ route('admin.pbx.inbound-routes.destroy', $r->id) }}" class="d-inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this route?') }}')">
+                                        <form method="POST" action="{{ route('admin.pbx.inbound-routes.destroy', $r->id) }}" class="d-inline m-0" onsubmit="return confirm('{{ __('Are you sure you want to delete this route?') }}')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1" title="{{ __('Delete') }}">
-                                                <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                                            <button type="submit" 
+                                                    class="btn btn-sm btn-outline-danger btn-action-icon" 
+                                                    title="{{ __('Delete Inbound Route') }}" 
+                                                    data-bs-toggle="tooltip">
+                                                <i data-lucide="trash-2"></i>
                                             </button>
                                         </form>
                                     </div>
