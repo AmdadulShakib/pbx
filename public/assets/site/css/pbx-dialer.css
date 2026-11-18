@@ -241,6 +241,27 @@ html[data-theme="dark"],
     transform: translateY(0) scale(1);
 }
 
+/* Document Picture-in-Picture Floating Mode (Google Meet Standard) */
+.pbx-dialer-card.in-pip-mode {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    z-index: 999999 !important;
+}
+
+.pbx-dialer-card.in-pip-mode .pbx-minimize-btn {
+    display: none !important;
+}
+
 /* Header bar */
 .pbx-card-header,
 .pbx-header {

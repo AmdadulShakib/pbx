@@ -1276,18 +1276,93 @@
         }
     }
 
-    // Pop-Out Window Feature (Enables persistent uninterrupted calling while browsing)
-    window.pbxPopoutWindow = function () {
+    // Google Meet-Style Floating Picture-in-Picture & Dedicated Window
+    let pbxPipWindow = null;
+
+    window.pbxPopoutWindow = async function () {
+        // 1. If already open in PiP, close it to dock back into main window
+        if (pbxPipWindow && !pbxPipWindow.closed) {
+            pbxPipWindow.close();
+            return;
+        }
+
+        // 2. Google Meet Style: Document Picture-in-Picture API (Chrome 116+, Edge)
+        // This opens a floating, OS-level ALWAYS ON TOP mini window without losing the call or opening a tab!
+        if ('documentPictureInPicture' in window) {
+            try {
+                const pipWindow = await window.documentPictureInPicture.requestWindow({
+                    width: 360,
+                    height: 600,
+                });
+
+                pbxPipWindow = pipWindow;
+
+                // Copy all page stylesheets and font links to PiP window
+                document.querySelectorAll('link[rel="stylesheet"], style').forEach((styleEl) => {
+                    try {
+                        pipWindow.document.head.appendChild(styleEl.cloneNode(true));
+                    } catch (e) {}
+                });
+
+                // Inherit active theme
+                const activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                pipWindow.document.documentElement.setAttribute('data-theme', activeTheme);
+                pipWindow.document.documentElement.setAttribute('data-bs-theme', activeTheme);
+
+                pipWindow.document.body.style.margin = '0';
+                pipWindow.document.body.style.padding = '0';
+                pipWindow.document.body.style.width = '100vw';
+                pipWindow.document.body.style.height = '100vh';
+                pipWindow.document.body.style.overflow = 'hidden';
+                pipWindow.document.body.style.background = activeTheme === 'dark' ? '#0b1120' : '#ffffff';
+
+                const card = document.getElementById('pbx-dialer-card');
+                const originalParent = card.parentElement;
+                const originalNext = card.nextSibling;
+
+                // Move dialer card into the floating PiP window
+                card.classList.add('in-pip-mode', 'open');
+                pipWindow.document.body.appendChild(card);
+
+                // Change icon to "Dock / Return to Page"
+                const popoutBtns = card.querySelectorAll('.pbx-popout-btn');
+                popoutBtns.forEach(btn => {
+                    btn.setAttribute('title', 'Dock back to page (Close Picture-in-Picture)');
+                    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 14h6m0 0v6m0-6L3 21"/><path d="M20 10h-6m0 0V4m0 6l7-7"/></svg>`;
+                });
+
+                // When PiP window closes, safely return dialer card back to the page
+                pipWindow.addEventListener('pagehide', () => {
+                    if (originalNext) {
+                        originalParent.insertBefore(card, originalNext);
+                    } else {
+                        originalParent.appendChild(card);
+                    }
+                    card.classList.remove('in-pip-mode');
+                    pbxPipWindow = null;
+                    popoutBtns.forEach(btn => {
+                        btn.setAttribute('title', 'Picture-in-Picture Floating Window (Like Google Meet - Always on top)');
+                        btn.innerHTML = `<svg class="pbx-pip-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="10" width="8" height="6" rx="1"/></svg>`;
+                    });
+                });
+
+                return;
+            } catch (err) {
+                console.warn('[PBX] Document PiP opening failed, falling back to standalone window:', err);
+            }
+        }
+
+        // 3. Fallback for older browsers: Standalone Dedicated Chromeless Window (popup=1,popup=yes)
         const isAdmin = window.location.pathname.startsWith('/admin');
         const popoutUrl = isAdmin ? '/admin/pbx/phone-window' : '/user/pbx/phone-window';
-        const winWidth = 380;
-        const winHeight = 650;
-        const left = window.screen.width ? (window.screen.width - winWidth - 40) : 100;
+        const winWidth = 360;
+        const winHeight = 620;
+        const left = window.screen.width ? (window.screen.width - winWidth - 30) : 100;
         const top = 60;
         const win = window.open(
             popoutUrl,
             'VoxPulsePbxSoftphone',
-            `width=${winWidth},height=${winHeight},top=${top},left=${left},scrollbars=no,resizable=yes,status=no,toolbar=no,menubar=no`
+            `popup=1,popup=yes,width=${winWidth},height=${winHeight},top=${top},left=${left},scrollbars=no,resizable=yes,status=no,toolbar=no,menubar=no,location=no`
         );
         if (win) {
             win.focus();
@@ -1296,7 +1371,7 @@
                 card.classList.remove('active');
             }
         } else {
-            alert('Pop-up window was blocked by your browser. Please allow popups for this site to keep your calls active in a separate window.');
+            alert('Pop-up window was blocked by your browser. Please allow popups for this site.');
         }
     };
 
