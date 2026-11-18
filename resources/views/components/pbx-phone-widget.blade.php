@@ -97,15 +97,19 @@
         <!-- Navigation Tabs -->
         <div class="pbx-nav-tabs">
             <button type="button" class="pbx-tab-item active" id="pbx-tab-keypad" onclick="switchPbxTab('keypad')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 <span>{{ __('Keypad') }}</span>
             </button>
             <button type="button" class="pbx-tab-item" id="pbx-tab-contacts" onclick="switchPbxTab('contacts')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
                 <span>{{ __('Colleagues') }}</span>
             </button>
+            <button type="button" class="pbx-tab-item" id="pbx-tab-rooms" onclick="switchPbxTab('rooms')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>{{ __('Team') }}</span>
+            </button>
             <button type="button" class="pbx-tab-item" id="pbx-tab-recents" onclick="switchPbxTab('recents')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 <span>{{ __('Recent') }}</span>
             </button>
         </div>
@@ -121,23 +125,6 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
                     </button>
                 </div>
-            </div>
-
-            <!-- Team Bridge Shortcut Pill -->
-            <div class="pbx-team-bridge-pill" onclick="if (typeof pbxJoinTeamBridge === 'function') pbxJoinTeamBridge('700');" title="{{ __('Join Company Multi-Party Voice Room') }}">
-                <div class="pbx-bridge-pill-left">
-                    <div class="pbx-bridge-pill-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    </div>
-                    <div>
-                        <div class="pbx-bridge-pill-title">{{ __('Team Bridge (Ext 700)') }}</div>
-                        <div class="pbx-bridge-pill-sub">{{ __('Multi-party conference room') }}</div>
-                    </div>
-                </div>
-                <button type="button" class="pbx-bridge-pill-btn">
-                    <span>{{ __('Join') }}</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
             </div>
 
             <!-- 12-Key Dialpad -->
@@ -180,6 +167,23 @@
             </div>
         </div>
 
+        <!-- View: Team Bridge Voice Rooms -->
+        <div id="pbx-view-rooms" class="pbx-tab-view" style="display: none;">
+            <div class="px-3 pt-3 pb-2 border-bottom border-secondary border-opacity-25">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <span class="fw-bold small text-white">{{ __('Team Bridge Voice Rooms') }}</span>
+                    <span class="badge bg-primary" style="font-size: 10px;">{{ __('Asterisk ConfBridge') }}</span>
+                </div>
+                <div class="text-muted" style="font-size: 11px;">{{ __('Multi-party conference rooms where all team members talk together.') }}</div>
+            </div>
+            <div class="pbx-contacts-scroll" id="pbx-team-rooms-container">
+                <div class="pbx-empty-state">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <div>{{ __('Loading conference rooms...') }}</div>
+                </div>
+            </div>
+        </div>
+
         <!-- View: Recent Calls -->
         <div id="pbx-view-recents" class="pbx-tab-view" style="display: none;">
             <div class="pbx-recents-scroll" id="pbx-recents-container">
@@ -215,8 +219,8 @@
                 </div>
             </div>
 
-            <!-- Callee Info -->
-            <div class="pbx-call-hero">
+            <!-- 1-on-1 Call Hero -->
+            <div class="pbx-call-hero" id="pbx-hero-1on1">
                 <div class="pbx-avatar-halo" id="pbx-avatar-halo">
                     <div class="pbx-call-avatar" id="pbx-overlay-avatar">?</div>
                 </div>
@@ -232,6 +236,45 @@
                     <!-- Audio Equalizer Waves -->
                     <div class="pbx-audio-waves" id="pbx-audio-waves">
                         <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Bridge Conference Hero (Active Multi-Party Voice Room) -->
+            <div class="pbx-conf-hero" id="pbx-hero-conf" style="display: none;">
+                <div class="pbx-conf-topbar">
+                    <div class="pbx-conf-badge">
+                        <span class="pbx-conf-dot"></span>
+                        <span id="pbx-conf-room-badge">{{ __('Room 700') }}</span>
+                    </div>
+                    <div class="pbx-conf-timer" id="pbx-conf-timer">00:00</div>
+                </div>
+                <h4 class="pbx-conf-room-title" id="pbx-conf-name">{{ __('Team Bridge Room') }}</h4>
+
+                <!-- Participants Bar & + Invite Button -->
+                <div class="pbx-conf-bar">
+                    <span class="pbx-conf-bar-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span id="pbx-conf-count-label">{{ __('In Room (1)') }}</span>
+                    </span>
+                    <button type="button" class="pbx-conf-invite-trigger" onclick="pbxToggleInviteDrawer()" title="{{ __('Ring colleague to join meeting') }}">
+                        + {{ __('Invite Member') }}
+                    </button>
+                </div>
+
+                <!-- Active Participants List (Scrollable, Showing Who is in room, Talking wave, Muted icon) -->
+                <div class="pbx-conf-list-scroll" id="pbx-conf-participants-list">
+                    <div class="text-center py-2 text-muted small">{{ __('Connecting to team bridge...') }}</div>
+                </div>
+
+                <!-- Invite Colleagues Drawer -->
+                <div class="pbx-conf-drawer" id="pbx-conf-invite-drawer">
+                    <div class="pbx-drawer-header">
+                        <span>{{ __('Ring Colleague to Join') }}</span>
+                        <button type="button" onclick="pbxToggleInviteDrawer()">&times;</button>
+                    </div>
+                    <div class="pbx-conf-invite-scroll" id="pbx-conf-invite-list">
+                        <!-- Populated via AJAX with offline members -->
                     </div>
                 </div>
             </div>

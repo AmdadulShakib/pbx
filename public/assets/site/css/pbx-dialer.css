@@ -1846,3 +1846,318 @@ html[data-theme="dark"] .pbx-recent-icon.missed,
         height: 38px !important;
     }
 }
+
+/* ==========================================================================
+   CONFERENCE PARTICIPANTS LIVE PANEL & DRAWER STYLES
+   ========================================================================== */
+.pbx-conf-hero {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    position: relative;
+    padding: 2px 0 4px 0;
+}
+
+.pbx-conf-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+.pbx-conf-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(37, 99, 235, 0.12);
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    color: #2563eb;
+    border-radius: 9999px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.pbx-conf-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    animation: pbx-pulse-live 1.8s infinite;
+}
+
+.pbx-conf-timer {
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--pbx-text-primary);
+}
+
+.pbx-conf-room-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--pbx-text-primary);
+    margin: 2px 0 6px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pbx-conf-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 2px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--pbx-border-subtle);
+}
+
+.pbx-conf-bar-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--pbx-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pbx-conf-invite-trigger {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 10.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.pbx-conf-invite-trigger:hover {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.pbx-conf-list-scroll {
+    max-height: 160px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 2px;
+    margin-bottom: 4px;
+}
+
+.pbx-conf-list-scroll::-webkit-scrollbar {
+    width: 3px;
+}
+.pbx-conf-list-scroll::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.4);
+    border-radius: 4px;
+}
+
+.pbx-conf-participant-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--pbx-surface-elevated);
+    border: 1px solid var(--pbx-border-subtle);
+    border-radius: 8px;
+    padding: 4px 8px;
+    transition: background 0.15s ease;
+}
+
+.pbx-conf-participant-row.is-me {
+    border-color: rgba(37, 99, 235, 0.35);
+    background: rgba(37, 99, 235, 0.05);
+}
+
+.pbx-conf-user-info, .pbx-conf-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    margin-left: 8px;
+}
+
+.pbx-conf-avatar, .pbx-conf-avatar-wrapper {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--pbx-surface-hover);
+    color: var(--pbx-text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1.5px solid var(--pbx-border-strong);
+    position: relative;
+}
+
+.pbx-conf-avatar img, .pbx-conf-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pbx-conf-avatar-init {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.pbx-conf-user-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.pbx-conf-user-name, .pbx-conf-pname {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--pbx-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pbx-conf-user-ext, .pbx-conf-pext {
+    font-size: 9.5px;
+    color: var(--pbx-text-muted);
+}
+
+.pbx-conf-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.pbx-conf-tag {
+    font-size: 9.5px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.pbx-conf-tag.talking, .pbx-conf-tag.tag-talking {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.pbx-conf-tag.muted, .pbx-conf-tag.tag-muted {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.pbx-conf-you-badge {
+    font-size: 9px;
+    font-weight: 700;
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.12);
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+.pbx-conf-admin-badge {
+    font-size: 9px;
+    font-weight: 700;
+    color: #d97706;
+    background: rgba(217, 119, 6, 0.12);
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+.pbx-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--pbx-text-primary);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--pbx-border-subtle);
+    margin-bottom: 6px;
+}
+
+.pbx-drawer-header button {
+    background: none;
+    border: none;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--pbx-text-muted);
+    cursor: pointer;
+}
+
+.pbx-drawer-header button:hover {
+    color: var(--pbx-text-primary);
+}
+
+.pbx-conf-drawer {
+    position: absolute;
+    inset: 0;
+    background: var(--pbx-surface-card);
+    z-index: 120;
+    border-radius: var(--pbx-radius-lg);
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: all 0.2s ease;
+}
+
+.pbx-conf-drawer.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.pbx-conf-invite-scroll {
+    overflow-y: auto;
+    max-height: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 4px 0;
+}
+
+.pbx-conf-invite-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background: var(--pbx-surface-elevated);
+    border: 1px solid var(--pbx-border-subtle);
+    border-radius: 6px;
+}
+
+.pbx-conf-ring-btn {
+    background: #10b981;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.pbx-conf-ring-btn:hover {
+    background: #059669;
+}

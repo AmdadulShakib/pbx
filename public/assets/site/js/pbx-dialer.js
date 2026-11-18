@@ -19,8 +19,31 @@
     let activeRingtone = null;
     let activeRingback = null;
 
-    // Helper: Element Selector
+    // Google Meet-Style Floating PiP Window Handle
+    let pbxPipWindow = null;
+
+    // Team Bridge Conference Polling State
+    let confPollInterval = null;
+    let currentConfRoom = null;
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // Helper: Element Selector (Looks inside floating PiP window document first if active)
     function $(id) {
+        if (typeof pbxPipWindow !== 'undefined' && pbxPipWindow && !pbxPipWindow.closed && pbxPipWindow.document) {
+            try {
+                const el = pbxPipWindow.document.getElementById(id);
+                if (el) return el;
+            } catch (e) {}
+        }
         return document.getElementById(id);
     }
 
@@ -547,7 +570,7 @@
 
     window.switchPbxTab = function (tabName) {
         getAudioContext();
-        ['keypad', 'contacts', 'recents'].forEach((tab) => {
+        ['keypad', 'contacts', 'rooms', 'recents'].forEach((tab) => {
             const btn = $('pbx-tab-' + tab);
             const view = $('pbx-view-' + tab);
             if (tab === tabName) {
@@ -558,6 +581,9 @@
                 if (view) view.style.display = 'none';
             }
         });
+        if (tabName === 'rooms') {
+            renderTeamRoomsList();
+        }
     };
 
     // =========================================================================
@@ -720,6 +746,44 @@
         const room = String(roomNumber || '700').trim();
         window.pbxCallContact(room, 'Team Bridge Room ' + room);
     };
+
+    function renderTeamRoomsList() {
+        const container = $('pbx-team-rooms-container');
+        if (!container) return;
+
+        const confList = (userCreds && userCreds.conferences && userCreds.conferences.length > 0)
+            ? userCreds.conferences
+            : [
+                { extension: '700', name: 'Company All-Hands Bridge', pin: null },
+                { extension: '701', name: 'Executive Boardroom', pin: '1234' },
+                { extension: '702', name: 'Support & Operations Bridge', pin: null }
+            ];
+
+        let html = '';
+        confList.forEach((conf) => {
+            const pinBadge = conf.pin 
+                ? `<span class="badge bg-warning text-dark" style="font-size:9px;">PIN Protected</span>` 
+                : `<span class="badge bg-success" style="font-size:9px;">Open Bridge</span>`;
+
+            html += `
+            <div class="pbx-room-card" onclick="pbxJoinTeamBridge('${escapeHtml(conf.extension)}')">
+                <div class="pbx-room-card-header">
+                    <div class="pbx-room-avatar">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div class="pbx-room-meta">
+                        <div class="pbx-room-title">${escapeHtml(conf.name)}</div>
+                        <div class="pbx-room-sub">Room ${escapeHtml(conf.extension)} &bull; ${pinBadge}</div>
+                    </div>
+                </div>
+                <button type="button" class="pbx-room-join-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    <span>Join Room</span>
+                </button>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
 
     // =========================================================================
     // Call History / Recents (Persisted in localStorage)
@@ -1171,6 +1235,30 @@
         $('pbx-overlay-ext').textContent = rawExt ? ('Ext ' + rawExt) : '';
         $('pbx-overlay-timer').textContent = '00:00';
 
+        const confTimer = $('pbx-conf-timer');
+        if (confTimer) confTimer.textContent = '00:00';
+
+        // Check if this is a Team Bridge multi-party conference call (e.g. 700, 701, 702 or 7xx)
+        const isConference = /^7\d{2}$/.test(rawExt) ||
+            (userCreds && userCreds.conferences && userCreds.conferences.some(c => String(c.extension) === String(rawExt)));
+
+        const hero1on1 = $('pbx-hero-1on1');
+        const heroConf = $('pbx-hero-conf');
+
+        if (isConference) {
+            if (hero1on1) hero1on1.style.display = 'none';
+            if (heroConf) heroConf.style.display = 'flex';
+            const badgeEl = $('pbx-conf-room-badge');
+            if (badgeEl) badgeEl.textContent = 'Room ' + rawExt;
+            const nameEl = $('pbx-conf-name');
+            if (nameEl) nameEl.textContent = name || ('Team Bridge Room ' + rawExt);
+            startConfPolling(rawExt);
+        } else {
+            stopConfPolling();
+            if (heroConf) heroConf.style.display = 'none';
+            if (hero1on1) hero1on1.style.display = 'flex';
+        }
+
         // Auto-lookup avatar if not explicitly provided
         if (!avatarUrl && userCreds && userCreds.contacts) {
             const m = userCreds.contacts.find(c => String(c.extension) === String(rawExt));
@@ -1236,6 +1324,9 @@
             const timeStr = `${mins}:${secs}`;
             if (timerEl) timerEl.textContent = timeStr;
 
+            const confTimer = $('pbx-conf-timer');
+            if (confTimer) confTimer.textContent = timeStr;
+
             const pipTimer = $('pbx-pip-timer');
             if (pipTimer) pipTimer.textContent = timeStr;
 
@@ -1251,8 +1342,230 @@
         }
     }
 
+    // =========================================================================
+    // Team Bridge Conference Live Polling & Action Controls
+    // =========================================================================
+    function startConfPolling(room) {
+        stopConfPolling();
+        currentConfRoom = room;
+        pollConferenceParticipants(room);
+        confPollInterval = setInterval(() => {
+            if (!currentSession || currentSession.isEnded()) {
+                stopConfPolling();
+                return;
+            }
+            pollConferenceParticipants(currentConfRoom);
+        }, 1800);
+    }
+
+    function stopConfPolling() {
+        if (confPollInterval) {
+            clearInterval(confPollInterval);
+            confPollInterval = null;
+        }
+        currentConfRoom = null;
+    }
+
+    async function pollConferenceParticipants(room) {
+        if (!room) return;
+        try {
+            const res = await fetch(`/user/pbx/conference/${encodeURIComponent(room)}/live-status`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data || !data.success) return;
+
+            // Update room badge & title
+            const badgeEl = $('pbx-conf-room-badge');
+            if (badgeEl) badgeEl.textContent = `Room ${data.room}`;
+            const titleEl = $('pbx-conf-name');
+            if (titleEl && data.room_name) titleEl.textContent = data.room_name;
+
+            // Update count
+            const countEl = $('pbx-conf-count-label');
+            const activeCount = data.active_count || (data.participants ? data.participants.length : 0);
+            if (countEl) countEl.textContent = `In Room (${activeCount})`;
+
+            // Active Participants List
+            const listEl = $('pbx-conf-participants-list');
+            if (listEl) {
+                if (!data.participants || data.participants.length === 0) {
+                    listEl.innerHTML = `
+                        <div style="text-align: center; padding: 20px 10px; color: var(--pbx-text-dim, #94a3b8); font-size: 12px;">
+                            <div class="spinner-grow spinner-grow-sm text-primary mb-2" role="status"></div>
+                            <div>Waiting for team members to join Room ${escapeHtml(room)}...</div>
+                        </div>
+                    `;
+                } else {
+                    listEl.innerHTML = data.participants.map(p => {
+                        const initial = p.name ? p.name.charAt(0).toUpperCase() : (p.extension ? p.extension.charAt(0) : '?');
+                        const avatarHtml = p.avatar
+                            ? `<img src="${p.avatar}" alt="${escapeHtml(p.name)}" class="pbx-conf-avatar-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'pbx-conf-avatar-init\\'>${initial}</span>'">`
+                            : `<span class="pbx-conf-avatar-init">${initial}</span>`;
+
+                        const isMeBadge = p.is_me ? `<span class="pbx-conf-you-badge">(You)</span>` : '';
+                        const adminBadge = p.is_admin ? `<span class="pbx-conf-admin-badge">Host</span>` : '';
+
+                        let statusBadge = '';
+                        if (p.is_muted) {
+                            statusBadge = `
+                                <span class="pbx-conf-tag tag-muted" title="Microphone Muted">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/></svg>
+                                    <span>Muted</span>
+                                </span>
+                            `;
+                        } else {
+                            statusBadge = `
+                                <span class="pbx-conf-tag tag-talking" title="Speaking">
+                                    <span class="pbx-mini-wave"><span></span><span></span><span></span></span>
+                                    <span>Talking</span>
+                                </span>
+                            `;
+                        }
+
+                        return `
+                            <div class="pbx-conf-participant-row ${p.is_me ? 'is-me' : ''}">
+                                <div class="pbx-conf-avatar-wrapper">
+                                    ${avatarHtml}
+                                    ${p.is_talking ? '<span class="pbx-talking-pulse"></span>' : ''}
+                                </div>
+                                <div class="pbx-conf-info">
+                                    <div class="pbx-conf-pname">
+                                        <span>${escapeHtml(p.name)}</span>
+                                        ${isMeBadge}
+                                        ${adminBadge}
+                                    </div>
+                                    <div class="pbx-conf-pext">Ext ${escapeHtml(p.extension)}</div>
+                                </div>
+                                <div class="pbx-conf-actions">
+                                    ${statusBadge}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // Offline Colleagues (Invite list)
+            const inviteEl = $('pbx-conf-invite-list');
+            if (inviteEl && data.offline_members) {
+                if (data.offline_members.length === 0) {
+                    inviteEl.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--pbx-text-dim, #94a3b8); font-size: 12px;">All team colleagues are in this room!</div>`;
+                } else {
+                    inviteEl.innerHTML = data.offline_members.map(m => {
+                        const initial = m.name ? m.name.charAt(0).toUpperCase() : (m.extension ? m.extension.charAt(0) : '?');
+                        const avatarHtml = m.avatar
+                            ? `<img src="${m.avatar}" alt="${escapeHtml(m.name)}" class="pbx-conf-avatar-img" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'pbx-conf-avatar-init\\'>${initial}</span>'">`
+                            : `<span class="pbx-conf-avatar-init">${initial}</span>`;
+
+                        return `
+                            <div class="pbx-conf-invite-row">
+                                <div class="pbx-conf-avatar-wrapper">
+                                    ${avatarHtml}
+                                </div>
+                                <div class="pbx-conf-info">
+                                    <div class="pbx-conf-pname">${escapeHtml(m.name)}</div>
+                                    <div class="pbx-conf-pext">Ext ${escapeHtml(m.extension)}</div>
+                                </div>
+                                <button type="button" class="pbx-conf-ring-btn" id="pbx-inv-btn-${escapeHtml(m.extension)}" onclick="pbxInviteToConference('${escapeHtml(m.extension)}', '${escapeHtml(room)}')" title="Ring extension now">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                    <span>Ring</span>
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+        } catch (err) {
+            console.warn('[PBX Conference Status] Poll error:', err);
+        }
+    }
+
+    window.pbxToggleInviteDrawer = function () {
+        getAudioContext();
+        const drawer = $('pbx-conf-invite-drawer');
+        if (drawer) {
+            drawer.classList.toggle('active');
+        }
+    };
+
+    window.pbxInviteToConference = async function (ext, room) {
+        getAudioContext();
+        if (!room) {
+            room = currentSession ? (currentSession._targetNum || '700') : '700';
+        }
+        const btn = $(`pbx-inv-btn-${ext}`);
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> Ringing...`;
+        }
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        try {
+            const res = await fetch(`/user/pbx/conference/${encodeURIComponent(room)}/invite`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
+                body: JSON.stringify({ extension: ext })
+            });
+            const json = await res.json();
+            if (json.success) {
+                if (btn) {
+                    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Calling`;
+                    btn.classList.add('btn-success');
+                }
+            } else {
+                alert(json.message || 'Failed to ring extension');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `Ring`;
+                }
+            }
+        } catch (e) {
+            console.error('[PBX Conference Invite] Error:', e);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `Ring`;
+            }
+        }
+    };
+
+    window.pbxConferenceAction = async function (action, channel, room) {
+        getAudioContext();
+        if (!room) {
+            room = currentSession ? (currentSession._targetNum || '700') : '700';
+        }
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        try {
+            const res = await fetch(`/user/pbx/conference/${encodeURIComponent(room)}/action`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
+                body: JSON.stringify({ action: action, channel: channel })
+            });
+            const json = await res.json();
+            if (json.success) {
+                pollConferenceParticipants(room);
+            } else {
+                alert(json.message || 'Action failed');
+            }
+        } catch (e) {
+            console.error('[PBX Conference Action] Error:', e);
+        }
+    };
+
     function endCallUI() {
         stopCallTimer();
+        stopConfPolling();
         try {
             stopAllAudioTones();
         } catch (e) {}
@@ -1269,21 +1582,31 @@
         isCallMuted = false;
         isCallHeld = false;
 
-        // Immediately close the active call overlay
+        // Immediately close the active call overlay in both main window and PiP document
         const overlay = $('pbx-call-overlay');
         if (overlay) overlay.classList.remove('active');
+        const mainOverlay = document.getElementById('pbx-call-overlay');
+        if (mainOverlay) mainOverlay.classList.remove('active');
+
+        // Reset hero visibility
+        const hero1on1 = $('pbx-hero-1on1');
+        if (hero1on1) hero1on1.style.display = 'flex';
+        const heroConf = $('pbx-hero-conf');
+        if (heroConf) heroConf.style.display = 'none';
 
         const incomingModal = $('pbx-incoming-modal');
         if (incomingModal) incomingModal.classList.remove('active');
+        const mainIncoming = document.getElementById('pbx-incoming-modal');
+        if (mainIncoming) mainIncoming.classList.remove('active');
 
-        const fab = $('pbx-fab-btn');
+        const fab = $('pbx-fab-btn') || document.getElementById('pbx-fab-btn');
         if (fab) {
             fab.classList.remove('is-incoming');
             fab.style.display = 'flex';
         }
 
         // Hide floating In-Call PiP bar and reset its position back to bottom-right
-        const pipBar = $('pbx-incall-pip-bar');
+        const pipBar = $('pbx-incall-pip-bar') || document.getElementById('pbx-incall-pip-bar');
         if (pipBar) {
             pipBar.style.display = 'none';
             pipBar.style.position = 'fixed';
@@ -1297,7 +1620,7 @@
         }
 
         // Snap the dialer card back to its natural bottom-right home
-        const card = $('pbx-dialer-card');
+        const card = $('pbx-dialer-card') || document.getElementById('pbx-dialer-card');
         if (card) {
             card.style.position = '';
             card.style.left = '';
@@ -1311,6 +1634,7 @@
         $('pbx-hold-btn')?.classList.remove('active');
         $('pbx-incall-dtmf-drawer')?.classList.remove('active');
         $('pbx-incall-transfer-drawer')?.classList.remove('active');
+        $('pbx-conf-invite-drawer')?.classList.remove('active');
 
         if (ua && ua.isRegistered()) {
             setStatus('online', 'Online');
@@ -1661,6 +1985,7 @@
 
             // Populate Colleagues & Team Bridge Rooms
             renderContactsList(data.contacts || [], data.conferences || []);
+            renderTeamRoomsList();
             renderRecentsList();
 
             // Check if JsSIP is loaded
@@ -1755,8 +2080,6 @@
     }
 
     // Google Meet-Style Floating Picture-in-Picture & Dedicated Window
-    let pbxPipWindow = null;
-
     window.pbxPopoutWindow = async function () {
         // 1. If already open in PiP, close it to dock back into main window
         if (pbxPipWindow && !pbxPipWindow.closed) {
@@ -1786,7 +2109,8 @@
                     'togglePbxDialer', 'closePbxDialer', 'pbxPopoutWindow', 'pbxAnswerIncoming',
                     'pbxRejectIncoming', 'pbxDial', 'pbxQuickCall', 'pbxCallColleague',
                     'pbxJoinTeamBridge', 'pbxCallContact', 'pbxMakeCall', 'pbxDialDigit',
-                    'pbxResetDialerPosition'
+                    'pbxResetDialerPosition', 'pbxToggleInviteDrawer', 'pbxInviteToConference',
+                    'pbxConferenceAction'
                 ];
                 pbxMethods.forEach((name) => {
                     if (typeof window[name] === 'function') {
@@ -1852,6 +2176,12 @@
                         btn.setAttribute('title', 'Float over all software & tabs (Google Meet Picture-in-Picture)');
                         btn.innerHTML = `<svg class="pbx-pip-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="10" width="8" height="6" rx="1"/></svg>`;
                     });
+                    if (!currentSession || currentSession.isEnded()) {
+                        const ov = document.getElementById('pbx-call-overlay');
+                        if (ov) ov.classList.remove('active');
+                        const inc = document.getElementById('pbx-incoming-modal');
+                        if (inc) inc.classList.remove('active');
+                    }
                     syncInCallPipBar();
                 });
 

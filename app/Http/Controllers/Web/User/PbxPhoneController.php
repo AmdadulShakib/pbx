@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Web\User;
 
 use App\Models\PbxExtension;
+use App\Models\PbxConference;
+use App\Services\Pbx\AsteriskAmi;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PbxPhoneController extends Controller
 {
@@ -152,6 +156,159 @@ class PbxPhoneController extends Controller
         $logs = $query->paginate(15);
 
         return view('user.pbx.history', compact('ext', 'logs', 'user'));
+    }
+
+    /**
+     * Real-time participant status of a conference room.
+     * Shows who joined, who is talking, who is muted, and who is not in the room yet.
+     */
+    public function conferenceStatus(string $room, AsteriskAmi $ami): JsonResponse
+    {
+        $room = trim($room);
+        $confRecord = PbxConference::where('room_number', $room)->first();
+        $roomName   = $confRecord ? $confRecord->name : ("Team Bridge Room {$room}");
+
+        $allExtensions = PbxExtension::with('user:id,name,email,avatar')
+            ->where('enabled', true)
+            ->get();
+
+        $activeParticipants = [];
+        $activeExtMap = [];
+
+        try {
+            $cmdLines = $ami->command("confbridge list {$room}");
+            if (!empty($cmdLines)) {
+                foreach ($cmdLines as $line) {
+                    $line = trim($line);
+                    if (empty($line) || str_starts_with($line, 'Channel') || str_starts_with($line, '===') || str_contains($line, 'No conference bridge')) {
+                        continue;
+                    }
+
+                    // Extract channel
+                    $parts = preg_split('/\s+/', $line);
+                    $channel = $parts[0] ?? '';
+                    $flags   = $parts[1] ?? '';
+
+                    // Try to identify extension number from line
+                    $matchedExt = null;
+                    if (preg_match('/<(\d+)>/', $line, $m)) {
+                        $matchedExt = $m[1];
+                    } elseif (preg_match('/PJSIP\/(\d+)/i', $channel, $m)) {
+                        $matchedExt = $m[1];
+                    } elseif (preg_match('/Local\/(\d+)/i', $channel, $m)) {
+                        $matchedExt = $m[1];
+                    }
+
+                    $extObj = $matchedExt ? $allExtensions->firstWhere('extension', $matchedExt) : null;
+                    $name   = $extObj ? ($extObj->name ?: $extObj->user?->name) : ($matchedExt ? "Ext {$matchedExt}" : 'Participant');
+                    $avatar = $extObj ? $extObj->user?->avatar_url : null;
+
+                    $currentUserId = auth('admin')->id() ?: auth('web')->id();
+                    $isMe = $extObj && $extObj->user_id && ($extObj->user_id == $currentUserId);
+
+                    $isMuted = str_contains($flags, 'm');
+                    $isAdmin = str_contains($flags, 'A');
+
+                    $activeParticipants[] = [
+                        'channel'    => $channel,
+                        'extension'  => $matchedExt ?: 'Unknown',
+                        'name'       => $name,
+                        'avatar'     => $avatar,
+                        'is_muted'   => $isMuted,
+                        'is_talking' => !$isMuted,
+                        'is_admin'   => $isAdmin,
+                        'is_me'      => $isMe,
+                    ];
+
+                    if ($matchedExt) {
+                        $activeExtMap[$matchedExt] = true;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Asterisk query failed or bridge empty
+        }
+
+        // Calculate colleagues who have not joined yet
+        $offlineMembers = [];
+        foreach ($allExtensions as $ext) {
+            if (!isset($activeExtMap[$ext->extension])) {
+                $offlineMembers[] = [
+                    'extension' => (string) $ext->extension,
+                    'name'      => $ext->name ?: $ext->user?->name ?: ("Ext " . $ext->extension),
+                    'avatar'    => $ext->user?->avatar_url,
+                ];
+            }
+        }
+
+        return response()->json([
+            'success'         => true,
+            'room'            => $room,
+            'room_name'       => $roomName,
+            'active_count'    => count($activeParticipants),
+            'participants'    => $activeParticipants,
+            'offline_members' => $offlineMembers,
+        ]);
+    }
+
+    /**
+     * Ring/Invite a colleague into an active conference room.
+     */
+    public function conferenceInvite(Request $request, string $room, AsteriskAmi $ami): JsonResponse
+    {
+        $targetExt = trim($request->input('extension', ''));
+        if (empty($targetExt)) {
+            return response()->json(['success' => false, 'message' => 'Extension is required'], 422);
+        }
+
+        try {
+            $ami->query([
+                'action'   => 'originate',
+                'channel'  => "Local/{$targetExt}@rg-member-dial",
+                'context'  => 'internal-calls',
+                'exten'    => $room,
+                'priority' => 1,
+                'callerid' => "Team Bridge {$room} <{$room}>",
+                'timeout'  => 30000,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Ringing Ext {$targetExt} to join Team Bridge Room {$room}...",
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to initiate invite call: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Mute / Unmute / Kick a participant from the conference room.
+     */
+    public function conferenceAction(Request $request, string $room, AsteriskAmi $ami): JsonResponse
+    {
+        $action  = $request->input('action'); // 'mute', 'unmute', 'kick'
+        $channel = trim($request->input('channel', ''));
+
+        if (empty($channel)) {
+            return response()->json(['success' => false, 'message' => 'Channel is required'], 422);
+        }
+
+        try {
+            if ($action === 'mute') {
+                $ami->command("confbridge mute {$room} {$channel}");
+            } elseif ($action === 'unmute') {
+                $ami->command("confbridge unmute {$room} {$channel}");
+            } elseif ($action === 'kick') {
+                $ami->command("confbridge kick {$room} {$channel}");
+            }
+
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 }
 
